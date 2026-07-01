@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Build artefacts
+*.nvda-addon
+addon/manifest.ini
+addon/locale/*.pot
+
+# Editors / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Local secrets - never commit API keys
+*.key
+credentials*.txt
+*crudentials*.txt
+.env

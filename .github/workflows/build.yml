@@ -1,0 +1,41 @@
+name: Build add-on
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  release:
+    types: [ published ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Compile all sources
+        shell: bash
+        run: |
+          python -c "import compileall, sys; sys.exit(0 if compileall.compile_dir('addon', quiet=1) else 1)"
+
+      - name: Build the .nvda-addon package
+        run: python build.py --no-copy
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sarvam-ai-addon
+          path: "*.nvda-addon"
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "*.nvda-addon"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

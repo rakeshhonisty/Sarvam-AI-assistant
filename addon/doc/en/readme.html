@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sarvam AI assistant for NVDA</title>
+<style>
+body { font-family: Segoe UI, Arial, sans-serif; max-width: 50em; margin: 1em auto; padding: 0 1em; line-height: 1.5; }
+h1, h2, h3 { color: #1a3e6e; }
+code, kbd { background: #f0f0f0; padding: 0 .3em; border-radius: 3px; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ccc; padding: .4em .6em; text-align: left; }
+.note { border-left: 4px solid #1a3e6e; background: #eef3fa; padding: .6em 1em; }
+</style>
+</head>
+<body>
+<h1>Sarvam AI assistant for NVDA</h1>
+<p>An accessible NVDA add-on that brings the Sarvam AI platform to blind and
+low-vision users through a fully keyboard-driven, screen-reader-friendly
+interface.</p>
+
+<h2>Features</h2>
+<ul>
+<li><strong>Text to Speech</strong> – synthesise Indian-language speech from a
+selection, the clipboard, typed text or a text file; play, pause, resume, stop
+and save the audio.</li>
+<li><strong>Speech to Text</strong> – transcribe an audio file or your
+microphone, optionally translating to English; copy or save the transcript.</li>
+<li><strong>Translation &amp; Transliteration</strong> – convert text between
+English and 10 Indian languages, with selectable styles.</li>
+<li><strong>Language Detection</strong> – identify the language and script of
+any text.</li>
+<li><strong>AI Assistant</strong> – chat, summarise text and understand
+documents with Sarvam's language models.</li>
+<li><strong>OCR</strong> – recognise text from PDFs and images with Sarvam
+Document OCR (23 languages) or the offline Windows OCR engine, then translate or
+summarise it with Sarvam.</li>
+</ul>
+
+<div class="note">
+<p><strong>About OCR:</strong> The primary engine is Sarvam's Document
+Digitization API, which recognises 23 languages from a PDF or image. Images and
+screen/clipboard captures are automatically wrapped into a one-page PDF before
+being sent. A second, fully offline Windows OCR engine is also available for
+instant screen and object recognition.</p>
+</div>
+
+<h2>Getting started</h2>
+<ol>
+<li>Open <em>NVDA menu &rarr; Tools &rarr; Sarvam AI &rarr; Settings…</em></li>
+<li>Paste your Sarvam API key (from <code>https://dashboard.sarvam.ai</code>).</li>
+<li>Press <strong>Validate key / Test connection</strong>.</li>
+<li>Set your default voice, language and folders, then press <strong>OK</strong>.</li>
+</ol>
+
+<h2>Menu</h2>
+<p>All features are under <em>Tools &rarr; Sarvam AI</em>: Text to Speech,
+Speech to Text, Translate, Transliterate, Detect language, OCR, AI Assistant /
+Summarise, Settings, Logs, Check for updates, Help and About.</p>
+
+<h2>Keyboard shortcuts</h2>
+<p>No gestures are assigned by default. Add your own under
+<em>NVDA &rarr; Preferences &rarr; Input Gestures &rarr; Sarvam AI</em>.</p>
+
+<h2>Text to Speech</h2>
+<p>Type or load text, choose a voice and language, then press <strong>Speak</strong>.
+Use <strong>Save audio…</strong> to export a WAV file. Playback can be paused,
+resumed and stopped.</p>
+
+<h2>Speech to Text</h2>
+<p>Choose the audio language (or leave it on automatic), then either
+<strong>Transcribe audio file…</strong> or <strong>Start recording</strong> to
+capture your microphone. Tick <strong>Translate to English</strong> to receive
+an English transcript. Copy or save the result.</p>
+
+<h2>Translate, Transliterate, Detect language</h2>
+<p>Pick the operation, enter or load text, choose source and target languages,
+then press <strong>Go</strong>.</p>
+
+<h2>AI Assistant</h2>
+<p>Choose a task – chat, summarise or understand a document – enter your text or
+question and press <strong>Send</strong>.</p>
+
+<h2>OCR</h2>
+<p>Choose an engine: <em>Sarvam Document OCR</em> (online, 23 languages, best for
+PDFs and photos) or <em>Windows OCR</em> (offline, instant, best for reading the
+screen). Recognise a PDF/image file, a clipboard image, or the current
+screen/object. Recognised text can be copied, saved, translated or
+summarised.</p>
+
+<h2>Troubleshooting</h2>
+<table>
+<tr><th>Symptom</th><th>Cause / fix</th></tr>
+<tr><td>"No Sarvam API key set"</td><td>Enter your key in Settings.</td></tr>
+<tr><td>"Authentication failed"</td><td>The key is wrong; re-check it.</td></tr>
+<tr><td>"No credits available"</td><td>Your account needs credits – add them in the Sarvam dashboard.</td></tr>
+<tr><td>"Windows OCR is not available"</td><td>Install a Windows OCR language pack in Windows Settings.</td></tr>
+<tr><td>Nothing happens on the network</td><td>Check your connection, proxy and network timeout in Settings; open Logs for details.</td></tr>
+</table>
+
+<h2>Privacy</h2>
+<p>Your API key is stored obfuscated in NVDA's configuration. Text, audio and
+images you process are sent to Sarvam for processing; OCR runs locally in
+Windows.</p>
+
+<h2>License</h2>
+<p>GNU General Public License, version 2.</p>
+</body>
+</html>
