@@ -15,13 +15,13 @@ addon_info = {
 		"23 languages, plus an offline Windows OCR engine). Fully keyboard "
 		"accessible and screen-reader friendly."
 	),
-	"addon_version": "1.0.0",
+	"addon_version": "1.0.1",
 	"addon_author": "Sarvam AI assistant contributors <rakesh.honistyboy@gmail.com>",
 	"addon_url": "https://github.com/rakeshhonisty/Sarvam-AI-assistant",
 	"addon_sourceURL": "https://github.com/rakeshhonisty/Sarvam-AI-assistant",
 	"addon_docFileName": "readme.html",
 	"addon_minimumNVDAVersion": "2021.1",
-	"addon_lastTestedNVDAVersion": "2026.1",
+	"addon_lastTestedNVDAVersion": "2026.2",
 	"addon_updateChannel": None,
 	"addon_license": "GPL v2",
 	"addon_licenseURL": "https://www.gnu.org/licenses/old-licenses/gpl-2.0.html",

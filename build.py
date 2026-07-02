@@ -94,7 +94,9 @@ def generate_pot():
 
 def package():
 	version = INFO["addon_version"]
-	out_name = "%s-%s.nvda-addon" % (INFO["addon_summary"].replace(" ", ""), version)
+	# Use the short add-on id for the file name (matches the addonId, avoids a
+	# long/ambiguous file name in the download URL).
+	out_name = "%s-%s.nvda-addon" % (INFO["addon_name"], version)
 	out_path = os.path.join(ROOT, out_name)
 	if os.path.exists(out_path):
 		os.remove(out_path)

@@ -1,15 +1,15 @@
 {
 	"addonId": "sarvamAI",
 	"displayName": "Sarvam AI assistant",
-	"URL": "https://github.com/rakeshhonisty/Sarvam-AI-assistant/releases/download/v1.0.0/SarvamAIassistant-1.0.0.nvda-addon",
+	"URL": "https://github.com/rakeshhonisty/Sarvam-AI-assistant/releases/download/v1.0.1/sarvamAI-1.0.1.nvda-addon",
 	"description": "Accessible NVDA add-on for the Sarvam AI platform. Provides text to speech, speech to text, translation, transliteration, language detection, AI chat and summarisation, and OCR (Sarvam Document OCR in 23 languages, plus an offline Windows OCR engine). Fully keyboard accessible and screen-reader friendly.",
-	"sha256": "b9648ba16bc980307daee63329c0b5169d61e47c6f892bbef2cc14de8d00ea5d",
+	"sha256": "cc53dbfbabf6218fc46cf8861f4f21e80d1a08493600d7aa930db68acaa5a222",
 	"homepage": "https://github.com/rakeshhonisty/Sarvam-AI-assistant",
-	"addonVersionName": "1.0.0",
+	"addonVersionName": "1.0.1",
 	"addonVersionNumber": {
 		"major": 1,
 		"minor": 0,
-		"patch": 0
+		"patch": 1
 	},
 	"minNVDAVersion": {
 		"major": 2021,
@@ -18,12 +18,12 @@
 	},
 	"lastTestedVersion": {
 		"major": 2026,
-		"minor": 1,
+		"minor": 2,
 		"patch": 0
 	},
 	"channel": "stable",
 	"publisher": "Rakesh Honisty",
 	"sourceURL": "https://github.com/rakeshhonisty/Sarvam-AI-assistant",
 	"license": "GPL v2",
-	"licenseURL": "https://www.gnu.org/licenses/old-licenses/gpl-2.0.html"
+	"licenseURL": "https://www.gnu.org/licenses/gpl-2.0.html"
 }
