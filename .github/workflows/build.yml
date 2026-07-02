@@ -1,11 +1,17 @@
 name: Build add-on
 
+# Continuous integration only: compile every source file and build the
+# .nvda-addon so breakages are caught early. Release assets are managed manually
+# with a verified SHA256 (the Add-on Store references that exact checksum), so
+# this workflow deliberately does NOT upload to or modify GitHub Releases.
+
 on:
   push:
     branches: [ main, master ]
   pull_request:
-  release:
-    types: [ published ]
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -31,11 +37,3 @@ jobs:
         with:
           name: sarvam-ai-addon
           path: "*.nvda-addon"
-
-      - name: Attach to release
-        if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v2
-        with:
-          files: "*.nvda-addon"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
