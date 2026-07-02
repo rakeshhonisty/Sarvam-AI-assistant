@@ -25,8 +25,8 @@ from . import logger
 addonHandler.initTranslation()
 
 # Update the owner/repo once the GitHub repository is published.
-GITHUB_OWNER = "your-github-username"
-GITHUB_REPO = "SarvamAIAddon"
+GITHUB_OWNER = "rakeshhonisty"
+GITHUB_REPO = "Sarvam-AI-assistant"
 RELEASES_API = "https://api.github.com/repos/%s/%s/releases/latest"
 
 

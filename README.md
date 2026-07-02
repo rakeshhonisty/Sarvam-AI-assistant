@@ -39,7 +39,7 @@ screen-reader-friendly interface that feels native to NVDA.
 ## Installation
 
 1. Download the latest `SarvamAIassistant-x.y.z.nvda-addon` from the
-   [Releases page](https://github.com/your-github-username/SarvamAIAddon/releases)
+   [Releases page](https://github.com/rakeshhonisty/Sarvam-AI-assistant/releases)
    (or build it yourself – see below).
 2. In NVDA, open the **Add-on Store** (or **Tools → Manage add-ons**), choose
    **Install from external file**, and select the downloaded file.
