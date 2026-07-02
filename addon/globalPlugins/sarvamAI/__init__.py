@@ -70,7 +70,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		add(_("&OCR..."), self.onOcr)
 		add(_("&AI Assistant / Summarise..."), self.onChat)
 		menu.AppendSeparator()
-		add(_("Se&ttings..."), self.onSettings)
+		add(_("Se&ttings (API key)..."), self.onSettings)
+		add(_("Ad&vanced settings..."), self.onAdvancedSettings)
 		add(_("&Logs..."), self.onLogs)
 		add(_("Check for &updates..."), self.onCheckUpdates)
 		add(_("&Help..."), self.onHelp)
@@ -159,6 +160,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self._open(lambda: ChatDialog(gui.mainFrame, initial_text=_get_selection()))
 
 	def onSettings(self, evt=None):
+		from .ui.setup import SetupDialog
+		self._open(lambda: SetupDialog(gui.mainFrame))
+
+	def onAdvancedSettings(self, evt=None):
 		wx.CallAfter(gui.mainFrame.popupSettingsDialog,
 			gui.settingsDialogs.NVDASettingsDialog, self._settingsPanel)
 

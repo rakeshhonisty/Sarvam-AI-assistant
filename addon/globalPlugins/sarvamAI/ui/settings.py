@@ -20,6 +20,7 @@ from .. import config
 from .. import client
 from .. import tasks
 from .. import logger
+from .. import ttsstyles
 from . import common
 
 
@@ -51,7 +52,8 @@ class SarvamSettingsPanel(SettingsPanel):
 		# --- Text to speech ------------------------------------------------
 		sh.addItem(wx.StaticText(self, label=_("Text to speech")))
 		self.ttsModelCtrl = self._choice(sh, _("TTS &model:"), constants.TTS_MODELS, conf.get("ttsModel"))
-		self.speakerCtrl = self._choice(sh, _("Default &voice:"), constants.SPEAKERS_V2 + constants.SPEAKERS_V1, conf.get("defaultSpeaker"))
+		_allVoices = tuple(ttsstyles.speakers_for("bulbul:v3", "Any")) + tuple(ttsstyles.speakers_for("bulbul:v2", "Any"))
+		self.speakerCtrl = self._choice(sh, _("Default &voice:"), _allVoices, conf.get("defaultSpeaker"))
 		labels, self._langCodes = common.language_choices()
 		# Translators: default synthesis language.
 		self.langCtrl = sh.addLabeledControl(_("Default &language:"), wx.Choice, choices=labels)

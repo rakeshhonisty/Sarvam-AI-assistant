@@ -85,14 +85,19 @@ OCR_ENGINE_SARVAM = "sarvam"
 OCR_ENGINE_WINDOWS = "windows"
 
 # --- Models -----------------------------------------------------------------
-TTS_MODELS = ("bulbul:v2", "bulbul:v1")
+TTS_MODELS = ("bulbul:v3", "bulbul:v2")
+
+# Output audio codecs accepted by /text-to-speech (verified from OpenAPI spec).
+# "wav" is used for in-app playback; "mp3" for saving a compact file.
+TTS_OUTPUT_CODECS = ("mp3", "wav", "opus", "flac", "aac")
+DEFAULT_TTS_CODEC = "mp3"
 STT_MODELS = ("saarika:v2.5", "saarika:v2", "saarika:v1", "saarika:flash")
 STT_TRANSLATE_MODELS = ("saaras:v2.5", "saaras:v2", "saaras:v1", "saaras:flash")
 TRANSLATE_MODELS = ("sarvam-translate:v1", "mayura:v1")
 # Chat models as returned live by GET /v1/models.
 CHAT_MODELS = ("sarvam-105b", "sarvam-30b")
 
-DEFAULT_TTS_MODEL = "bulbul:v2"
+DEFAULT_TTS_MODEL = "bulbul:v3"
 DEFAULT_STT_MODEL = "saarika:v2.5"
 DEFAULT_STT_TRANSLATE_MODEL = "saaras:v2.5"
 DEFAULT_TRANSLATE_MODEL = "sarvam-translate:v1"
@@ -109,7 +114,7 @@ SPEAKERS_V1 = (
 	"meera", "pavithra", "maitreyi", "arvind", "amol", "amartya",
 	"diya", "neel", "misha", "vian", "arjun", "maya",
 )
-DEFAULT_SPEAKER = "anushka"
+DEFAULT_SPEAKER = "shubh"
 
 
 def speakers_for_model(model):

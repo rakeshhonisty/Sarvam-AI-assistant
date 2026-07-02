@@ -223,14 +223,18 @@ class SarvamClient:
 	# -- text to speech -----------------------------------------------------
 	def text_to_speech(self, text, language_code, speaker=None, model=None,
 			pitch=None, pace=None, loudness=None, sample_rate=None,
-			enable_preprocessing=True, cancel=None, progress=None):
-		"""Synthesise ``text`` and return the raw WAV bytes.
+			enable_preprocessing=True, temperature=None, output_audio_codec=None,
+			cancel=None, progress=None):
+		"""Synthesise ``text`` and return the raw audio bytes in the requested
+		codec (``wav`` for playback, ``mp3`` etc. for saving).
 
-		Long input is split into <= ``TTS_MAX_CHARS`` chunks and the resulting
-		WAV segments are concatenated. Returns ``bytes`` of a single WAV file.
+		Long input is split into <= ``TTS_MAX_CHARS`` chunks; the resulting audio
+		segments are joined (WAV segments are re-framed into one valid WAV, other
+		codecs are concatenated).
 		"""
+		codec = (output_audio_codec or "wav").lower()
 		chunks = _chunk_text(text, constants.TTS_MAX_CHARS)
-		wavs = []
+		segments = []
 		total = len(chunks)
 		for i, chunk in enumerate(chunks):
 			if cancel:
@@ -243,6 +247,7 @@ class SarvamClient:
 				"speaker": speaker or constants.DEFAULT_SPEAKER,
 				"model": model or constants.DEFAULT_TTS_MODEL,
 				"enable_preprocessing": bool(enable_preprocessing),
+				"output_audio_codec": codec,
 			}
 			if pitch is not None:
 				payload["pitch"] = float(pitch)
@@ -250,16 +255,20 @@ class SarvamClient:
 				payload["pace"] = float(pace)
 			if loudness is not None:
 				payload["loudness"] = float(loudness)
+			if temperature is not None:
+				payload["temperature"] = float(temperature)
 			if sample_rate:
 				payload["speech_sample_rate"] = int(sample_rate)
 			res = self._post_json(constants.EP_TEXT_TO_SPEECH, payload, cancel=cancel)
 			audios = res.get("audios") if isinstance(res, dict) else None
 			if not audios:
 				raise errors.SarvamError(_("Sarvam did not return any audio."))
-			wavs.append(base64.b64decode(audios[0]))
+			segments.append(base64.b64decode(audios[0]))
 		if progress:
 			progress(total, total)
-		return _concat_wav(wavs)
+		if codec == "wav":
+			return _concat_wav(segments)
+		return b"".join(segments)
 
 	# -- speech to text -----------------------------------------------------
 	def speech_to_text(self, audio_path, language_code=None, model=None,

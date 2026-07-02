@@ -3,8 +3,9 @@
 # Copyright (C) 2026 Sarvam AI assistant contributors
 # This file is covered by the GNU General Public License v2.
 
-"""Speech to text dialog: transcribe an audio file or the microphone, with an
-optional translate-to-English mode."""
+"""Speech to text dialog: pick an audio file or record the microphone, then
+press Transcribe to send it to Sarvam. Optionally translate to English. Save
+the transcript as plain text or a Word document."""
 
 import os
 
@@ -20,6 +21,7 @@ from .. import config
 from .. import client
 from .. import tasks
 from .. import recorder
+from .. import docwriter
 from .. import logger
 from . import common
 
@@ -32,6 +34,7 @@ class SpeechToTextDialog(wx.Dialog):
 			style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 		self._cli = client.SarvamClient(config)
 		self._rec = recorder.MicRecorder()
+		self._audioPath = None
 		conf = config.conf()
 
 		helper = guiHelper.BoxSizerHelper(self, orientation=wx.VERTICAL)
@@ -44,27 +47,39 @@ class SpeechToTextDialog(wx.Dialog):
 		self.translateCtrl = row.addItem(wx.CheckBox(self, label=_("Translate to &English")))
 		helper.addItem(row.sizer)
 
+		# Source selection.
 		srcBtns = guiHelper.ButtonHelper(wx.HORIZONTAL)
-		self.fileBtn = srcBtns.addButton(self, label=_("Transcribe audio &file..."))
-		self.fileBtn.Bind(wx.EVT_BUTTON, self.onFile)
+		self.fileBtn = srcBtns.addButton(self, label=_("Choose audio &file..."))
+		self.fileBtn.Bind(wx.EVT_BUTTON, self.onChooseFile)
 		self.recordBtn = srcBtns.addButton(self, label=_("Start &recording"))
 		self.recordBtn.Bind(wx.EVT_BUTTON, self.onRecordToggle)
 		helper.addItem(srcBtns)
 
-		# Translators: field showing the transcript.
+		# Translators: shows the currently selected audio source.
+		self.sourceLabel = helper.addItem(wx.StaticText(self, label=_("Source: none selected")))
+
+		# The Transcribe trigger.
+		go = guiHelper.ButtonHelper(wx.HORIZONTAL)
+		self.transcribeBtn = go.addButton(self, label=_("&Transcribe"))
+		self.transcribeBtn.Bind(wx.EVT_BUTTON, self.onTranscribe)
+		helper.addItem(go)
+
 		self.transcriptCtrl = helper.addLabeledControl(
 			_("&Transcript:"), wx.TextCtrl,
-			style=wx.TE_MULTILINE | wx.TE_READONLY, size=(560, 240))
+			style=wx.TE_MULTILINE, size=(560, 220))
 
 		btns = guiHelper.ButtonHelper(wx.HORIZONTAL)
-		self.copyBtn = btns.addButton(self, label=_("&Copy transcript"))
+		self.copyBtn = btns.addButton(self, label=_("&Copy"))
 		self.copyBtn.Bind(wx.EVT_BUTTON, self.onCopy)
-		self.saveBtn = btns.addButton(self, label=_("&Save transcript..."))
-		self.saveBtn.Bind(wx.EVT_BUTTON, self.onSave)
+		self.saveTxtBtn = btns.addButton(self, label=_("Save as &text (.txt)"))
+		self.saveTxtBtn.Bind(wx.EVT_BUTTON, self.onSaveTxt)
+		self.saveDocBtn = btns.addButton(self, label=_("Save as &Word (.docx)"))
+		self.saveDocBtn.Bind(wx.EVT_BUTTON, self.onSaveDocx)
 		closeBtn = btns.addButton(self, id=wx.ID_CLOSE, label=_("Cl&ose"))
 		closeBtn.Bind(wx.EVT_BUTTON, lambda e: self.Close())
 		helper.addItem(btns)
 
+		self._updateTranscribe()
 		self.SetEscapeId(wx.ID_CLOSE)
 		self.Bind(wx.EVT_CLOSE, self._onClose)
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
@@ -73,7 +88,8 @@ class SpeechToTextDialog(wx.Dialog):
 		self.CentreOnScreen()
 		self.fileBtn.SetFocus()
 
-	def onFile(self, evt):
+	# -- source selection ---------------------------------------------------
+	def onChooseFile(self, evt):
 		exts = ";".join("*" + e for e in constants.AUDIO_EXTENSIONS)
 		with wx.FileDialog(
 				self, _("Open audio file"),
@@ -81,8 +97,10 @@ class SpeechToTextDialog(wx.Dialog):
 				style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fd:
 			if fd.ShowModal() != wx.ID_OK:
 				return
-			path = fd.GetPath()
-		self._transcribe(path)
+			self._audioPath = fd.GetPath()
+		self.sourceLabel.SetLabel(_("Source: {name}").format(name=os.path.basename(self._audioPath)))
+		common.report(_("Audio file selected. Press Transcribe."))
+		self._updateTranscribe()
 
 	def onRecordToggle(self, evt):
 		if self._rec.recording:
@@ -93,24 +111,29 @@ class SpeechToTextDialog(wx.Dialog):
 				self.recordBtn.SetLabel(_("Start &recording"))
 				return
 			self.recordBtn.SetLabel(_("Start &recording"))
-			common.report(_("Recording stopped, transcribing"))
-			if path:
-				self._transcribe(path)
+			self._audioPath = path
+			self.sourceLabel.SetLabel(_("Source: microphone recording"))
+			common.report(_("Recording stopped. Press Transcribe."))
+			self._updateTranscribe()
 		else:
 			try:
 				self._rec.start()
 			except recorder.RecorderError as e:
 				common.error_dialog(self, e)
 				return
-			self.recordBtn.SetLabel(_("&Stop recording and transcribe"))
+			self.recordBtn.SetLabel(_("&Stop recording"))
 			common.report(_("Recording. Press the button again to stop."))
 
-	def _transcribe(self, path):
+	# -- transcription ------------------------------------------------------
+	def onTranscribe(self, evt):
+		if not self._audioPath or not os.path.isfile(self._audioPath):
+			common.report(_("Choose an audio file or record first"))
+			return
+		path = self._audioPath
 		lang = self._langCodes[self.langCtrl.GetSelection()]
 		translate = self.translateCtrl.GetValue()
 		conf = config.conf()
-		self.fileBtn.Enable(False)
-		self.recordBtn.Enable(False)
+		self.transcribeBtn.Enable(False)
 
 		def work(cancel, progress):
 			if translate:
@@ -121,54 +144,59 @@ class SpeechToTextDialog(wx.Dialog):
 				path, language_code=language, model=conf.get("sttModel"), cancel=cancel)
 
 		def ok(result):
-			self.fileBtn.Enable(True)
-			self.recordBtn.Enable(True)
-			transcript = result.get("transcript", "")
-			self.transcriptCtrl.SetValue(transcript)
+			self.transcribeBtn.Enable(True)
+			self.transcriptCtrl.SetValue(result.get("transcript", ""))
 			detected = result.get("language_code")
 			if detected:
 				common.report(_("Transcribed. Detected language {lang}").format(lang=detected))
 			else:
 				common.report(_("Transcribed"))
+			self.transcriptCtrl.SetFocus()
 
 		def bad(exc):
-			self.fileBtn.Enable(True)
-			self.recordBtn.Enable(True)
+			self.transcribeBtn.Enable(True)
 			common.error_dialog(self, exc)
 
 		tasks.run_task(work, on_success=ok, on_error=bad,
 			title=_("Sarvam AI - Speech to Text"),
 			message=_("Transcribing audio..."), parent=self)
 
+	def _updateTranscribe(self):
+		self.transcribeBtn.Enable(bool(self._audioPath))
+
+	# -- output -------------------------------------------------------------
 	def onCopy(self, evt):
 		text = self.transcriptCtrl.GetValue()
-		if not text:
-			common.report(_("Nothing to copy"))
-			return
-		if wx.TheClipboard.Open():
+		if text and wx.TheClipboard.Open():
 			try:
 				wx.TheClipboard.SetData(wx.TextDataObject(text))
 				wx.TheClipboard.Flush()
 			finally:
 				wx.TheClipboard.Close()
 			common.report(_("Copied"))
+		else:
+			common.report(_("Nothing to copy"))
 
-	def onSave(self, evt):
+	def onSaveTxt(self, evt):
+		self._save("transcript.txt", _("Text files (*.txt)|*.txt"), docwriter.write_txt)
+
+	def onSaveDocx(self, evt):
+		self._save("transcript.docx", _("Word documents (*.docx)|*.docx"), docwriter.write_docx)
+
+	def _save(self, default_name, wildcard, writer):
 		text = self.transcriptCtrl.GetValue()
-		if not text:
+		if not text.strip():
 			common.report(_("Nothing to save"))
 			return
 		with wx.FileDialog(
 				self, _("Save transcript"), defaultDir=common.default_output_folder(),
-				defaultFile="transcript.txt",
-				wildcard=_("Text files (*.txt)|*.txt"),
+				defaultFile=default_name, wildcard=wildcard,
 				style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fd:
 			if fd.ShowModal() != wx.ID_OK:
 				return
 			path = fd.GetPath()
 		try:
-			with open(path, "w", encoding="utf-8") as f:
-				f.write(text)
+			writer(text, path)
 			common.report(_("Saved"))
 		except Exception as e:
 			common.error_dialog(self, e)
