@@ -21,7 +21,7 @@ addon_info = {
 	"addon_sourceURL": "https://github.com/rakeshhonisty/Sarvam-AI-assistant",
 	"addon_docFileName": "readme.html",
 	"addon_minimumNVDAVersion": "2021.1",
-	"addon_lastTestedNVDAVersion": "2025.1",
+	"addon_lastTestedNVDAVersion": "2026.1",
 	"addon_updateChannel": None,
 	"addon_license": "GPL v2",
 	"addon_licenseURL": "https://www.gnu.org/licenses/old-licenses/gpl-2.0.html",
