@@ -54,10 +54,11 @@ class SarvamSettingsPanel(SettingsPanel):
 		self.ttsModelCtrl = self._choice(sh, _("TTS &model:"), constants.TTS_MODELS, conf.get("ttsModel"))
 		_allVoices = tuple(ttsstyles.speakers_for("bulbul:v3", "Any")) + tuple(ttsstyles.speakers_for("bulbul:v2", "Any"))
 		self.speakerCtrl = self._choice(sh, _("Default &voice:"), _allVoices, conf.get("defaultSpeaker"))
-		labels, self._langCodes = common.language_choices()
-		# Translators: default synthesis language.
+		labels, self._langCodes = common.language_choices(include_auto=True)
+		# Translators: default synthesis language ("Auto detect" detects the
+		# language of the text, including code-mixed text, before synthesis).
 		self.langCtrl = sh.addLabeledControl(_("Default &language:"), wx.Choice, choices=labels)
-		common.select_in_combo(self.langCtrl, self._langCodes, conf.get("defaultLanguage"))
+		common.select_in_combo(self.langCtrl, self._langCodes, conf.get("defaultLanguage") or constants.AUTO_DETECT)
 
 		self.pitchCtrl = self._spin_float(sh, _("&Pitch (-0.75 to 0.75):"), conf.get("pitch"), constants.PITCH_RANGE)
 		self.paceCtrl = self._spin_float(sh, _("Pac&e (0.3 to 3.0):"), conf.get("pace"), constants.PACE_RANGE)

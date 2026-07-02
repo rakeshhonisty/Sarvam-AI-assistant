@@ -22,6 +22,7 @@ addonHandler.initTranslation()
 from .. import constants
 from .. import config
 from .. import client
+from .. import errors
 from .. import tasks
 from .. import audioutils
 from .. import textextract
@@ -76,9 +77,11 @@ class TextToSpeechDialog(wx.Dialog):
 		# Voice / language.
 		row2 = guiHelper.BoxSizerHelper(self, orientation=wx.HORIZONTAL)
 		self.voiceCtrl = row2.addLabeledControl(_("&Voice:"), wx.Choice, choices=[])
-		labels, self._langCodes = common.language_choices()
+		# "Auto detect" is offered and is the default: the language of the text
+		# (including code-mixed text) is detected before synthesis.
+		labels, self._langCodes = common.language_choices(include_auto=True)
 		self.langCtrl = row2.addLabeledControl(_("&Language:"), wx.Choice, choices=labels)
-		common.select_in_combo(self.langCtrl, self._langCodes, conf.get("defaultLanguage"))
+		common.select_in_combo(self.langCtrl, self._langCodes, conf.get("defaultLanguage") or constants.AUTO_DETECT)
 		helper.addItem(row2.sizer)
 		self._reloadVoices(conf.get("defaultSpeaker"))
 
@@ -194,9 +197,22 @@ class TextToSpeechDialog(wx.Dialog):
 			title=_("Sarvam AI"), message=_("Reading document..."), parent=self)
 
 	# -- convert / play / save ---------------------------------------------
+	def _selectedLang(self):
+		return self._langCodes[self.langCtrl.GetSelection()]
+
+	def _resolveLang(self, sel_lang, text, cancel):
+		"""Return a concrete TTS language code, detecting it when 'auto'."""
+		if sel_lang and sel_lang != constants.AUTO_DETECT:
+			return sel_lang
+		detected = None
+		try:
+			detected = self._cli.detect_language(text, cancel=cancel).get("language_code")
+		except errors.SarvamError:
+			detected = None
+		return constants.to_tts_language(detected)
+
 	def _params(self):
 		return dict(
-			language_code=self._langCodes[self.langCtrl.GetSelection()],
 			speaker=self.voiceCtrl.GetStringSelection() or None,
 			model=self._model(),
 			pitch=self.pitchCtrl.GetValue() / 100.0,
@@ -212,11 +228,14 @@ class TextToSpeechDialog(wx.Dialog):
 			common.report(_("There is no text to convert"))
 			return
 		params = self._params()
+		sel_lang = self._selectedLang()
 		self.convertBtn.Enable(False)
 
 		def work(cancel, progress):
+			lang = self._resolveLang(sel_lang, text, cancel)
 			return self._cli.text_to_speech(
-				text, output_audio_codec="wav", cancel=cancel, progress=progress, **params)
+				text, language_code=lang, output_audio_codec="wav",
+				cancel=cancel, progress=progress, **params)
 
 		def ok(wav):
 			self.convertBtn.Enable(True)
@@ -269,11 +288,14 @@ class TextToSpeechDialog(wx.Dialog):
 		if not path:
 			return
 		params = self._params()
+		sel_lang = self._selectedLang()
 		self.mp3Btn.Enable(False)
 
 		def work(cancel, progress):
+			lang = self._resolveLang(sel_lang, text, cancel)
 			data = self._cli.text_to_speech(
-				text, output_audio_codec="mp3", cancel=cancel, progress=progress, **params)
+				text, language_code=lang, output_audio_codec="mp3",
+				cancel=cancel, progress=progress, **params)
 			with open(path, "wb") as f:
 				f.write(data)
 			return path

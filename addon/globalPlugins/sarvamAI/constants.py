@@ -143,6 +143,31 @@ LANGUAGES = {
 # For source language of translation / transliteration "auto" is accepted.
 AUTO_DETECT = "auto"
 
+# Fallback used when auto-detection cannot map to a supported TTS language.
+DEFAULT_TTS_FALLBACK_LANGUAGE = "en-IN"
+
+
+def to_tts_language(detected_code):
+	"""Map a language code from /text-lid to a supported TTS language code.
+
+	Handles the Odia code difference (text-lid may return ``or-IN`` while TTS
+	uses ``od-IN``) and falls back to English (India) for anything the TTS
+	models do not support.
+	"""
+	if not detected_code:
+		return DEFAULT_TTS_FALLBACK_LANGUAGE
+	code = detected_code.strip()
+	if code in ("or-IN", "ory-IN"):
+		code = "od-IN"
+	if code in LANGUAGES:
+		return code
+	# Try matching just the primary subtag (e.g. "hi" -> "hi-IN").
+	primary = code.split("-")[0].lower()
+	for supported in LANGUAGES:
+		if supported.split("-")[0].lower() == primary:
+			return supported
+	return DEFAULT_TTS_FALLBACK_LANGUAGE
+
 # Translation output styles accepted by /translate.
 TRANSLATE_MODES = ("formal", "modern-colloquial", "classic-colloquial", "code-mixed")
 DEFAULT_TRANSLATE_MODE = "formal"

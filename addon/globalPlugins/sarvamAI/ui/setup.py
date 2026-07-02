@@ -59,9 +59,9 @@ class SetupDialog(wx.Dialog):
 		self.baseUrlCtrl.Bind(wx.EVT_TEXT_ENTER, self.onValidate)
 
 		# A couple of core defaults for convenience.
-		labels, self._langCodes = common.language_choices()
+		labels, self._langCodes = common.language_choices(include_auto=True)
 		self.langCtrl = helper.addLabeledControl(_("Default &language:"), wx.Choice, choices=labels)
-		common.select_in_combo(self.langCtrl, self._langCodes, conf.get("defaultLanguage"))
+		common.select_in_combo(self.langCtrl, self._langCodes, conf.get("defaultLanguage") or constants.AUTO_DETECT)
 		self.modelCtrl = helper.addLabeledControl(
 			_("Default TTS &model:"), wx.Choice, choices=list(constants.TTS_MODELS))
 		common.select_in_combo(self.modelCtrl, list(constants.TTS_MODELS), conf.get("ttsModel"))

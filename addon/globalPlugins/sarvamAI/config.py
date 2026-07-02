@@ -28,7 +28,7 @@ CONFIG_SPEC = {
 	# Text to speech defaults.
 	"ttsModel": "string(default=\"%s\")" % constants.DEFAULT_TTS_MODEL,
 	"defaultSpeaker": "string(default=\"%s\")" % constants.DEFAULT_SPEAKER,
-	"defaultLanguage": "string(default=\"hi-IN\")",
+	"defaultLanguage": "string(default=\"auto\")",
 	"pitch": "float(default=0.0)",
 	"pace": "float(default=1.0)",
 	"loudness": "float(default=1.0)",

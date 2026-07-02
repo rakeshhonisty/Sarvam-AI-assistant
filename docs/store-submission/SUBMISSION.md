@@ -48,7 +48,7 @@ official NVDA Add-on Store, based on NV Access's
 | Add-on version name | `1.0.0` |
 | Version number | major `1`, minor `0`, patch `0` |
 | Download URL | `https://github.com/rakeshhonisty/Sarvam-AI-assistant/releases/download/v1.0.0/SarvamAIassistant-1.0.0.nvda-addon` |
-| SHA256 | `008cb6aa846f9ff155ddc3d219e888c8e560d5d3b91ff22bf5e064052747a8bd` |
+| SHA256 | `b9648ba16bc980307daee63329c0b5169d61e47c6f892bbef2cc14de8d00ea5d` |
 | Homepage | `https://github.com/rakeshhonisty/Sarvam-AI-assistant` |
 | Source URL | `https://github.com/rakeshhonisty/Sarvam-AI-assistant` |
 | Minimum NVDA version | `2021.1` |
