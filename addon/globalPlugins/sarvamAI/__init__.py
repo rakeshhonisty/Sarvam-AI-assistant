@@ -53,20 +53,15 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		super().terminate()
 
 	# -- menu ---------------------------------------------------------------
-	def _buildMenu(self):
-		try:
-			toolsMenu = gui.mainFrame.sysTrayIcon.toolsMenu
-		except Exception:
-			logger.warning("Could not access the NVDA Tools menu.")
-			return
-		self._menu = wx.Menu()
-
+	def _populate(self, menu, target):
+		"""Append all Sarvam AI items to ``menu`` and bind them to ``target``
+		(the window that will receive the menu events)."""
 		def add(label, handler):
-			item = self._menu.Append(wx.ID_ANY, label)
-			gui.mainFrame.sysTrayIcon.Bind(wx.EVT_MENU, handler, item)
+			item = menu.Append(wx.ID_ANY, label)
+			target.Bind(wx.EVT_MENU, handler, item)
 			return item
 
-		# Translators: menu items under Tools > Sarvam AI.
+		# Translators: items in the Sarvam AI menu.
 		add(_("&Text to Speech..."), self.onTextToSpeech)
 		add(_("&Speech to Text..."), self.onSpeechToText)
 		add(_("&Translate..."), self.onTranslate)
@@ -74,15 +69,25 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		add(_("&Detect language..."), self.onDetectLanguage)
 		add(_("&OCR..."), self.onOcr)
 		add(_("&AI Assistant / Summarise..."), self.onChat)
-		self._menu.AppendSeparator()
+		menu.AppendSeparator()
 		add(_("Se&ttings..."), self.onSettings)
 		add(_("&Logs..."), self.onLogs)
 		add(_("Check for &updates..."), self.onCheckUpdates)
 		add(_("&Help..."), self.onHelp)
 		add(_("A&bout..."), self.onAbout)
+		return menu
 
-		# Translators: the top-level Sarvam AI submenu label in the Tools menu.
+	def _buildMenu(self):
+		"""Add a 'Sarvam AI' submenu to the NVDA menu (under Tools)."""
+		try:
+			toolsMenu = gui.mainFrame.sysTrayIcon.toolsMenu
+		except Exception:
+			logger.warning("Could not access the NVDA Tools menu.")
+			return
+		self._menu = self._populate(wx.Menu(), gui.mainFrame.sysTrayIcon)
+		# Translators: the Sarvam AI submenu label in the NVDA menu (under Tools).
 		self._menuItem = toolsMenu.AppendSubMenu(self._menu, _("Sar&vam AI"))
+		logger.info("Sarvam AI menu added to the NVDA Tools menu.")
 
 	def _removeMenu(self):
 		try:
@@ -92,6 +97,16 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			pass
 		self._menuItem = None
 		self._menu = None
+
+	def _popupMenu(self):
+		"""Show the Sarvam AI menu as a pop-up (used by the hotkey)."""
+		menu = self._populate(wx.Menu(), gui.mainFrame)
+		try:
+			gui.mainFrame.prePopup()
+			gui.mainFrame.PopupMenu(menu)
+		finally:
+			gui.mainFrame.postPopup()
+			menu.Destroy()
 
 	# -- dialog openers -----------------------------------------------------
 	def _open(self, factory):
@@ -171,7 +186,17 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		gui.messageBox(about.about_text(), _("About Sarvam AI assistant"),
 			wx.OK | wx.ICON_INFORMATION)
 
-	# -- gestures (unbound by default; user assigns in Input Gestures) ------
+	# -- gestures -----------------------------------------------------------
+	# The main launcher is bound to NVDA+alt+s by default (mnemonic: Sarvam).
+	# All other commands are unbound; assign them in Input Gestures > Sarvam AI.
+	@script(
+		# Translators: input help for opening the Sarvam AI menu.
+		description=_("Opens the Sarvam AI menu"),
+		category=SCRIPT_CATEGORY,
+		gesture="kb:NVDA+alt+s")
+	def script_openSarvamMenu(self, gesture):
+		wx.CallAfter(self._popupMenu)
+
 	@script(
 		# Translators: input help for opening the text to speech window.
 		description=_("Opens the Sarvam AI Text to Speech window with the current selection"),

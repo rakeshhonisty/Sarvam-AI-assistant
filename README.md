@@ -74,11 +74,17 @@ Everything is reachable from **Tools → Sarvam AI** in the NVDA menu:
 
 ### Keyboard shortcuts
 
-No gestures are bound by default (to avoid clashes). Assign your own in
-**NVDA → Preferences → Input Gestures → Sarvam AI**. Available commands include:
-open Text to Speech, speak current selection, open Speech to Text, translate
-selection, open OCR, recognise the current screen/object, open the AI
-assistant, and open settings.
+- **`NVDA+Alt+S`** — open the Sarvam AI menu (default). From there, use the arrow
+  keys to reach any feature.
+
+All other commands are unbound by default. Assign your own in
+**NVDA → Preferences → Input Gestures → Sarvam AI** (open Text to Speech, speak
+current selection, open Speech to Text, translate selection, open OCR, recognise
+the current screen/object, open the AI assistant, open settings). You can also
+rebind `NVDA+Alt+S` there.
+
+> NVDA keyboard commands are single chords, so a combination like "NVDA+S+A"
+> (two letter keys at once) isn't possible; `NVDA+Alt+S` is used instead.
 
 ## Building from source
 
@@ -115,7 +121,16 @@ network calls run on background threads so NVDA never freezes.
 Released under the **GNU General Public License, version 2**. See
 [LICENSE](LICENSE).
 
+## Author and contact
+
+Created by **Rakesh**.
+
+- Email: <rakesh.honistyboy@gmail.com>
+- Repository: <https://github.com/rakeshhonisty/Sarvam-AI-assistant>
+- Issues / feature requests: <https://github.com/rakeshhonisty/Sarvam-AI-assistant/issues>
+
 ## Credits
 
 Built for the NVDA screen reader. Sarvam AI and its API are the property of
-Sarvam AI. This is an independent, community add-on.
+Sarvam AI. This is an independent community add-on, not affiliated with or
+endorsed by Sarvam AI or NV Access.
