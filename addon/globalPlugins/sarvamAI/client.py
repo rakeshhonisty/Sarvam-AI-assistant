@@ -22,7 +22,6 @@ import json
 import os
 import ssl
 import time
-import uuid
 import base64
 import urllib.request
 import urllib.error
@@ -44,7 +43,7 @@ def _multipart_encode(fields, files):
 
 	Returns ``(content_type_header, body_bytes)``.
 	"""
-	boundary = "----SarvamAINVDA" + uuid.uuid4().hex
+	boundary = "----SarvamAINVDA" + os.urandom(16).hex()
 	crlf = b"\r\n"
 	buf = []
 	for name, value in (fields or {}).items():

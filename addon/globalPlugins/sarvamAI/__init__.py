@@ -187,13 +187,14 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			wx.OK | wx.ICON_INFORMATION)
 
 	# -- gestures -----------------------------------------------------------
-	# The main launcher is bound to NVDA+alt+s by default (mnemonic: Sarvam).
-	# All other commands are unbound; assign them in Input Gestures > Sarvam AI.
+	# No gesture is bound by default (NVDA+Alt+S is taken by NVDA's built-in
+	# "sound split" command). Assign your own key to "Opens the Sarvam AI menu"
+	# under Input Gestures > Sarvam AI.
 	@script(
 		# Translators: input help for opening the Sarvam AI menu.
 		description=_("Opens the Sarvam AI menu"),
 		category=SCRIPT_CATEGORY,
-		gesture="kb:NVDA+alt+s")
+		gesture=None)
 	def script_openSarvamMenu(self, gesture):
 		wx.CallAfter(self._popupMenu)
 

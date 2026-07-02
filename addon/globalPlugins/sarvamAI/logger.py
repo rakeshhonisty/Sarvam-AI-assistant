@@ -5,58 +5,41 @@
 
 """Add-on logging.
 
-Everything is written to NVDA's own log (so it shows up in NVDA's log viewer
-with a clear ``Sarvam AI:`` prefix) and, additionally, to a dedicated rotating
-file under the NVDA user configuration directory. The dedicated file powers the
-in-add-on log viewer and the "export logs" feature, and works even when NVDA's
-global log level is above debug.
+Messages go to NVDA's own log (with a clear ``Sarvam AI:`` prefix) and to a
+dedicated file under the NVDA user configuration directory, which powers the
+in-add-on log viewer and the export feature.
+
+Important: NVDA ships a trimmed Python standard library that does **not**
+include ``logging.handlers``. This module therefore avoids the ``logging``
+package entirely for file output and does simple, thread-safe file writes with
+manual size-based rotation, so the add-on always imports cleanly inside NVDA.
 """
 
 import os
-import logging
-from logging.handlers import RotatingFileHandler
+import time
+import threading
 
 import globalVars
 from logHandler import log as nvdaLog
 
 _PREFIX = "Sarvam AI: "
 _LOG_FILENAME = "sarvamAI.log"
+_MAX_BYTES = 512 * 1024
 
-_fileLogger = None
+_lock = threading.Lock()
 _debugEnabled = False
 
 
 def _logDir():
 	try:
-		base = globalVars.appArgs.configPath
+		return globalVars.appArgs.configPath
 	except Exception:
-		base = os.path.expanduser("~")
-	return base
+		return os.path.expanduser("~")
 
 
 def logFilePath():
 	"""Absolute path of the dedicated add-on log file."""
 	return os.path.join(_logDir(), _LOG_FILENAME)
-
-
-def _ensureFileLogger():
-	global _fileLogger
-	if _fileLogger is not None:
-		return _fileLogger
-	logger = logging.getLogger("sarvamAI")
-	logger.setLevel(logging.DEBUG)
-	logger.propagate = False
-	try:
-		handler = RotatingFileHandler(
-			logFilePath(), maxBytes=512 * 1024, backupCount=2, encoding="utf-8")
-		handler.setFormatter(logging.Formatter(
-			"%(asctime)s %(levelname)s %(message)s", "%Y-%m-%d %H:%M:%S"))
-		logger.addHandler(handler)
-	except Exception:
-		# If the file cannot be opened we still log to NVDA's own log.
-		pass
-	_fileLogger = logger
-	return logger
 
 
 def setDebug(enabled):
@@ -65,37 +48,75 @@ def setDebug(enabled):
 	_debugEnabled = bool(enabled)
 
 
-def _write(level, msg, exc_info=False):
+def _rotate_if_needed(path):
 	try:
-		_ensureFileLogger().log(level, msg, exc_info=exc_info)
-	except Exception:
+		if os.path.getsize(path) > _MAX_BYTES:
+			backup = path + ".1"
+			try:
+				if os.path.exists(backup):
+					os.remove(backup)
+				os.replace(path, backup)
+			except OSError:
+				# If rotation fails, truncate to avoid unbounded growth.
+				open(path, "w", encoding="utf-8").close()
+	except OSError:
 		pass
+
+
+def _write(level, msg):
+	path = logFilePath()
+	line = "%s %s %s\n" % (time.strftime("%Y-%m-%d %H:%M:%S"), level, msg)
+	with _lock:
+		try:
+			_rotate_if_needed(path)
+			with open(path, "a", encoding="utf-8") as f:
+				f.write(line)
+		except Exception:
+			# Never let logging break a feature.
+			pass
 
 
 def debug(msg):
 	if _debugEnabled:
-		nvdaLog.debug(_PREFIX + msg)
-		_write(logging.DEBUG, msg)
+		try:
+			nvdaLog.debug(_PREFIX + msg)
+		except Exception:
+			pass
+		_write("DEBUG", msg)
 
 
 def info(msg):
-	nvdaLog.info(_PREFIX + msg)
-	_write(logging.INFO, msg)
+	try:
+		nvdaLog.info(_PREFIX + msg)
+	except Exception:
+		pass
+	_write("INFO", msg)
 
 
 def warning(msg):
-	nvdaLog.warning(_PREFIX + msg)
-	_write(logging.WARNING, msg)
+	try:
+		nvdaLog.warning(_PREFIX + msg)
+	except Exception:
+		pass
+	_write("WARNING", msg)
 
 
 def error(msg, exc_info=False):
-	nvdaLog.error(_PREFIX + msg, exc_info=exc_info)
-	_write(logging.ERROR, msg, exc_info=exc_info)
+	try:
+		nvdaLog.error(_PREFIX + msg, exc_info=exc_info)
+	except Exception:
+		pass
+	_write("ERROR", msg)
 
 
 def exception(msg):
-	nvdaLog.error(_PREFIX + msg, exc_info=True)
-	_write(logging.ERROR, msg, exc_info=True)
+	try:
+		nvdaLog.error(_PREFIX + msg, exc_info=True)
+	except Exception:
+		pass
+	# Capture the traceback into the dedicated file too.
+	import traceback
+	_write("ERROR", msg + "\n" + traceback.format_exc())
 
 
 def readLog(maxBytes=200 * 1024):

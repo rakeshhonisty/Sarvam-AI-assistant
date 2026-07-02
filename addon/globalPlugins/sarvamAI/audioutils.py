@@ -12,12 +12,16 @@ stop/pause/resume without freezing the UI.
 
 import os
 import io
-import wave
 import time
 import tempfile
 import threading
 
 from . import logger
+
+try:
+	import wave
+except Exception:
+	wave = None
 
 try:
 	import nvwave
@@ -49,8 +53,8 @@ class Player:
 		self._thread.start()
 
 	def _run(self, wav_bytes):
-		if nvwave is None:
-			logger.warning("nvwave unavailable; cannot play audio.")
+		if nvwave is None or wave is None:
+			logger.warning("nvwave/wave unavailable; cannot play audio.")
 			return
 		try:
 			with wave.open(io.BytesIO(wav_bytes), "rb") as wf:
