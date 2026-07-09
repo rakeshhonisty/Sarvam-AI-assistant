@@ -45,14 +45,14 @@ official NVDA Add-on Store, based on NV Access's
 | Display name | `Sarvam AI assistant` |
 | Publisher | `Rakesh Honisty` |
 | Channel | `stable` |
-| Add-on version name | `1.0.1` |
-| Version number | major `1`, minor `0`, patch `1` |
-| Download URL | `https://github.com/rakeshhonisty/Sarvam-AI-assistant/releases/download/v1.0.1/sarvamAI-1.0.1.nvda-addon` |
-| SHA256 | `cc53dbfbabf6218fc46cf8861f4f21e80d1a08493600d7aa930db68acaa5a222` |
+| Add-on version name | `1.0.2` |
+| Version number | major `1`, minor `0`, patch `2` |
+| Download URL | `https://github.com/rakeshhonisty/Sarvam-AI-assistant/releases/download/v1.0.2/sarvamAI-1.0.2.nvda-addon` |
+| SHA256 | `244ab26e74d905d2e7b77b607df3be0fc91050ed5a5f11d086db9f5c36499a18` |
 | Homepage | `https://github.com/rakeshhonisty/Sarvam-AI-assistant` |
 | Source URL | `https://github.com/rakeshhonisty/Sarvam-AI-assistant` |
 | Minimum NVDA version | `2021.1` |
-| Last tested NVDA version | `2026.2` |
+| Last tested NVDA version | `2026.1` (must be the latest *released stable*; 2026.2 was rejected as "not stable yet") |
 | License | `GPL v2` |
 | License URL | `https://www.gnu.org/licenses/old-licenses/gpl-2.0.html` |
 
