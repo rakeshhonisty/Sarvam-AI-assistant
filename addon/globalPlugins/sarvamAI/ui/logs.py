@@ -39,6 +39,7 @@ class LogViewerDialog(wx.Dialog):
 		helper.addItem(btns)
 
 		self.SetEscapeId(wx.ID_CLOSE)
+		common.make_closeable(self)
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
 		mainSizer.Add(helper.sizer, border=guiHelper.BORDER_FOR_DIALOGS, flag=wx.ALL)
 		self.SetSizerAndFit(mainSizer)

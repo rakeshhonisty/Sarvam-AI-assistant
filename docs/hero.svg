@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="380" viewBox="0 0 1200 380" role="img" aria-label="Sarvam AI assistant for NVDA — accessible AI for the blind and visually impaired">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f2a5e"/>
+      <stop offset="0.55" stop-color="#1a3e8c"/>
+      <stop offset="1" stop-color="#2b6cb0"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f6ad55"/>
+      <stop offset="1" stop-color="#ed8936"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="380" rx="18" fill="url(#bg)"/>
+  <rect x="0" y="0" width="10" height="380" fill="url(#accent)"/>
+  <text x="60" y="120" font-family="Segoe UI, Arial, sans-serif" font-size="60" font-weight="700" fill="#ffffff">Sarvam AI assistant</text>
+  <text x="60" y="170" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="400" fill="#cfe0f7">for the NVDA screen reader</text>
+  <text x="60" y="238" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="600" fill="#f6ad55">Accessible AI for the blind and visually impaired</text>
+  <g font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#e8f0fc">
+    <text x="60" y="300">Text&#8209;to&#8209;Speech &#160;&#8226;&#160; Speech&#8209;to&#8209;Text &#160;&#8226;&#160; Translation &#160;&#8226;&#160; OCR (23 languages)</text>
+    <text x="60" y="336">AI Workforce (Sarvam&#8209;105B reasoning) &#160;&#8226;&#160; Fully keyboard accessible &#160;&#8226;&#160; Free &amp; open source</text>
+  </g>
+  <g transform="translate(1010,110)" opacity="0.95">
+    <circle cx="60" cy="60" r="58" fill="none" stroke="#f6ad55" stroke-width="6"/>
+    <text x="60" y="52" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="700" fill="#ffffff">105B</text>
+    <text x="60" y="82" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="16" fill="#cfe0f7">reasoning</text>
+  </g>
+</svg>

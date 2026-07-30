@@ -73,11 +73,15 @@ class SetupDialog(wx.Dialog):
 		self.saveBtn.Bind(wx.EVT_BUTTON, self.onSave)
 		self.fullBtn = btns.addButton(self, label=_("Advanced se&ttings..."))
 		self.fullBtn.Bind(wx.EVT_BUTTON, self.onFull)
-		cancelBtn = btns.addButton(self, id=wx.ID_CANCEL, label=_("Cancel"))
+		# Both Close and Cancel simply exit the dialog (discarding unsaved
+		# changes). Escape does the same, from anywhere in the dialog.
+		self.closeBtn = btns.addButton(self, id=wx.ID_CLOSE, label=_("Cl&ose"))
+		self.closeBtn.Bind(wx.EVT_BUTTON, lambda e: self.Close())
+		cancelBtn = btns.addButton(self, id=wx.ID_CANCEL, label=_("&Cancel"))
 		cancelBtn.Bind(wx.EVT_BUTTON, lambda e: self.Close())
 		helper.addItem(btns)
 
-		self.SetEscapeId(wx.ID_CANCEL)
+		common.make_closeable(self)
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
 		mainSizer.Add(helper.sizer, border=guiHelper.BORDER_FOR_DIALOGS, flag=wx.ALL)
 		self.SetSizerAndFit(mainSizer)

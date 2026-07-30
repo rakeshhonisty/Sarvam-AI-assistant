@@ -69,6 +69,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		add(_("&Detect language..."), self.onDetectLanguage)
 		add(_("&OCR..."), self.onOcr)
 		add(_("&AI Assistant / Summarise..."), self.onChat)
+		add(_("AI &Workforce (reasoning, 105B)..."), self.onWorkforce)
 		menu.AppendSeparator()
 		add(_("Se&ttings (API key)..."), self.onSettings)
 		add(_("Ad&vanced settings..."), self.onAdvancedSettings)
@@ -158,6 +159,11 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		from .ui.chat import ChatDialog
 		from .ui.tts import _get_selection
 		self._open(lambda: ChatDialog(gui.mainFrame, initial_text=_get_selection()))
+
+	def onWorkforce(self, evt=None):
+		from .ui.workforce import WorkforceDialog
+		from .ui.tts import _get_selection
+		self._open(lambda: WorkforceDialog(gui.mainFrame, initial_text=_get_selection()))
 
 	def onSettings(self, evt=None):
 		from .ui.setup import SetupDialog
@@ -275,6 +281,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		category=SCRIPT_CATEGORY, gesture=None)
 	def script_chat(self, gesture):
 		self.onChat()
+
+	@script(
+		description=_("Opens the Sarvam AI Workforce (105B reasoning) window"),
+		category=SCRIPT_CATEGORY, gesture=None)
+	def script_workforce(self, gesture):
+		self.onWorkforce()
 
 	@script(
 		description=_("Opens the Sarvam AI settings"),

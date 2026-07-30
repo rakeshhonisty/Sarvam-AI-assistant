@@ -113,7 +113,7 @@ class TextToSpeechDialog(wx.Dialog):
 
 		self._updateButtons()
 		self.SetEscapeId(wx.ID_CLOSE)
-		self.Bind(wx.EVT_CLOSE, self._onClose)
+		common.make_closeable(self, cleanup=lambda: _player.stop())
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
 		mainSizer.Add(helper.sizer, border=guiHelper.BORDER_FOR_DIALOGS, flag=wx.ALL)
 		self.SetSizerAndFit(mainSizer)
@@ -325,11 +325,6 @@ class TextToSpeechDialog(wx.Dialog):
 		self.stopBtn.Enable(has)
 		self.wavBtn.Enable(has)
 		self.mp3Btn.Enable(True)
-
-	def _onClose(self, evt):
-		_player.stop()
-		self.Destroy()
-
 
 # --- helpers still used by other modules (selection/clipboard readers) ------
 def _get_selection():

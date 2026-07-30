@@ -29,6 +29,33 @@ def report(message):
 		pass
 
 
+def make_closeable(dialog, cleanup=None):
+	"""Guarantee a dialog can always be exited.
+
+	- Pressing Escape anywhere in the dialog (including inside text boxes)
+	  closes it.
+	- Closing the dialog runs an optional ``cleanup`` callback and then
+	  destroys the window, so focus returns to NVDA and the dialog does not
+	  linger (which is what made earlier dialogs feel "stuck").
+	"""
+	def onCharHook(evt):
+		if evt.GetKeyCode() == wx.WXK_ESCAPE:
+			dialog.Close()
+		else:
+			evt.Skip()
+
+	def onClose(evt):
+		if cleanup:
+			try:
+				cleanup()
+			except Exception:
+				pass
+		dialog.Destroy()
+
+	dialog.Bind(wx.EVT_CHAR_HOOK, onCharHook)
+	dialog.Bind(wx.EVT_CLOSE, onClose)
+
+
 def error_dialog(parent, exc):
 	"""Show an error to the user, tailored to the exception type."""
 	if isinstance(exc, errors.SarvamError):
@@ -121,6 +148,7 @@ class ResultDialog(wx.Dialog):
 		helper.addItem(btns)
 
 		self.SetEscapeId(wx.ID_CLOSE)
+		make_closeable(self)
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
 		mainSizer.Add(helper.sizer, border=guiHelper.BORDER_FOR_DIALOGS, flag=wx.ALL)
 		self.SetSizerAndFit(mainSizer)

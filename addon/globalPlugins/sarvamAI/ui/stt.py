@@ -81,7 +81,7 @@ class SpeechToTextDialog(wx.Dialog):
 
 		self._updateTranscribe()
 		self.SetEscapeId(wx.ID_CLOSE)
-		self.Bind(wx.EVT_CLOSE, self._onClose)
+		common.make_closeable(self, cleanup=self._cleanup)
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
 		mainSizer.Add(helper.sizer, border=guiHelper.BORDER_FOR_DIALOGS, flag=wx.ALL)
 		self.SetSizerAndFit(mainSizer)
@@ -201,7 +201,6 @@ class SpeechToTextDialog(wx.Dialog):
 		except Exception as e:
 			common.error_dialog(self, e)
 
-	def _onClose(self, evt):
+	def _cleanup(self):
 		if self._rec.recording:
 			self._rec.cancel()
-		self.Destroy()

@@ -56,6 +56,12 @@ CONFIG_SPEC = {
 	"chatTemperature": "float(default=0.3)",
 	"chatMaxTokens": "integer(default=800)",
 
+	# AI Workforce (sarvam-105b reasoning) defaults.
+	"workforceRole": "string(default=\"assistant\")",
+	"reasoningEffort": "string(default=\"%s\")" % constants.DEFAULT_REASONING_EFFORT,
+	"wikiGrounding": "boolean(default=False)",
+	"workforceMaxTokens": "integer(default=2048)",
+
 	# OCR (document digitization) defaults.
 	"ocrEngine": "string(default=\"%s\")" % constants.OCR_ENGINE_SARVAM,
 	"ocrLanguage": "string(default=\"%s\")" % constants.DEFAULT_OCR_LANGUAGE,

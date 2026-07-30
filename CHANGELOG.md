@@ -3,6 +3,29 @@
 All notable changes to the Sarvam AI assistant NVDA add-on are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.3] - 2026-07-10
+
+### Added
+- **AI Workforce (Sarvam-105B)** – a reasoning / agentic layer using the
+  `sarvam-105b` model (128K context): choose a worker role (assistant,
+  researcher, writer, programmer, planner, analyst, tutor, or multi-step task
+  agent), a reasoning effort (low/medium/high) and optional wiki grounding, then
+  run a task. Results save to .txt or .docx.
+- Hero banner and an expanded "Who this is for" section emphasising how the
+  add-on helps the blind and visually-impaired community.
+
+### Fixed
+- **You can now always exit a window.** Pressing Escape anywhere in any
+  dialog (including inside text boxes) closes it and returns focus. Every dialog
+  destroys cleanly on close, and the API-key setup dialog now has both a
+  **Close** and a **Cancel** button. This resolves getting "stuck" in the
+  settings / API-key windows.
+
+### Notes
+- Default language remains Auto-detect (handles code-mixed text).
+- `lastTestedNVDAVersion` stays at 2026.1 (current stable) for the store's
+  stable channel.
+
 ## [1.0.0] - 2026-07-01
 
 Initial release.

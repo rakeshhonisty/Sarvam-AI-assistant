@@ -102,6 +102,7 @@ class OcrDialog(wx.Dialog):
 		self.langCtrl.Enable(self._sarvam())
 		self._updateOcrButton()
 		self.SetEscapeId(wx.ID_CLOSE)
+		common.make_closeable(self)
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
 		mainSizer.Add(helper.sizer, border=guiHelper.BORDER_FOR_DIALOGS, flag=wx.ALL)
 		self.SetSizerAndFit(mainSizer)

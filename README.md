@@ -1,23 +1,56 @@
 # Sarvam AI assistant for NVDA
 
+![Sarvam AI assistant for NVDA — accessible AI for the blind and visually impaired](docs/hero.svg)
+
+> **Available in the official NVDA Add-on Store.** Open NVDA → Tools → Add-on
+> Store → Available add-ons and search for *Sarvam AI assistant*.
+
 An accessible NVDA add-on that brings the [Sarvam AI](https://www.sarvam.ai/)
 platform to blind and low-vision users through a fully keyboard-driven,
 screen-reader-friendly interface that feels native to NVDA.
 
-- **Text to Speech** – synthesise natural Indian-language speech from a
-  selection, the clipboard, typed text or a text file; play, pause, resume,
-  stop and save the audio.
+## Who this is for — and why it matters
+
+This add-on is built **for blind and visually-impaired (VI) users**, and for the
+Indian-language accessibility community in particular.
+
+- **Independence.** Powerful AI — natural speech, transcription, translation,
+  document reading (OCR) and reasoning — reachable entirely by keyboard and
+  screen reader, with no sighted assistance and no inaccessible web dashboards.
+- **Indian languages first.** Most assistive AI targets English and Western
+  markets. Sarvam is India's most comprehensive language-AI platform, so blind
+  users get high-quality speech, OCR and translation across **23 Indian
+  languages** — including code-mixed text — right inside NVDA.
+- **Read anything.** Turn scanned PDFs, images and photographed documents into
+  text with OCR, then have it spoken, translated or summarised — a common
+  barrier for VI users made routine.
+- **An AI workforce at your fingertips.** The new AI Workforce uses Sarvam's
+  105B reasoning model to help with research, writing, coding, planning,
+  studying and multi-step tasks — presented in one accessible dialog.
+- **Accessible by design, not as an afterthought.** Standard NVDA controls,
+  logical focus order, spoken status, a cancellable progress dialog, and
+  Escape-to-exit everywhere. Nothing freezes NVDA.
+- **Free and open source (GPL v2).** No lock-in; you bring your own Sarvam API
+  key.
+
+## Features
+
+- **Text to Speech** – synthesise natural speech from typed/pasted text or an
+  uploaded **text, Word (.docx) or EPUB** file; pick voice, style, gender,
+  language (auto-detect), speed and pitch; play and save as **MP3 or WAV**.
 - **Speech to Text** – transcribe an audio file or your microphone, with an
-  optional translate-to-English mode; copy or save the transcript.
-- **Translation & Transliteration** – translate or transliterate between
-  English and 10 Indian languages, with selectable styles.
+  optional translate-to-English mode; save as **.txt or .docx**.
+- **Translation & Transliteration** – convert between English and Indian
+  languages, with selectable styles.
 - **Language Detection** – identify the language and script of any text.
-- **AI Assistant** – chat, summarise text and understand documents using
-  Sarvam's large language models.
+- **AI Assistant** – chat, summarise text and understand documents.
+- **AI Workforce (Sarvam-105B)** – a reasoning / agentic layer: choose a worker
+  role (researcher, writer, coder, planner, analyst, tutor, task agent…), a
+  reasoning effort (low/medium/high) and optional wiki grounding, then hand it a
+  task. Save the result as **.txt or .docx**.
 - **OCR** – recognise text from PDFs and images using **Sarvam Document OCR**
-  (Sarvam's document-digitization service, 23 languages), or the offline
-  **Windows OCR** engine for instant screen reading; then translate or
-  summarise the result with Sarvam.
+  (23 languages), or the offline **Windows OCR** engine for instant screen
+  reading; then translate or summarise the result with Sarvam.
 
 > **On OCR:** The primary OCR engine is Sarvam's Document Digitization API,
 > which recognises 23 languages from a PDF or image. Because that API works on
@@ -67,6 +100,7 @@ Everything is reachable from **Tools → Sarvam AI** in the NVDA menu:
 | Translate… / Transliterate… / Detect language… | Text language tools. |
 | OCR… | Recognise text from a PDF/image (Sarvam OCR) or the screen (Windows OCR). |
 | AI Assistant / Summarise… | Chat, summarise, or understand a document. |
+| AI Workforce (reasoning, 105B)… | Reasoning/agentic tasks via Sarvam-105B with role, effort and grounding. |
 | Settings… | Configure the add-on. |
 | Logs… | View / export the add-on log. |
 | Check for updates… | Check GitHub for a newer release. |

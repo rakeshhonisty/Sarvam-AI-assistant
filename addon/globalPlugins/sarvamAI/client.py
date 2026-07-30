@@ -350,9 +350,13 @@ class SarvamClient:
 
 	# -- chat / summarise ---------------------------------------------------
 	def chat(self, messages, model=None, temperature=None, max_tokens=None,
-			cancel=None):
+			reasoning_effort=None, wiki_grounding=None, cancel=None):
 		"""OpenAI-compatible /v1/chat/completions. ``messages`` is a list of
-		``{"role": ..., "content": str}`` dicts. Returns the assistant text."""
+		``{"role": ..., "content": str}`` dicts. Returns the assistant text.
+
+		``reasoning_effort`` ("low"/"medium"/"high") drives the sarvam-105b
+		reasoning depth; ``wiki_grounding`` grounds answers in reference data.
+		"""
 		payload = {
 			"model": model or constants.DEFAULT_CHAT_MODEL,
 			"messages": messages,
@@ -361,6 +365,10 @@ class SarvamClient:
 			payload["temperature"] = float(temperature)
 		if max_tokens:
 			payload["max_tokens"] = int(max_tokens)
+		if reasoning_effort:
+			payload["reasoning_effort"] = reasoning_effort
+		if wiki_grounding:
+			payload["wiki_grounding"] = True
 		res = self._post_json(constants.EP_CHAT_COMPLETIONS, payload, cancel=cancel)
 		try:
 			return res["choices"][0]["message"]["content"]

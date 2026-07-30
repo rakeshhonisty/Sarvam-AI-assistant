@@ -15,7 +15,7 @@ addon_info = {
 		"23 languages, plus an offline Windows OCR engine). Fully keyboard "
 		"accessible and screen-reader friendly."
 	),
-	"addon_version": "1.0.2",
+	"addon_version": "1.0.3",
 	"addon_author": "Sarvam AI assistant contributors <rakesh.honistyboy@gmail.com>",
 	"addon_url": "https://github.com/rakeshhonisty/Sarvam-AI-assistant",
 	"addon_sourceURL": "https://github.com/rakeshhonisty/Sarvam-AI-assistant",
