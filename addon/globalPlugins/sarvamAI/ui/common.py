@@ -68,6 +68,125 @@ def error_dialog(parent, exc):
 	gui.messageBox(msg, _("Sarvam AI - Error"), wx.OK | wx.ICON_ERROR, parent)
 
 
+def batch_concurrency():
+	"""How many work items to process at once, from Advanced settings (1x-10x)."""
+	from .. import constants
+	return constants.batch_multiplier_value(config.conf().get("batchConcurrency"))
+
+
+def save_result(parent, text, default_name, as_docx=False, markdown=False):
+	"""Show the standard Windows Save As dialog and write ``text``.
+
+	``as_docx`` writes a Word document; when ``markdown`` is also true the text
+	is treated as Markdown so headings, lists and tables become real Word
+	structure (used for OCR / AI output). Unicode is always preserved and the
+	dialog prompts before overwriting.
+	"""
+	from .. import docwriter
+	if not (text or "").strip():
+		report(_("Nothing to save"))
+		return None
+	if as_docx:
+		wildcard = _("Word documents (*.docx)|*.docx")
+	elif default_name.lower().endswith(".md"):
+		wildcard = _("Markdown files (*.md)|*.md")
+	else:
+		wildcard = _("Text files (*.txt)|*.txt")
+	with wx.FileDialog(
+			parent, _("Save as"), defaultDir=default_output_folder(),
+			defaultFile=default_name, wildcard=wildcard,
+			style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fd:
+		if fd.ShowModal() != wx.ID_OK:
+			return None
+		path = fd.GetPath()
+	try:
+		if as_docx:
+			if markdown:
+				docwriter.write_docx_from_markdown(text, path)
+			else:
+				docwriter.write_docx(text, path)
+		else:
+			docwriter.write_txt(text, path)
+		report(_("Saved"))
+		return path
+	except Exception as e:  # noqa: BLE001
+		error_dialog(parent, e)
+		return None
+
+
+class SaveBar:
+	"""A row of Save buttons that stays hidden until a task succeeds.
+
+	Every Sarvam feature follows the same rule: perform task -> show result ->
+	only then reveal Save as TXT / Save as DOCX. This small helper keeps that
+	behaviour identical everywhere.
+	"""
+
+	def __init__(self, dialog, helper, get_text, base_name, markdown=False,
+			include_md=False):
+		self._dialog = dialog
+		self._get_text = get_text
+		self._base = base_name
+		self._markdown = markdown
+		bar = guiHelper.ButtonHelper(wx.HORIZONTAL)
+		self._buttons = []
+		self.txtBtn = bar.addButton(dialog, label=_("Save as &text (.txt)"))
+		self.txtBtn.Bind(wx.EVT_BUTTON, self._onTxt)
+		self._buttons.append(self.txtBtn)
+		self.docBtn = bar.addButton(dialog, label=_("Save as &Word (.docx)"))
+		self.docBtn.Bind(wx.EVT_BUTTON, self._onDocx)
+		self._buttons.append(self.docBtn)
+		self.mdBtn = None
+		if include_md:
+			# Markdown keeps Sarvam's original converted structure (headings,
+			# tables, lists) so the user can convert it to any format later.
+			self.mdBtn = bar.addButton(dialog, label=_("Save as &Markdown (.md)"))
+			self.mdBtn.Bind(wx.EVT_BUTTON, self._onMd)
+			self._buttons.append(self.mdBtn)
+		self.copyBtn = bar.addButton(dialog, label=_("&Copy"))
+		self.copyBtn.Bind(wx.EVT_BUTTON, self._onCopy)
+		self._buttons.append(self.copyBtn)
+		helper.addItem(bar)
+		self.show(False)
+
+	def show(self, visible):
+		for b in self._buttons:
+			b.Show(visible)
+		self._dialog.Layout()
+		try:
+			self._dialog.Fit()
+		except Exception:
+			pass
+
+	def focus(self):
+		try:
+			self.txtBtn.SetFocus()
+		except Exception:
+			pass
+
+	def _onTxt(self, evt):
+		save_result(self._dialog, self._get_text(), self._base + ".txt", as_docx=False)
+
+	def _onDocx(self, evt):
+		save_result(self._dialog, self._get_text(), self._base + ".docx",
+			as_docx=True, markdown=self._markdown)
+
+	def _onMd(self, evt):
+		save_result(self._dialog, self._get_text(), self._base + ".md", as_docx=False)
+
+	def _onCopy(self, evt):
+		text = self._get_text()
+		if text and wx.TheClipboard.Open():
+			try:
+				wx.TheClipboard.SetData(wx.TextDataObject(text))
+				wx.TheClipboard.Flush()
+			finally:
+				wx.TheClipboard.Close()
+			report(_("Copied"))
+		else:
+			report(_("Nothing to copy"))
+
+
 def language_choices(include_auto=False, include_unknown=False):
 	"""Return parallel lists ``(labels, codes)`` for a language combo box."""
 	labels = []

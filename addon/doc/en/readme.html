@@ -22,35 +22,38 @@ through a fully keyboard-driven, screen-reader-friendly interface.</p>
 
 <div class="note">
 <p><strong>Where to find it:</strong> Open the NVDA menu (<kbd>NVDA+N</kbd>) &rarr;
-<em>Tools</em> &rarr; <em>Sarvam AI</em>. Or press the shortcut
-<kbd>NVDA+Alt+S</kbd> at any time to open the Sarvam AI menu. Settings are also
-available under NVDA <em>Preferences &rarr; Settings &rarr; Sarvam AI</em>.</p>
+<em>Tools</em> &rarr; <em>Sarvam AI</em>. You can also assign your own shortcut
+to "Opens the Sarvam AI menu" under <em>Preferences &rarr; Input Gestures &rarr;
+Sarvam AI</em>. Settings are available from that menu and under NVDA
+<em>Preferences &rarr; Settings &rarr; Sarvam AI</em>.</p>
 </div>
 
 <h2>Features</h2>
 <ul>
-<li><strong>Text to Speech</strong> – synthesise Indian-language speech from a
-selection, the clipboard, typed text or a text file; play, pause, resume, stop
-and save the audio.</li>
+<li><strong>Text to Speech</strong> – synthesise speech from typed or pasted
+text, or from an uploaded text, Word or EPUB file; filtered voices by style and
+gender; save as MP3 or WAV.</li>
 <li><strong>Speech to Text</strong> – transcribe an audio file or your
 microphone, optionally translating to English; copy or save the transcript.</li>
 <li><strong>Translation &amp; Transliteration</strong> – convert text between
 English and 10 Indian languages, with selectable styles.</li>
 <li><strong>Language Detection</strong> – identify the language and script of
 any text.</li>
-<li><strong>AI Assistant</strong> – chat, summarise text and understand
-documents with Sarvam's language models.</li>
 <li><strong>OCR</strong> – recognise text from PDFs and images with Sarvam
-Document OCR (23 languages) or the offline Windows OCR engine, then translate or
-summarise it with Sarvam.</li>
+Document Intelligence (23 languages), preserving headings, tables, columns and
+reading order; save as Markdown, Word or plain text.</li>
+<li><strong>AI Workforce</strong> – one module for AI Assistant, AI Summary,
+Document Analysis, Content Generation, Question Answering and File Analysis,
+powered by Sarvam's 105B reasoning model.</li>
 </ul>
 
 <div class="note">
-<p><strong>About OCR:</strong> The primary engine is Sarvam's Document
-Digitization API, which recognises 23 languages from a PDF or image. Images and
-screen/clipboard captures are automatically wrapped into a one-page PDF before
-being sent. A second, fully offline Windows OCR engine is also available for
-instant screen and object recognition.</p>
+<p><strong>About OCR:</strong> OCR uses Sarvam's Document Intelligence service,
+which performs layout analysis so that headings, lists, tables, multi-column
+text and reading order are preserved rather than flattened. Images are wrapped
+into a one-page PDF automatically, and multi-page PDFs keep their page order.
+The previous offline Windows OCR engine was removed because running two engines
+produced conflicting results.</p>
 </div>
 
 <h2>Getting started</h2>
@@ -58,76 +61,78 @@ instant screen and object recognition.</p>
 <li>Open <em>NVDA menu &rarr; Tools &rarr; Sarvam AI &rarr; Settings…</em></li>
 <li>Paste your Sarvam API key (from <code>https://dashboard.sarvam.ai</code>).</li>
 <li>Press <strong>Validate key / Test connection</strong>.</li>
-<li>Set your default voice, language and folders, then press <strong>OK</strong>.</li>
+<li>If you do not have a key yet, press <strong>Generate API key</strong> to
+open the Sarvam developer portal in your browser.</li>
+<li>Set your defaults, then press <strong>Save</strong>.</li>
 </ol>
 
 <h2>Menu</h2>
 <p>All features are under <em>Tools &rarr; Sarvam AI</em>: Text to Speech,
-Speech to Text, Translate, Transliterate, Detect language, OCR, AI Assistant /
-Summarise, Settings, Logs, Check for updates, Help and About.</p>
+Speech to Text, Translate, Transliterate, Detect language, OCR, AI Workforce,
+Settings (API key), Advanced settings, Logs, Check for updates, Help and
+About.</p>
 
 <h2>Keyboard shortcuts</h2>
-<p>The main shortcut <kbd>NVDA+Alt+S</kbd> opens the Sarvam AI menu, from which
-you can reach every feature with the arrow keys. All other commands (open Text
-to Speech, speak selection, Speech to Text, Translate, OCR, recognise screen,
-AI assistant, Settings) are unbound by default; assign your own keys under
-<em>NVDA &rarr; Preferences &rarr; Input Gestures &rarr; Sarvam AI</em>. You can
-also rebind <kbd>NVDA+Alt+S</kbd> there if it conflicts with another add-on.</p>
-<p>Note: NVDA keyboard commands are single chords, so a combination such as
-"NVDA+S+A" (two letter keys together) is not possible; <kbd>NVDA+Alt+S</kbd> is
-used instead.</p>
+<p>No keyboard shortcut is assigned by default, so nothing clashes with NVDA's
+own commands. To add your own, go to <em>NVDA &rarr; Preferences &rarr; Input
+Gestures &rarr; Sarvam AI</em> and assign a key to any command, for example
+"Opens the Sarvam AI menu", Text to Speech, Speech to Text, Translate, OCR or
+AI Workforce.</p>
+<p>Inside any Sarvam AI window, press <kbd>Escape</kbd> to close it — this works
+even while the cursor is inside a text box.</p>
 
 <h2>Text to Speech</h2>
 <p>Type or paste text into the edit box, or press <strong>Upload file</strong>
-to load a plain text, Microsoft Word (.docx) or EPUB e-book (.epub) file. Choose
-the <strong>model</strong> (bulbul:v3 is newest), a <strong>conversion
-style</strong> (neutral, news, audiobook, entertainment, conversational,
-storytelling), the <strong>gender</strong> and <strong>voice</strong>, and the
-<strong>language</strong> (leave it on <em>Auto detect</em>, the default, to
-handle mixed-language text automatically). Adjust the <strong>Speed</strong> and
-<strong>Pitch</strong> sliders. Then press <strong>Convert</strong>. After
-conversion, press <strong>Listen</strong> to play it, or <strong>Save as
-MP3</strong> / <strong>Save as WAV</strong> to export the audio. Choosing a style
-automatically sets suitable speed, pitch, loudness and expressiveness.</p>
+to load a text, Word (.docx) or EPUB (.epub) file. Choose a <strong>speaking
+style</strong> (News reader, Conversational, Narration, Formal, Expressive) and
+a <strong>gender</strong> — the <strong>voice</strong> list is filtered
+automatically so only matching voices are offered. Choose a language (Auto
+detect by default, which also handles mixed-language text) and adjust the
+<strong>Speech speed</strong>, <strong>Pitch</strong> and <strong>Volume</strong>
+sliders, each of which announces its purpose and value. Press
+<strong>Convert</strong>. Only after the audio is ready do
+<strong>Listen</strong>, <strong>Save as MP3</strong> and <strong>Save as
+WAV</strong> appear.</p>
 
 <h2>Speech to Text</h2>
-<p>Choose the audio language (or leave it on automatic). Select a source with
-<strong>Choose audio file…</strong> or <strong>Start recording</strong> (your
-microphone), then press <strong>Transcribe</strong> to send it to Sarvam. Tick
-<strong>Translate to English</strong> for an English transcript. Save the result
-as plain text (.txt) or a Word document (.docx), or copy it.</p>
+<p>Press <strong>Choose audio file</strong> or <strong>Start recording</strong>,
+pick the audio language (or leave it automatic), then press
+<strong>Transcribe</strong>. Large audio files are handled for you: anything
+beyond the real-time limit is processed through Sarvam's batch transcription
+service and merged into one complete transcript. Tick <strong>Translate to
+English</strong> for an English transcript. After transcription finishes, save
+the result as plain text or a Word document.</p>
 
 <h2>Translate, Transliterate, Detect language</h2>
-<p>Pick the operation, enter or load text, choose source and target languages,
-then press <strong>Go</strong>.</p>
+<p>Enter or paste text, or press <strong>Upload document</strong> to load a
+text, Word, EPUB, PDF or image file (PDFs and images are read with Sarvam OCR
+first). Choose the <strong>Operation</strong> — Translation, Transliteration or
+Language detection — set the languages, and press <strong>Go</strong>. Text of
+any length is handled automatically. Save options appear once the result is
+ready.</p>
 
-<h2>AI Assistant</h2>
-<p>Choose a task – chat, summarise or understand a document – enter your text or
-question and press <strong>Send</strong>.</p>
-
-<h2>AI Workforce (Sarvam-105B)</h2>
-<p>A reasoning and agentic layer powered by Sarvam's 105B model. Pick a
-<strong>worker role</strong> (general assistant, researcher, writer, programmer,
-planner, analyst, tutor, or multi-step task agent), a <strong>reasoning
-effort</strong> (low, medium or high), and optionally <strong>wiki
-grounding</strong>. Enter your task and press <strong>Run task</strong>. The
-model reasons through the task in the chosen role and returns the result, which
-you can edit, copy, or save as text or a Word document.</p>
-
-<h2>Getting out of any window</h2>
-<p>Press <kbd>Escape</kbd> at any point — including while your cursor is in a
-text box — to close the current Sarvam AI window and return to where you were.
-Every dialog also has a clearly labelled <strong>Close</strong> button, and the
-settings windows additionally offer <strong>Cancel</strong>.</p>
+<h2>AI Workforce</h2>
+<p>This single module replaces the old separate AI Assistant and AI Summarise
+windows. When it opens, the cursor is in <strong>Ask a question</strong>. Press
+<kbd>Shift+Tab</kbd> to reach <strong>Upload file</strong>, which accepts text,
+Word, EPUB, PDF, image and audio files (PDFs and images are read with OCR and
+audio is transcribed automatically). Press <kbd>Tab</kbd> from the question box
+to reach the <strong>Response</strong>, then <kbd>Tab</kbd> again for
+<strong>Task mode</strong> (AI Assistant, AI Summary, Document Analysis,
+General AI Workforce, Content Generation, Question Answering, File Analysis),
+reasoning effort and the Run button. <kbd>Ctrl+Enter</kbd> in the question box
+also runs the task. When a response is ready you can save it as text, Word or
+Markdown.</p>
 
 <h2>OCR</h2>
-<p>Choose an engine: <em>Sarvam Document OCR</em> (online, 23 languages, best for
-PDFs and photos) or <em>Windows OCR</em> (offline, instant, best for reading the
-screen). Choose a source — <strong>Choose PDF / image file</strong>,
-<strong>Use clipboard image</strong>, or <strong>Use current screen /
-object</strong> — then press <strong>Perform OCR</strong>. The recognised text is
-editable; copy it, save as .txt or Word (.docx), or translate / summarise it with
-Sarvam.</p>
+<p>Press <strong>Choose PDF or image</strong>, set the <strong>Document
+language</strong> (<em>Auto detect</em> by default) and the output structure,
+then press <strong>Perform OCR</strong>. The recognised text keeps the
+document's structure. Once recognition finishes you can save it as
+<strong>Markdown</strong> (Sarvam's original structured output, convertible to
+any format), <strong>Word</strong> (real headings and tables) or plain
+<strong>text</strong>, or send it straight to Translation or the AI
+Workforce.</p>
 
 <h2>Troubleshooting</h2>
 <table>

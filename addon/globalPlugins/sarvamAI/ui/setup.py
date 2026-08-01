@@ -46,6 +46,8 @@ class SetupDialog(wx.Dialog):
 		self.apiKeyCtrl.Bind(wx.EVT_TEXT_ENTER, self.onValidate)
 
 		keyBtns = guiHelper.ButtonHelper(wx.HORIZONTAL)
+		self.generateBtn = keyBtns.addButton(self, label=_("&Generate API key (opens Sarvam website)"))
+		self.generateBtn.Bind(wx.EVT_BUTTON, self.onGenerateKey)
 		self.validateBtn = keyBtns.addButton(self, label=_("&Validate key / Test connection"))
 		self.validateBtn.Bind(wx.EVT_BUTTON, self.onValidate)
 		self.showBtn = keyBtns.addButton(self, label=_("Sho&w key"))
@@ -87,6 +89,20 @@ class SetupDialog(wx.Dialog):
 		self.SetSizerAndFit(mainSizer)
 		self.CentreOnScreen()
 		self.apiKeyCtrl.SetFocus()
+
+	def onGenerateKey(self, evt):
+		"""Open the official Sarvam developer portal so the user can create an
+		API key there. Key creation deliberately happens on Sarvam's site, not
+		inside the add-on."""
+		import webbrowser
+		try:
+			webbrowser.open(constants.SARVAM_DASHBOARD_URL)
+			common.report(_("Opening the Sarvam dashboard in your browser"))
+		except Exception:
+			gui.messageBox(
+				_("Could not open the browser. Please visit {url} to create an API key.").format(
+					url=constants.SARVAM_DASHBOARD_URL),
+				_("Sarvam AI"), wx.OK | wx.ICON_INFORMATION, self)
 
 	def onShowKey(self, evt):
 		key = self.apiKeyCtrl.GetValue()

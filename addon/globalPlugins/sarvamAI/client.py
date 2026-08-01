@@ -297,6 +297,98 @@ class SarvamClient:
 		res = self._post_multipart(constants.EP_SPEECH_TO_TEXT_TRANSLATE, fields, files, cancel=cancel)
 		return _normalise_transcript(res)
 
+	def transcribe(self, audio_path, language_code=None, model=None,
+			translate=False, cancel=None, progress=None):
+		"""Transcribe audio, automatically using the batch job API for large
+		files (long audio) and the real-time API for short clips. Returns a
+		dict with ``transcript`` and ``language_code``."""
+		try:
+			size = os.path.getsize(audio_path)
+		except OSError:
+			size = 0
+		if translate:
+			# Speech-translate has no simple batch path here; use real-time.
+			return self.speech_to_text_translate(audio_path, model=model, cancel=cancel)
+		if size <= constants.STT_REALTIME_MAX_BYTES:
+			return self.speech_to_text(
+				audio_path, language_code=language_code, model=model, cancel=cancel)
+		logger.info("Large audio (%d bytes); using batch transcription." % size)
+		return self.speech_to_text_batch(
+			audio_path, language_code=language_code, model=model,
+			cancel=cancel, progress=progress)
+
+	def speech_to_text_batch(self, audio_path, language_code=None, model=None,
+			cancel=None, progress=None, poll_interval=4.0, max_wait=1800):
+		"""Full batch speech-to-text lifecycle for large audio files."""
+		filename = os.path.basename(audio_path)
+
+		def step(i, n):
+			if progress:
+				progress(i, n)
+
+		step(0, 6)
+		params = {}
+		if language_code and language_code not in ("unknown", constants.AUTO_DETECT):
+			params["language_code"] = language_code
+		else:
+			params["language_code"] = "unknown"
+		if model:
+			params["model"] = model
+		created = self._post_json(constants.EP_STT_JOB, {"job_parameters": params}, cancel=cancel)
+		job_id = created.get("job_id")
+		storage = created.get("storage_container_type")
+		if not job_id:
+			raise errors.SarvamError(_("Sarvam did not return a transcription job id."))
+
+		step(1, 6)
+		up = self._post_json(constants.EP_STT_JOB_UPLOAD,
+			{"job_id": job_id, "files": [filename]}, cancel=cancel)
+		upload_urls = up.get("upload_urls") or {}
+		details = upload_urls.get(filename) or (list(upload_urls.values())[0] if upload_urls else None)
+		if not details or not details.get("file_url"):
+			raise errors.SarvamError(_("Sarvam did not return an upload URL for the audio."))
+
+		step(2, 6)
+		with open(audio_path, "rb") as f:
+			self._put_url(details["file_url"], f.read(), storage_type=storage)
+
+		step(3, 6)
+		self._request("POST", constants.EP_STT_JOB_START.format(job_id=job_id), cancel=cancel)
+
+		step(4, 6)
+		waited = 0.0
+		state = None
+		while waited < max_wait:
+			if cancel:
+				cancel.check()
+			status = self._request("GET", constants.EP_STT_JOB_STATUS.format(job_id=job_id), cancel=cancel)
+			state = status.get("job_state")
+			if state in constants.JOB_TERMINAL_STATES:
+				if state == "Failed":
+					raise errors.SarvamError(
+						_("Transcription failed: {msg}").format(msg=status.get("error_message") or state))
+				break
+			time.sleep(poll_interval)
+			waited += poll_interval
+		else:
+			raise errors.SarvamError(_("Transcription timed out. Please try a shorter file."))
+
+		step(5, 6)
+		dl = self._post_json(constants.EP_STT_JOB_DOWNLOAD, {"job_id": job_id}, cancel=cancel)
+		download_urls = dl.get("download_urls") or {}
+		parts = []
+		for name, det in download_urls.items():
+			url = det.get("file_url") if isinstance(det, dict) else None
+			if not url:
+				continue
+			blob = self._get_url(url)
+			parts.append(_extract_transcript_text(name, blob))
+		step(6, 6)
+		text = "\n".join(p for p in parts if p).strip()
+		if not text:
+			raise errors.SarvamError(_("No transcript was produced from the audio."))
+		return {"transcript": text, "job_id": job_id, "state": state, "language_code": None}
+
 	# -- translation & language --------------------------------------------
 	def translate(self, text, source_language_code, target_language_code,
 			model=None, mode=None, speaker_gender=None, output_script=None,
@@ -322,6 +414,39 @@ class SarvamClient:
 			"source_language_code": res.get("source_language_code", source_language_code),
 			"request_id": res.get("request_id"),
 		}
+
+	def translate_long(self, text, source_language_code, target_language_code,
+			model=None, mode=None, cancel=None, progress=None, concurrency=1):
+		"""Translate text of any length.
+
+		The endpoint accepts a limited number of characters per call, so long
+		input is split on paragraph/sentence boundaries and the pieces are
+		translated (optionally several at a time, per the batch setting) and
+		re-joined in order.
+		"""
+		from . import tasks as _tasks
+		chunks = _chunk_text(text, constants.TRANSLATE_MAX_CHARS)
+		total = len(chunks)
+		if progress:
+			progress(0, total)
+		done = [0]
+
+		def one(chunk):
+			if cancel:
+				cancel.check()
+			r = self.translate(
+				chunk, source_language_code=source_language_code,
+				target_language_code=target_language_code,
+				model=model, mode=mode, cancel=cancel)
+			done[0] += 1
+			if progress:
+				progress(done[0], total)
+			return r.get("translated_text", "")
+
+		if total == 1:
+			return one(chunks[0])
+		parts = _tasks.parallel_map(one, chunks, concurrency=concurrency, cancel=cancel)
+		return "\n\n".join(p for p in parts if p)
 
 	def transliterate(self, text, source_language_code, target_language_code,
 			numerals_format=None, spoken_form=False, cancel=None):
@@ -427,7 +552,6 @@ class SarvamClient:
 		Implements the full job lifecycle: create -> get upload URL -> upload ->
 		start -> poll status -> get download URL -> download ZIP -> extract text.
 		"""
-		language = language or constants.DEFAULT_OCR_LANGUAGE
 		output_format = output_format or constants.DEFAULT_OCR_OUTPUT_FORMAT
 		filename = os.path.basename(pdf_path)
 
@@ -438,8 +562,13 @@ class SarvamClient:
 
 		# 1) Create job.
 		step("create job", 0, 6)
+		# Document Intelligence job parameters. Omitting "language" lets Sarvam
+		# detect the document language itself (Auto detect).
+		job_params = {"output_format": output_format}
+		if language and language != constants.OCR_AUTO_LANGUAGE:
+			job_params["language"] = language
 		created = self._post_json(constants.EP_OCR_CREATE, {
-			"job_parameters": {"language": language, "output_format": output_format}
+			"job_parameters": job_params
 		}, cancel=cancel)
 		job_id = created.get("job_id")
 		storage = created.get("storage_container_type")
@@ -578,12 +707,13 @@ def _extract_ocr_text(name, blob, output_format):
 			return _strip_html(raw)
 		return raw  # markdown / plain
 
-	# ZIP archive?
+	# ZIP archive: one entry per page. Sort naturally so page2 precedes page10,
+	# preserving the document's reading order across large PDFs.
 	if blob[:2] == b"PK":
 		parts = []
 		try:
 			with zipfile.ZipFile(io.BytesIO(blob)) as zf:
-				for info in sorted(zf.namelist()):
+				for info in sorted(zf.namelist(), key=_natural_key):
 					if info.endswith("/"):
 						continue
 					parts.append(to_text(info, zf.read(info)))
@@ -591,6 +721,46 @@ def _extract_ocr_text(name, blob, output_format):
 			return blob.decode("utf-8", "replace")
 		return "\n\n".join(p for p in parts if p and p.strip())
 	return to_text(name, blob)
+
+
+def _natural_key(name):
+	"""Sort key that orders embedded numbers numerically (page2 < page10)."""
+	import re
+	return [int(p) if p.isdigit() else p.lower()
+		for p in re.split(r"(\d+)", name)]
+
+
+def _extract_transcript_text(name, blob):
+	"""Extract transcript text from a batch STT result payload (JSON, or a ZIP
+	of JSON files)."""
+	import io
+	import zipfile
+
+	def one(data):
+		try:
+			raw = data.decode("utf-8", "replace")
+		except Exception:
+			return ""
+		try:
+			obj = json.loads(raw)
+		except Exception:
+			return raw
+		if isinstance(obj, dict):
+			return (obj.get("transcript") or obj.get("text")
+				or obj.get("diarized_transcript") or "")
+		return raw
+
+	if blob[:2] == b"PK":
+		parts = []
+		try:
+			with zipfile.ZipFile(io.BytesIO(blob)) as zf:
+				for info in sorted(zf.namelist()):
+					if not info.endswith("/"):
+						parts.append(one(zf.read(info)))
+		except zipfile.BadZipFile:
+			return blob.decode("utf-8", "replace")
+		return "\n".join(p for p in parts if p)
+	return one(blob)
 
 
 def _json_to_text(raw):

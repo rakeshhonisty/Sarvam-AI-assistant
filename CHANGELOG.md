@@ -3,6 +3,63 @@
 All notable changes to the Sarvam AI assistant NVDA add-on are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.4] - 2026-07-30
+
+A large usability and quality release driven by user testing, focused on making
+every module behave consistently and on getting far better OCR results.
+
+### Bug fixes
+- **Save buttons appeared before there was anything to save.** Every module now
+  follows one rule: perform the task, show the result, and only then reveal the
+  save options. In Text to Speech, **Save as MP3 now appears after Convert**,
+  which is where it makes sense.
+- **Sliders did not say what they were.** Speed, Pitch and Volume now announce
+  their purpose and value (for example "Speech speed percent, 100") instead of
+  an anonymous "slider".
+- **The voice list showed voices that did not match the chosen style or
+  gender.** Voices are now filtered live: pick a style (for example News
+  reader) and a gender, and only the matching voices are listed.
+- **Duplicate operation entries in Translation.** Translate, Transliterate and
+  Detect language are now chosen from a single Operation dropdown inside one
+  dialog.
+- **Two OCR engines produced conflicting results.** The offline Windows OCR
+  engine has been removed; Sarvam Cloud OCR is now the single engine.
+- Large transcripts, OCR output and AI responses no longer make the result
+  boxes sluggish.
+
+### Improvements
+- **OCR is now Sarvam Document Intelligence.** Layout analysis is used so
+  **headings, lists, tables, multi-column text and reading order are
+  preserved** instead of being flattened into plain text. Multi-page PDFs keep
+  their correct page order.
+- **New: Save as Markdown (.md)** in OCR and AI Workforce, so you keep Sarvam's
+  original structured output and can convert it to any format you like.
+  **Save as Word (.docx) now creates real Word headings and tables.**
+- **Large audio just works.** Files beyond the real-time limit are automatically
+  sent through Sarvam's batch transcription API and merged into one complete
+  transcript - no manual splitting.
+- **AI Assistant, AI Summary and AI Workforce are now one module: AI
+  Workforce**, with Task modes (AI Assistant, AI Summary, Document Analysis,
+  General AI Workforce, Content Generation, Question Answering, File Analysis).
+  Tab order is deliberate: Ask a question is focused, Shift+Tab reaches Upload
+  file, Tab moves to the Response, then to Task mode and the rest.
+- **Upload a file almost anywhere.** Text to Speech accepts TXT/DOCX/EPUB;
+  Translation accepts those plus PDF and images (read with OCR first); AI
+  Workforce additionally accepts audio (transcribed automatically).
+- **Auto detect language** for OCR, and long text is translated in chunks and
+  rejoined so there is no length limit.
+- **New: Generate API key button** in Settings, which opens the official Sarvam
+  developer portal in your browser.
+- **New: Batch processing speed (1x - 10x)** in Advanced settings, controlling
+  how many pieces of work are processed at once.
+- "From selection" and "From clipboard" buttons were removed from Translation
+  and AI Workforce in favour of the upload workflow.
+
+### Notes
+- Advanced settings is retained and now contains the batch processing setting.
+- Every save action opens the standard Windows Save As dialog, preserves
+  Unicode and prompts before overwriting.
+
 ## [1.0.3] - 2026-07-10
 
 ### Added

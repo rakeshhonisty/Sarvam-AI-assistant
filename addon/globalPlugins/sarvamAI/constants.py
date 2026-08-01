@@ -17,6 +17,9 @@ ADDON_SUMMARY = "Sarvam AI assistant"
 # Default API host. Overridable from the settings panel (advanced).
 DEFAULT_BASE_URL = "https://api.sarvam.ai"
 
+# Official Sarvam developer portal, where users create their own API key.
+SARVAM_DASHBOARD_URL = "https://dashboard.sarvam.ai/"
+
 # The HTTP header carrying the subscription key (confirmed live).
 AUTH_HEADER = "api-subscription-key"
 
@@ -34,7 +37,17 @@ EP_TTS_STREAM = "/text-to-speech/stream"
 # Batch (job) APIs. All follow the same create -> upload -> start -> status ->
 # download lifecycle under /{service}/job/v1.
 EP_STT_JOB = "/speech-to-text/job/v1"
+EP_STT_JOB_UPLOAD = "/speech-to-text/job/v1/upload-files"
+EP_STT_JOB_START = "/speech-to-text/job/v1/{job_id}/start"
+EP_STT_JOB_STATUS = "/speech-to-text/job/v1/{job_id}/status"
+EP_STT_JOB_DOWNLOAD = "/speech-to-text/job/v1/download-files"
 EP_STT_TRANSLATE_JOB = "/speech-to-text-translate/job/v1"
+
+# Real-time /speech-to-text handles roughly <=30 s clips; larger audio uses the
+# batch job API. This size threshold (bytes) is a safe switch-over point.
+STT_REALTIME_MAX_BYTES = 8 * 1024 * 1024
+# Terminal states shared by the batch job APIs.
+JOB_TERMINAL_STATES = ("Completed", "PartiallyCompleted", "Failed")
 
 # Document digitization = Sarvam's OCR / document intelligence service.
 EP_OCR_CREATE = "/doc-digitization/job/v1"
@@ -78,9 +91,14 @@ OCR_LANGUAGES = {
 	"sat-IN": "Santali",
 	"sd-IN": "Sindhi",
 }
-DEFAULT_OCR_LANGUAGE = "en-IN"
+DEFAULT_OCR_LANGUAGE = "auto"
 
-# OCR engines exposed in the UI.
+# "auto" lets Sarvam determine the document language (the language hint is
+# omitted from the request). Offered at the top of the OCR language list.
+OCR_AUTO_LANGUAGE = "auto"
+
+# OCR engine identifiers. Sarvam Document OCR is the only engine used now;
+# the Windows constant is retained for backward-compatible config values.
 OCR_ENGINE_SARVAM = "sarvam"
 OCR_ENGINE_WINDOWS = "windows"
 
@@ -105,40 +123,49 @@ DEFAULT_REASONING_EFFORT = "medium"
 
 WORKFORCE_MODEL = "sarvam-105b"
 
-# Predefined "workers" (role personas). Each is (key, English label, system
-# prompt). The 105B model reasons through the task in the chosen role.
+# Task modes for the unified AI Workforce (merges the former AI Assistant,
+# AI Summarise and AI Workforce). Each is (key, English label, system prompt).
 WORKFORCE_ROLES = (
-	("assistant", "General assistant",
+	("assistant", "AI Assistant",
 		"You are a highly capable, helpful AI assistant. Think step by step and "
 		"give a clear, accurate, well-structured answer."),
-	("researcher", "Researcher / Analyst",
-		"You are a meticulous research analyst. Break the question down, reason "
-		"carefully through the evidence, and present structured findings with "
-		"your key reasoning made explicit."),
-	("writer", "Writer / Editor",
-		"You are a professional writer and editor. Produce clear, well-organised, "
-		"polished prose. When asked to edit, improve grammar, clarity and style "
-		"while preserving meaning."),
-	("coder", "Programmer",
-		"You are an expert software engineer. Write correct, readable, "
-		"well-commented code, explain your approach, and call out edge cases and "
-		"potential bugs."),
-	("planner", "Planner / Strategist",
-		"You are a strategic planner. Decompose the goal into a clear, ordered, "
-		"actionable step-by-step plan with milestones, dependencies and risks."),
-	("analyst", "Business / Data analyst",
-		"You are a rigorous business and data analyst. Reason quantitatively, "
-		"identify the key drivers, and give a structured, evidence-based "
-		"conclusion with caveats."),
-	("tutor", "Tutor / Explainer",
-		"You are a patient, encouraging tutor for a blind or low-vision learner. "
-		"Explain concepts simply and step by step, using clear language and "
-		"examples, and avoid relying on visual descriptions."),
-	("agent", "Task agent (multi-step)",
-		"You are an autonomous task agent. Given a goal, reason through the "
-		"required steps, work through them in order, and produce the final "
-		"result. State your plan first, then carry it out, then give the answer."),
+	("summary", "AI Summary",
+		"Summarise the provided material clearly and concisely, preserving the "
+		"key facts, structure and any figures. Use headings or bullet points "
+		"where that aids clarity."),
+	("document", "Document Analysis",
+		"You are a document analyst. Read the provided document carefully, "
+		"extract the key points, structure and entities, and answer the user's "
+		"question about it with your reasoning made explicit."),
+	("workforce", "General AI Workforce",
+		"You are a capable multi-step task agent. State a brief plan, carry it "
+		"out step by step, then give the final result clearly."),
+	("content", "Content Generation",
+		"You are a professional writer. Generate high-quality, well-structured, "
+		"polished content exactly as requested (drafts, emails, reports, posts, "
+		"articles), ready to use."),
+	("qa", "Question Answering",
+		"Answer the user's question accurately and directly, using the provided "
+		"context where given and your own knowledge otherwise. Be precise."),
+	("file", "File Analysis",
+		"Analyse the content of the uploaded file and perform the requested task "
+		"on it, giving a structured, well-reasoned result."),
 )
+DEFAULT_WORKFORCE_ROLE = "assistant"
+
+# --- Batch / parallel processing --------------------------------------------
+# How many work items (e.g. long-text TTS chunks, multiple files) to process
+# concurrently. Shown in Advanced settings as 1x/2x/.../10x.
+BATCH_MULTIPLIERS = ("1x", "2x", "3x", "4x", "5x", "10x")
+DEFAULT_BATCH_MULTIPLIER = "2x"
+
+
+def batch_multiplier_value(label):
+	"""Turn a "3x" label into the integer 3 (bounded 1..16)."""
+	try:
+		return max(1, min(16, int(str(label).lower().rstrip("x"))))
+	except (ValueError, TypeError):
+		return 1
 
 DEFAULT_TTS_MODEL = "bulbul:v3"
 DEFAULT_STT_MODEL = "saarika:v2.5"
@@ -243,3 +270,7 @@ OCR_INPUT_EXTENSIONS = (".pdf",) + IMAGE_EXTENSIONS
 # Maximum characters the TTS endpoint accepts per request. Longer input is
 # chunked automatically by the client.
 TTS_MAX_CHARS = 1500
+
+# Maximum characters sent to /translate per request; longer input is split on
+# paragraph/sentence boundaries and re-joined.
+TRANSLATE_MAX_CHARS = 1800

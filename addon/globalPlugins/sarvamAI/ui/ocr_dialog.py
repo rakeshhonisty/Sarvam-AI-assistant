@@ -3,12 +3,18 @@
 # Copyright (C) 2026 Sarvam AI assistant contributors
 # This file is covered by the GNU General Public License v2.
 
-"""OCR dialog.
+"""OCR dialog, powered by Sarvam Document Intelligence.
 
-Primary engine: Sarvam Document OCR (document-digitization, 23 languages, PDF or
-image). Secondary: offline Windows OCR. Choose a source (file / clipboard image
-/ screen), then press "Perform OCR". The recognised text is editable and can be
-copied, saved as .txt or .docx, or translated / summarised with Sarvam."""
+Sarvam Cloud OCR is the only engine (the former Windows OCR engine was removed
+because running two engines caused conflicting results). Sarvam's document
+digitization service performs layout analysis, so headings, lists, tables,
+multi-column text and reading order are preserved rather than flattened.
+
+Order: choose a PDF or image, choose the document language (Auto detect by
+default), press Perform OCR. Only after a successful recognition do the save
+options appear: Markdown keeps Sarvam's original structured output, Word
+recreates real headings and tables, and plain text is also available.
+"""
 
 import os
 
@@ -22,84 +28,72 @@ from .. import constants
 from .. import config
 from .. import client
 from .. import tasks
-from .. import ocr
 from .. import imaging
-from .. import docwriter
 from . import common
-from .translate import TranslateDialog
-from .chat import ChatDialog
 
 
 class OcrDialog(wx.Dialog):
 
 	def __init__(self, parent):
 		# Translators: title of the OCR dialog.
-		super().__init__(parent, title=_("Sarvam AI - OCR"),
+		super().__init__(parent, title=_("Sarvam AI - OCR (Document Intelligence)"),
 			style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 		self._cli = client.SarvamClient(config)
-		self._source = None  # ("file", path) | ("clipboard", None) | ("screen", None)
+		self._path = None
 		conf = config.conf()
 		helper = guiHelper.BoxSizerHelper(self, orientation=wx.VERTICAL)
 
-		# Engine + language.
+		# 1) Choose the document.
+		up = guiHelper.ButtonHelper(wx.HORIZONTAL)
+		self.fileBtn = up.addButton(self, label=_("&Choose PDF or image..."))
+		self.fileBtn.Bind(wx.EVT_BUTTON, self.onChooseFile)
+		helper.addItem(up)
+		# Translators: shows the selected OCR document.
+		self.sourceLabel = helper.addItem(wx.StaticText(self, label=_("Document: none selected")))
+
+		# 2) Language (Auto detect first) and output structure.
 		row = guiHelper.BoxSizerHelper(self, orientation=wx.HORIZONTAL)
-		self.engineCtrl = row.addLabeledControl(
-			_("OCR &engine:"), wx.Choice,
-			choices=[_("Sarvam Document OCR (online, 23 languages)"),
-				_("Windows OCR (offline, instant)")])
-		self.engineCtrl.SetSelection(
-			0 if conf.get("ocrEngine") == constants.OCR_ENGINE_SARVAM else 1)
-		self._ocrLangCodes = list(constants.OCR_LANGUAGES.keys())
-		langLabels = ["%s (%s)" % (name, code) for code, name in constants.OCR_LANGUAGES.items()]
+		self._langCodes = [constants.OCR_AUTO_LANGUAGE] + list(constants.OCR_LANGUAGES.keys())
+		langLabels = [_("Auto detect")] + [
+			"%s (%s)" % (name, code) for code, name in constants.OCR_LANGUAGES.items()]
 		self.langCtrl = row.addLabeledControl(_("Document &language:"), wx.Choice, choices=langLabels)
-		common.select_in_combo(self.langCtrl, self._ocrLangCodes, conf.get("ocrLanguage"))
-		self.engineCtrl.Bind(wx.EVT_CHOICE, lambda e: self.langCtrl.Enable(self._sarvam()))
+		common.select_in_combo(self.langCtrl, self._langCodes,
+			conf.get("ocrLanguage") or constants.OCR_AUTO_LANGUAGE)
+		self._formatKeys = list(constants.OCR_OUTPUT_FORMATS)
+		self.formatCtrl = row.addLabeledControl(
+			_("Output st&ructure:"), wx.Choice,
+			choices=[_("Markdown (keeps headings and tables)"), _("HTML"), _("JSON")])
+		common.select_in_combo(self.formatCtrl, self._formatKeys,
+			conf.get("ocrOutputFormat") or constants.DEFAULT_OCR_OUTPUT_FORMAT)
 		helper.addItem(row.sizer)
 
-		# Source selection.
-		srcBtns = guiHelper.ButtonHelper(wx.HORIZONTAL)
-		self.fileBtn = srcBtns.addButton(self, label=_("Choose PDF / image &file..."))
-		self.fileBtn.Bind(wx.EVT_BUTTON, self.onChooseFile)
-		self.clipBtn = srcBtns.addButton(self, label=_("Use clip&board image"))
-		self.clipBtn.Bind(wx.EVT_BUTTON, self.onUseClipboard)
-		self.screenBtn = srcBtns.addButton(self, label=_("Use current &screen / object"))
-		self.screenBtn.Bind(wx.EVT_BUTTON, self.onUseScreen)
-		helper.addItem(srcBtns)
-
-		# Translators: shows the currently selected OCR source.
-		self.sourceLabel = helper.addItem(wx.StaticText(self, label=_("Source: none selected")))
-
-		# The OCR trigger.
+		# 3) Perform OCR.
 		go = guiHelper.ButtonHelper(wx.HORIZONTAL)
 		self.ocrBtn = go.addButton(self, label=_("Perform &OCR"))
 		self.ocrBtn.Bind(wx.EVT_BUTTON, self.onPerformOcr)
 		helper.addItem(go)
 
+		# 4) Result. Structure is preserved exactly as Sarvam returned it.
 		self.textCtrl = helper.addLabeledControl(
-			_("Recognised &text (editable):"), wx.TextCtrl,
-			style=wx.TE_MULTILINE, size=(620, 260))
+			_("Recognised &text:"), wx.TextCtrl,
+			style=wx.TE_MULTILINE | wx.TE_RICH2, size=(640, 280))
 
-		# Row 1: clipboard + save actions.
-		saveBtns = guiHelper.ButtonHelper(wx.HORIZONTAL)
-		self.copyBtn = saveBtns.addButton(self, label=_("&Copy text"))
-		self.copyBtn.Bind(wx.EVT_BUTTON, self.onCopy)
-		self.saveTxtBtn = saveBtns.addButton(self, label=_("Save as &text (.txt)"))
-		self.saveTxtBtn.Bind(wx.EVT_BUTTON, self.onSaveTxt)
-		self.saveDocBtn = saveBtns.addButton(self, label=_("Save as &Word (.docx)"))
-		self.saveDocBtn.Bind(wx.EVT_BUTTON, self.onSaveDocx)
-		helper.addItem(saveBtns)
+		# 5) Save bar with Markdown, hidden until OCR succeeds.
+		self.saveBar = common.SaveBar(self, helper,
+			lambda: self.textCtrl.GetValue(), "ocr",
+			markdown=True, include_md=True)
 
-		# Row 2: Sarvam post-processing + close.
-		btns = guiHelper.ButtonHelper(wx.HORIZONTAL)
-		self.translateBtn = btns.addButton(self, label=_("Tr&anslate with Sarvam"))
+		# 6) Send the recognised text on to another Sarvam feature.
+		more = guiHelper.ButtonHelper(wx.HORIZONTAL)
+		self.translateBtn = more.addButton(self, label=_("Tr&anslate this text"))
 		self.translateBtn.Bind(wx.EVT_BUTTON, self.onTranslate)
-		self.summariseBtn = btns.addButton(self, label=_("Su&mmarise with Sarvam"))
-		self.summariseBtn.Bind(wx.EVT_BUTTON, self.onSummarise)
-		closeBtn = btns.addButton(self, id=wx.ID_CLOSE, label=_("Cl&ose"))
+		self.aiBtn = more.addButton(self, label=_("Send to AI &Workforce"))
+		self.aiBtn.Bind(wx.EVT_BUTTON, self.onSendToAI)
+		closeBtn = more.addButton(self, id=wx.ID_CLOSE, label=_("Cl&ose"))
 		closeBtn.Bind(wx.EVT_BUTTON, lambda e: self.Close())
-		helper.addItem(btns)
+		helper.addItem(more)
+		self._showFollowUp(False)
 
-		self.langCtrl.Enable(self._sarvam())
 		self._updateOcrButton()
 		self.SetEscapeId(wx.ID_CLOSE)
 		common.make_closeable(self)
@@ -109,152 +103,93 @@ class OcrDialog(wx.Dialog):
 		self.CentreOnScreen()
 		self.fileBtn.SetFocus()
 
-	def _sarvam(self):
-		return self.engineCtrl.GetSelection() == 0
-
+	# -- helpers ------------------------------------------------------------
 	def _updateOcrButton(self):
-		self.ocrBtn.Enable(self._source is not None)
+		self.ocrBtn.Enable(self._path is not None)
 
-	def _setSource(self, source, label):
-		self._source = source
-		self.sourceLabel.SetLabel(_("Source: {what}").format(what=label))
-		self._updateOcrButton()
-		common.report(_("Source selected. Press Perform OCR."))
+	def _showFollowUp(self, visible):
+		for b in (self.translateBtn, self.aiBtn):
+			b.Show(visible)
+		self.Layout()
+		try:
+			self.Fit()
+		except Exception:
+			pass
 
-	# -- source selection ---------------------------------------------------
 	def onChooseFile(self, evt):
-		if self._sarvam():
-			exts = ";".join("*" + e for e in constants.OCR_INPUT_EXTENSIONS)
-			prompt = _("Open PDF or image")
-		else:
-			exts = ";".join("*" + e for e in constants.IMAGE_EXTENSIONS)
-			prompt = _("Open image")
-		with wx.FileDialog(
-				self, prompt,
-				wildcard=_("Supported files (%s)|%s|All files (*.*)|*.*") % (exts, exts),
+		exts = ";".join("*" + e for e in constants.OCR_INPUT_EXTENSIONS)
+		with wx.FileDialog(self, _("Choose a PDF or image"),
+				wildcard=_("PDF and images (%s)|%s|All files (*.*)|*.*") % (exts, exts),
 				style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fd:
 			if fd.ShowModal() != wx.ID_OK:
 				return
-			path = fd.GetPath()
-		self._setSource(("file", path), os.path.basename(path))
-
-	def onUseClipboard(self, evt):
-		self._setSource(("clipboard", None), _("clipboard image"))
-
-	def onUseScreen(self, evt):
-		self._setSource(("screen", None), _("current screen / object"))
+			self._path = fd.GetPath()
+		name = os.path.basename(self._path)
+		try:
+			mb = os.path.getsize(self._path) / (1024.0 * 1024.0)
+			self.sourceLabel.SetLabel(_("Document: {name} ({size:.1f} MB)").format(name=name, size=mb))
+		except OSError:
+			self.sourceLabel.SetLabel(_("Document: {name}").format(name=name))
+		common.report(_("Document selected. Press Perform OCR."))
+		self._updateOcrButton()
+		self.ocrBtn.SetFocus()
 
 	# -- perform ------------------------------------------------------------
 	def onPerformOcr(self, evt):
-		if not self._source:
-			common.report(_("Choose a source first"))
+		if not self._path:
+			common.report(_("Choose a PDF or image first"))
 			return
-		kind, path = self._source
-		if kind == "clipboard":
-			path = ocr.save_clipboard_image_to_temp()
-			if not path:
-				common.report(_("The clipboard has no image"))
-				return
-			kind = "file"
-		if self._sarvam():
-			self._sarvamOcr(kind, path)
-		else:
-			self._windowsOcr(kind, path)
+		path = self._path
+		language = self._langCodes[self.langCtrl.GetSelection()]
+		out_format = self._formatKeys[self.formatCtrl.GetSelection()]
+		self.ocrBtn.Enable(False)
+		self.saveBar.show(False)
+		self._showFollowUp(False)
 
-	def _sarvamOcr(self, kind, path):
-		language = self._ocrLangCodes[self.langCtrl.GetSelection()]
-		out_format = config.conf().get("ocrOutputFormat")
-		# Screen capture uses wx and must run on the GUI thread, so do it now.
-		screen_temp = None
-		if kind == "screen":
-			try:
-				path = ocr.capture_navigator_png()
-				screen_temp = path
-			except Exception as e:
-				common.error_dialog(self, e)
-				return
-
-		def work(cancel, progress, src=path, screen_temp=screen_temp):
-			pdf_path, is_temp = imaging.ensure_pdf(src)
+		def work(cancel, progress):
+			# Images are wrapped into a one-page PDF; PDFs pass straight through
+			# so multi-page documents keep their page order and layout.
+			pdf_path, is_temp = imaging.ensure_pdf(path)
 			try:
 				return self._cli.document_ocr(
 					pdf_path, language=language, output_format=out_format,
 					cancel=cancel, progress=progress)
 			finally:
-				for p in ((pdf_path if is_temp else None), screen_temp):
-					if p:
-						try:
-							os.remove(p)
-						except OSError:
-							pass
+				if is_temp:
+					try:
+						os.remove(pdf_path)
+					except OSError:
+						pass
 
-		tasks.run_task(work, on_success=lambda r: self._setText(r.get("text", "")),
-			on_error=lambda e: common.error_dialog(self, e),
+		def ok(result):
+			self.ocrBtn.Enable(True)
+			text = result.get("text", "")
+			self.textCtrl.ChangeValue(text)
+			self.saveBar.show(True)
+			self._showFollowUp(True)
+			common.report(_("Recognised {n} characters. Save options are now available.").format(n=len(text)))
+			self.textCtrl.SetFocus()
+
+		def bad(exc):
+			self.ocrBtn.Enable(True)
+			common.error_dialog(self, exc)
+
+		tasks.run_task(work, on_success=ok, on_error=bad,
 			title=_("Sarvam AI - OCR"),
-			message=_("Recognising document with Sarvam..."), parent=self)
+			message=_("Recognising document with Sarvam Document Intelligence..."),
+			parent=self)
 
-	def _windowsOcr(self, kind, path):
-		if not ocr.is_available():
-			common.report(_("Windows OCR is not available"))
-			return
-		common.report(_("Recognising"))
-		if kind == "screen":
-			ocr.recognize_screen(self._setText, lambda e: common.error_dialog(self, e))
-		else:
-			ocr.recognize_image_file(path, self._setText, lambda e: common.error_dialog(self, e))
-
-	def _setText(self, text):
-		self.textCtrl.SetValue(text)
-		common.report(_("Text recognised"))
-		self.textCtrl.SetFocus()
-
-	# -- output -------------------------------------------------------------
-	def onCopy(self, evt):
-		text = self.textCtrl.GetValue()
-		if text and wx.TheClipboard.Open():
-			try:
-				wx.TheClipboard.SetData(wx.TextDataObject(text))
-				wx.TheClipboard.Flush()
-			finally:
-				wx.TheClipboard.Close()
-			common.report(_("Copied"))
-		else:
-			common.report(_("Nothing to copy"))
-
-	def onSaveTxt(self, evt):
-		self._save("ocr.txt", _("Text files (*.txt)|*.txt"), docwriter.write_txt)
-
-	def onSaveDocx(self, evt):
-		self._save("ocr.docx", _("Word documents (*.docx)|*.docx"), docwriter.write_docx)
-
-	def _save(self, default_name, wildcard, writer):
-		text = self.textCtrl.GetValue()
-		if not text.strip():
-			common.report(_("Nothing to save"))
-			return
-		with wx.FileDialog(
-				self, _("Save recognised text"),
-				defaultDir=common.default_output_folder(), defaultFile=default_name,
-				wildcard=wildcard, style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fd:
-			if fd.ShowModal() != wx.ID_OK:
-				return
-			path = fd.GetPath()
-		try:
-			writer(text, path)
-			common.report(_("Saved"))
-		except Exception as e:
-			common.error_dialog(self, e)
-
+	# -- follow-up ----------------------------------------------------------
 	def onTranslate(self, evt):
 		text = self.textCtrl.GetValue().strip()
 		if not text:
-			common.report(_("Nothing to translate"))
 			return
+		from .translate import TranslateDialog
 		TranslateDialog(self, initial_text=text).Show()
 
-	def onSummarise(self, evt):
+	def onSendToAI(self, evt):
 		text = self.textCtrl.GetValue().strip()
 		if not text:
-			common.report(_("Nothing to summarise"))
 			return
-		ChatDialog(self, initial_text=text, mode="summarize").Show()
+		from .workforce import WorkforceDialog
+		WorkforceDialog(self, initial_context=text).Show()

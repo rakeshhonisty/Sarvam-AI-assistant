@@ -35,43 +35,45 @@ Indian-language accessibility community in particular.
 
 ## Features
 
-- **Text to Speech** – synthesise natural speech from typed/pasted text or an
-  uploaded **text, Word (.docx) or EPUB** file; pick voice, style, gender,
-  language (auto-detect), speed and pitch; play and save as **MP3 or WAV**.
-- **Speech to Text** – transcribe an audio file or your microphone, with an
-  optional translate-to-English mode; save as **.txt or .docx**.
-- **Translation & Transliteration** – convert between English and Indian
-  languages, with selectable styles.
-- **Language Detection** – identify the language and script of any text.
-- **AI Assistant** – chat, summarise text and understand documents.
-- **AI Workforce (Sarvam-105B)** – a reasoning / agentic layer: choose a worker
-  role (researcher, writer, coder, planner, analyst, tutor, task agent…), a
-  reasoning effort (low/medium/high) and optional wiki grounding, then hand it a
-  task. Save the result as **.txt or .docx**.
-- **OCR** – recognise text from PDFs and images using **Sarvam Document OCR**
-  (23 languages), or the offline **Windows OCR** engine for instant screen
-  reading; then translate or summarise the result with Sarvam.
-
-> **On OCR:** The primary OCR engine is Sarvam's Document Digitization API,
-> which recognises 23 languages from a PDF or image. Because that API works on
-> PDFs, the add-on automatically wraps images (and screen/clipboard captures)
-> into a one-page PDF before sending them. A second, fully offline **Windows
-> OCR** engine is also available for instant screen and object recognition.
-> Recognised text can then be translated or summarised with Sarvam.
+- **Text to Speech** – synthesise speech from typed/pasted text or an uploaded
+  **text, Word (.docx) or EPUB** file. Choose a **speaking style** (News reader,
+  Conversational, Narration, Formal, Expressive) and a **gender**, and the
+  **voice list filters itself** to matching voices. Speed, Pitch and Volume
+  sliders announce their purpose. After Convert: **Listen, Save as MP3, Save as
+  WAV**.
+- **Speech to Text** – transcribe an audio file or your microphone. **Large
+  audio is handled automatically** via Sarvam's batch transcription service and
+  merged into one complete transcript. Optional translate-to-English. Save as
+  TXT or DOCX.
+- **Translation, Transliteration & Language detection** – one dialog with a
+  single **Operation** dropdown. **Upload a document** (TXT/DOCX/EPUB/PDF/image
+  — PDFs and images are read with OCR first). Text of any length is chunked and
+  rejoined automatically.
+- **OCR — Sarvam Document Intelligence** – layout analysis **preserves
+  headings, lists, tables, multi-column text and reading order** instead of
+  flattening them. Multi-page PDFs keep page order. **Auto detect** language or
+  choose from 23. Save as **Markdown** (Sarvam's original structure), **Word**
+  (real headings and tables) or plain text.
+- **AI Workforce (Sarvam-105B)** – one module for **AI Assistant, AI Summary,
+  Document Analysis, General AI Workforce, Content Generation, Question
+  Answering and File Analysis**. Upload any supported file (documents, PDFs,
+  images, audio) as context, ask a question, choose reasoning effort, and save
+  the result as TXT, DOCX or Markdown.
+- **Accessibility-first** – save options appear only once a task succeeds,
+  Escape closes any window from anywhere, every control is labelled, and no
+  long task ever blocks NVDA.
 
 ## Requirements
 
-- NVDA 2021.1 or later (tested up to 2025.1).
+- NVDA 2021.1 or later (tested up to 2026.1).
 - Windows 10 / 11.
-- A Sarvam AI API key – get one from the
-  [Sarvam dashboard](https://dashboard.sarvam.ai/). Note that most endpoints
-  consume account credits.
-- For OCR: a Windows OCR language pack (most Windows installations include
-  English by default).
+- A Sarvam AI API key – press **Generate API key** in the add-on's settings, or
+  get one from the [Sarvam dashboard](https://dashboard.sarvam.ai/). Note that
+  Sarvam endpoints consume account credits.
 
 ## Installation
 
-1. Download the latest `SarvamAIassistant-x.y.z.nvda-addon` from the
+1. Download the latest `sarvamAI-x.y.z.nvda-addon` from the
    [Releases page](https://github.com/rakeshhonisty/Sarvam-AI-assistant/releases)
    (or build it yourself – see below).
 2. In NVDA, open the **Add-on Store** (or **Tools → Manage add-ons**), choose
@@ -86,8 +88,9 @@ Indian-language accessibility community in particular.
 3. Press **Validate key / Test connection**. You should hear a confirmation
    listing the available models. If you hear *"no credits available"*, your key
    is valid but your account needs credits.
-4. Adjust the default voice, language, speech rate and folders to taste, then
-   press **OK**.
+   (No key yet? Press **Generate API key** to open the Sarvam developer portal.)
+4. Adjust your defaults, then press **Save**. More options live under
+   **Advanced settings**, including **Batch processing speed (1x–10x)**.
 
 ## Using the add-on
 
@@ -98,27 +101,23 @@ Everything is reachable from **Tools → Sarvam AI** in the NVDA menu:
 | Text to Speech… | Synthesise and play/save speech. |
 | Speech to Text… | Transcribe a file or the microphone. |
 | Translate… / Transliterate… / Detect language… | Text language tools. |
-| OCR… | Recognise text from a PDF/image (Sarvam OCR) or the screen (Windows OCR). |
-| AI Assistant / Summarise… | Chat, summarise, or understand a document. |
-| AI Workforce (reasoning, 105B)… | Reasoning/agentic tasks via Sarvam-105B with role, effort and grounding. |
-| Settings… | Configure the add-on. |
+| OCR… | Sarvam Document Intelligence OCR of a PDF/image, preserving tables and layout. |
+| AI Workforce… | Assistant, summary, document analysis, content generation and file analysis via Sarvam-105B. |
+| Settings (API key)… | API key, Generate API key, and core defaults. |
+| Advanced settings… | All options, including batch processing speed. |
 | Logs… | View / export the add-on log. |
 | Check for updates… | Check GitHub for a newer release. |
 | Help… / About… | Documentation and version info. |
 
 ### Keyboard shortcuts
 
-- **`NVDA+Alt+S`** — open the Sarvam AI menu (default). From there, use the arrow
-  keys to reach any feature.
+No shortcut is bound by default, so nothing clashes with NVDA's own commands
+(an earlier default clashed with NVDA's sound-split command). Assign your own in
+**NVDA → Preferences → Input Gestures → Sarvam AI** — for example "Opens the
+Sarvam AI menu", or go straight to Text to Speech, Speech to Text, Translate,
+OCR or AI Workforce.
 
-All other commands are unbound by default. Assign your own in
-**NVDA → Preferences → Input Gestures → Sarvam AI** (open Text to Speech, speak
-current selection, open Speech to Text, translate selection, open OCR, recognise
-the current screen/object, open the AI assistant, open settings). You can also
-rebind `NVDA+Alt+S` there.
-
-> NVDA keyboard commands are single chords, so a combination like "NVDA+S+A"
-> (two letter keys at once) isn't possible; `NVDA+Alt+S` is used instead.
+Inside any Sarvam AI window, **Escape closes it** — even from inside a text box.
 
 ## Building from source
 
@@ -146,9 +145,8 @@ network calls run on background threads so NVDA never freezes.
   clear text). This is obfuscation, not strong encryption – treat the machine
   as trusted.
 - Text, audio, images and documents you process are sent to Sarvam's servers
-  for processing (including Sarvam Document OCR). If you instead choose the
-  **Windows OCR** engine, recognition happens locally on your PC and only the
-  resulting text is sent to Sarvam when you ask to translate or summarise it.
+  for processing (including Sarvam Document OCR). Nothing is sent anywhere else,
+  and the add-on itself collects no data.
 
 ## License
 

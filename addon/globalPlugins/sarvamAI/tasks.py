@@ -120,3 +120,54 @@ def _finish(dlg, _unused):
 			dlg.Destroy()
 		except Exception:
 			pass
+
+
+def parallel_map(func, items, concurrency=1, cancel=None):
+	"""Apply ``func(item)`` to every item, running up to ``concurrency`` at a
+	time on worker threads, and return the results in the original order.
+
+	Uses a simple bounded thread pool (no concurrent.futures dependency, which
+	is not guaranteed in NVDA's trimmed stdlib). Exceptions are re-raised in
+	order after all work finishes.
+	"""
+	items = list(items)
+	n = len(items)
+	results = [None] * n
+	errors_out = [None] * n
+	concurrency = max(1, int(concurrency))
+	if concurrency == 1 or n <= 1:
+		for i, it in enumerate(items):
+			if cancel:
+				cancel.check()
+			results[i] = func(it)
+		return results
+
+	lock = threading.Lock()
+	next_index = [0]
+
+	def worker():
+		while True:
+			with lock:
+				if next_index[0] >= n:
+					return
+				i = next_index[0]
+				next_index[0] += 1
+			if cancel and cancel.cancelled:
+				return
+			try:
+				results[i] = func(items[i])
+			except Exception as e:  # noqa: BLE001
+				errors_out[i] = e
+
+	threads = [threading.Thread(target=worker, name="SarvamAIBatch%d" % k, daemon=True)
+		for k in range(min(concurrency, n))]
+	for t in threads:
+		t.start()
+	for t in threads:
+		t.join()
+	if cancel:
+		cancel.check()
+	for e in errors_out:
+		if e is not None:
+			raise e
+	return results

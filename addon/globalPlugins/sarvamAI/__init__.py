@@ -6,7 +6,7 @@
 
 """Sarvam AI assistant - a global plugin exposing the Sarvam AI platform
 (text to speech, speech to text, translation, transliteration, language
-detection, AI chat / summarisation and Windows OCR) through an accessible,
+detection, an AI Workforce reasoning layer and Sarvam Document OCR) through an accessible,
 keyboard-driven NVDA interface."""
 
 import wx
@@ -68,8 +68,9 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		add(_("T&ransliterate..."), self.onTransliterate)
 		add(_("&Detect language..."), self.onDetectLanguage)
 		add(_("&OCR..."), self.onOcr)
-		add(_("&AI Assistant / Summarise..."), self.onChat)
-		add(_("AI &Workforce (reasoning, 105B)..."), self.onWorkforce)
+		# AI Assistant and AI Summarise are Task modes inside AI Workforce now,
+		# rather than separate windows.
+		add(_("AI &Workforce (assistant, summary, analysis)..."), self.onWorkforce)
 		menu.AppendSeparator()
 		add(_("Se&ttings (API key)..."), self.onSettings)
 		add(_("Ad&vanced settings..."), self.onAdvancedSettings)
@@ -156,14 +157,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self._open(lambda: OcrDialog(gui.mainFrame))
 
 	def onChat(self, evt=None):
-		from .ui.chat import ChatDialog
-		from .ui.tts import _get_selection
-		self._open(lambda: ChatDialog(gui.mainFrame, initial_text=_get_selection()))
+		# Kept for backward compatibility (old gestures): opens AI Workforce.
+		self.onWorkforce(evt)
 
 	def onWorkforce(self, evt=None):
 		from .ui.workforce import WorkforceDialog
-		from .ui.tts import _get_selection
-		self._open(lambda: WorkforceDialog(gui.mainFrame, initial_text=_get_selection()))
+		self._open(lambda: WorkforceDialog(gui.mainFrame))
 
 	def onSettings(self, evt=None):
 		from .ui.setup import SetupDialog
@@ -251,39 +250,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		self.onOcr()
 
 	@script(
-		description=_("Recognises the current screen or object with Windows OCR"),
-		category=SCRIPT_CATEGORY, gesture=None)
-	def script_ocrScreen(self, gesture):
-		from . import ocr
-		if not ocr.is_available():
-			nvdaUi.message(_("Windows OCR is not available"))
-			return
-		nvdaUi.message(_("Recognising"))
-
-		def onText(text):
-			from .ui.common import ResultDialog
-			from .ui.translate import TranslateDialog
-			from .ui.chat import ChatDialog
-			dlg = ResultDialog(
-				gui.mainFrame, _("Sarvam AI - OCR result"), text,
-				on_translate=lambda t: TranslateDialog(gui.mainFrame, initial_text=t).Show(),
-				on_summarize=lambda t: ChatDialog(gui.mainFrame, initial_text=t, mode="summarize").Show())
-			dlg.Show()
-
-		def onError(exc):
-			from .ui.common import error_dialog
-			error_dialog(gui.mainFrame, exc)
-
-		ocr.recognize_screen(onText, onError)
-
-	@script(
-		description=_("Opens the Sarvam AI assistant (chat and summarise) window"),
-		category=SCRIPT_CATEGORY, gesture=None)
-	def script_chat(self, gesture):
-		self.onChat()
-
-	@script(
-		description=_("Opens the Sarvam AI Workforce (105B reasoning) window"),
+		description=_("Opens the Sarvam AI Workforce (assistant, summary, analysis) window"),
 		category=SCRIPT_CATEGORY, gesture=None)
 	def script_workforce(self, gesture):
 		self.onWorkforce()

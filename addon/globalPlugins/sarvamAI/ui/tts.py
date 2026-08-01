@@ -5,12 +5,11 @@
 
 """Text to speech dialog.
 
-Workflow: type or paste text (or upload a .txt/.docx/.epub file), choose the
-model, conversion style, gender, voice and language, tune speed and pitch, then
-press Convert. After conversion you can Listen, or save the audio as MP3 or WAV.
+Order: type or paste text (or upload a .txt/.docx/.epub file), choose a speaking
+style, gender and (dynamically filtered) voice, a language, and tune the speed,
+pitch and volume sliders. Press Convert. Only after a successful conversion do
+the Listen and Save (MP3 / WAV) controls appear.
 """
-
-import os
 
 import wx
 import gui
@@ -39,188 +38,182 @@ class TextToSpeechDialog(wx.Dialog):
 		super().__init__(parent, title=_("Sarvam AI - Text to Speech"),
 			style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
 		self._cli = client.SarvamClient(config)
-		self._wav = None  # last converted WAV bytes (for playback / WAV save)
+		self._wav = None
 		conf = config.conf()
 
 		helper = guiHelper.BoxSizerHelper(self, orientation=wx.VERTICAL)
 
-		# Text box (paste target) + upload.
+		# 1) Text (type or paste) + upload.
 		self.textCtrl = helper.addLabeledControl(
-			_("&Text to speak (type, paste, or upload a file):"), wx.TextCtrl,
-			style=wx.TE_MULTILINE, size=(580, 180))
+			_("&Text to speak (type or paste):"), wx.TextCtrl,
+			style=wx.TE_MULTILINE, size=(580, 170))
 		self.textCtrl.SetValue(initial_text or "")
-
-		uploadRow = guiHelper.ButtonHelper(wx.HORIZONTAL)
-		self.uploadBtn = uploadRow.addButton(
-			self, label=_("&Upload file (text, Word, EPUB)..."))
+		up = guiHelper.ButtonHelper(wx.HORIZONTAL)
+		self.uploadBtn = up.addButton(self, label=_("&Upload file (text, Word, EPUB)..."))
 		self.uploadBtn.Bind(wx.EVT_BUTTON, self.onUpload)
-		helper.addItem(uploadRow)
+		helper.addItem(up)
 
-		# Model / style / gender.
+		# 2) Model / style / gender.
 		row1 = guiHelper.BoxSizerHelper(self, orientation=wx.HORIZONTAL)
-		self.modelCtrl = row1.addLabeledControl(
-			_("&Model:"), wx.Choice, choices=list(ttsstyles.MODELS))
-		self._select(self.modelCtrl, conf.get("ttsModel") or ttsstyles.DEFAULT_MODEL)
-		self.modelCtrl.Bind(wx.EVT_CHOICE, self._onModelOrGender)
+		self.modelCtrl = row1.addLabeledControl(_("&Model:"), wx.Choice, choices=list(ttsstyles.MODELS))
+		self._sel(self.modelCtrl, conf.get("ttsModel") or ttsstyles.DEFAULT_MODEL)
+		self.modelCtrl.Bind(wx.EVT_CHOICE, self._refreshVoices)
 		self._styleKeys = list(ttsstyles.style_keys())
 		self.styleCtrl = row1.addLabeledControl(
-			_("Conversion s&tyle:"), wx.Choice,
+			_("Speaking s&tyle:"), wx.Choice,
 			choices=[ttsstyles.style_label(k) for k in self._styleKeys])
-		self._select(self.styleCtrl, ttsstyles.style_label(conf.get("ttsStyle") or "neutral"))
+		common.select_in_combo(self.styleCtrl, self._styleKeys, conf.get("ttsStyle"))
 		self.styleCtrl.Bind(wx.EVT_CHOICE, self._onStyle)
-		self.genderCtrl = row1.addLabeledControl(
-			_("&Gender:"), wx.Choice, choices=list(ttsstyles.GENDERS))
-		self._select(self.genderCtrl, conf.get("ttsGender") or "Any")
-		self.genderCtrl.Bind(wx.EVT_CHOICE, self._onModelOrGender)
+		self.genderCtrl = row1.addLabeledControl(_("&Gender:"), wx.Choice, choices=list(ttsstyles.GENDERS))
+		self._sel(self.genderCtrl, conf.get("ttsGender") or "Female")
+		self.genderCtrl.Bind(wx.EVT_CHOICE, self._refreshVoices)
 		helper.addItem(row1.sizer)
 
-		# Voice / language.
+		# 3) Voice (filtered) + language.
 		row2 = guiHelper.BoxSizerHelper(self, orientation=wx.HORIZONTAL)
 		self.voiceCtrl = row2.addLabeledControl(_("&Voice:"), wx.Choice, choices=[])
-		# "Auto detect" is offered and is the default: the language of the text
-		# (including code-mixed text) is detected before synthesis.
 		labels, self._langCodes = common.language_choices(include_auto=True)
 		self.langCtrl = row2.addLabeledControl(_("&Language:"), wx.Choice, choices=labels)
 		common.select_in_combo(self.langCtrl, self._langCodes, conf.get("defaultLanguage") or constants.AUTO_DETECT)
 		helper.addItem(row2.sizer)
-		self._reloadVoices(conf.get("defaultSpeaker"))
+		self._refreshVoices()
 
-		# Speed + pitch sliders (mapped: slider value / 100).
-		self.speedCtrl, self.speedLabel = self._slider(
-			helper, _("&Speed:"), 30, 300, int(float(conf.get("pace") or 1.0) * 100))
-		self.pitchCtrl, self.pitchLabel = self._slider(
-			helper, _("&Pitch:"), -75, 75, int(float(conf.get("pitch") or 0.0) * 100))
-		# Hidden style-driven parameters (not shown as sliders).
+		# 4) Sliders (each names itself so NVDA announces its purpose).
+		self.speedCtrl = self._slider(helper, _("Speech s&peed, percent:"), 30, 300,
+			int(float(conf.get("pace") or 1.0) * 100), _("Speech speed percent"))
+		self.pitchCtrl = self._slider(helper, _("Pi&tch:"), -75, 75,
+			int(float(conf.get("pitch") or 0.0) * 100), _("Pitch"))
+		self.volumeCtrl = self._slider(helper, _("Vol&ume, percent:"), 10, 300,
+			int(float(conf.get("loudness") or 1.0) * 100), _("Volume percent"))
 		self._temperature = float(conf.get("ttsTemperature") or 0.6)
-		self._loudness = float(conf.get("loudness") or 1.0)
-		self._applyStyle(conf.get("ttsStyle") or "neutral", updateSliders=True)
+		self._applyStyle(conf.get("ttsStyle") or ttsstyles.default_style(), sliders=True)
 
-		# Actions.
-		btns = guiHelper.ButtonHelper(wx.HORIZONTAL)
-		self.convertBtn = btns.addButton(self, label=_("&Convert"))
+		# 5) Convert.
+		conv = guiHelper.ButtonHelper(wx.HORIZONTAL)
+		self.convertBtn = conv.addButton(self, label=_("&Convert"))
 		self.convertBtn.Bind(wx.EVT_BUTTON, self.onConvert)
-		self.listenBtn = btns.addButton(self, label=_("&Listen"))
-		self.listenBtn.Bind(wx.EVT_BUTTON, self.onListen)
-		self.stopBtn = btns.addButton(self, label=_("St&op"))
-		self.stopBtn.Bind(wx.EVT_BUTTON, self.onStop)
-		self.mp3Btn = btns.addButton(self, label=_("Save as &MP3..."))
-		self.mp3Btn.Bind(wx.EVT_BUTTON, self.onSaveMp3)
-		self.wavBtn = btns.addButton(self, label=_("Save as &WAV..."))
-		self.wavBtn.Bind(wx.EVT_BUTTON, self.onSaveWav)
-		closeBtn = btns.addButton(self, id=wx.ID_CLOSE, label=_("Cl&ose"))
-		closeBtn.Bind(wx.EVT_BUTTON, lambda e: self.Close())
-		helper.addItem(btns)
+		helper.addItem(conv)
 
-		self._updateButtons()
+		# 6) Result actions - hidden until a successful conversion.
+		self._resultBtns = guiHelper.ButtonHelper(wx.HORIZONTAL)
+		self.listenBtn = self._resultBtns.addButton(self, label=_("&Listen"))
+		self.listenBtn.Bind(wx.EVT_BUTTON, self.onListen)
+		self.stopBtn = self._resultBtns.addButton(self, label=_("St&op"))
+		self.stopBtn.Bind(wx.EVT_BUTTON, self.onStop)
+		self.mp3Btn = self._resultBtns.addButton(self, label=_("Save as &MP3..."))
+		self.mp3Btn.Bind(wx.EVT_BUTTON, self.onSaveMp3)
+		self.wavBtn = self._resultBtns.addButton(self, label=_("Save as &WAV..."))
+		self.wavBtn.Bind(wx.EVT_BUTTON, self.onSaveWav)
+		helper.addItem(self._resultBtns)
+		self._showResults(False)
+
+		# Close.
+		closeRow = guiHelper.ButtonHelper(wx.HORIZONTAL)
+		closeBtn = closeRow.addButton(self, id=wx.ID_CLOSE, label=_("Cl&ose"))
+		closeBtn.Bind(wx.EVT_BUTTON, lambda e: self.Close())
+		helper.addItem(closeRow)
+
 		self.SetEscapeId(wx.ID_CLOSE)
 		common.make_closeable(self, cleanup=lambda: _player.stop())
-		mainSizer = wx.BoxSizer(wx.VERTICAL)
-		mainSizer.Add(helper.sizer, border=guiHelper.BORDER_FOR_DIALOGS, flag=wx.ALL)
-		self.SetSizerAndFit(mainSizer)
+		self._mainSizer = wx.BoxSizer(wx.VERTICAL)
+		self._mainSizer.Add(helper.sizer, border=guiHelper.BORDER_FOR_DIALOGS, flag=wx.ALL)
+		self.SetSizerAndFit(self._mainSizer)
 		self.CentreOnScreen()
 		self.textCtrl.SetFocus()
 
-	# -- small helpers ------------------------------------------------------
-	def _select(self, ctrl, value):
+	# -- helpers ------------------------------------------------------------
+	def _sel(self, ctrl, value):
 		items = [ctrl.GetString(i) for i in range(ctrl.GetCount())]
-		if value in items:
-			ctrl.SetSelection(items.index(value))
-		elif items:
-			ctrl.SetSelection(0)
+		ctrl.SetSelection(items.index(value) if value in items else 0)
 
-	def _slider(self, helper, label, lo, hi, value):
-		row = guiHelper.BoxSizerHelper(self, orientation=wx.HORIZONTAL)
-		ctrl = row.addLabeledControl(
+	def _slider(self, helper, label, lo, hi, value, name):
+		ctrl = helper.addLabeledControl(
 			label, wx.Slider, minValue=lo, maxValue=hi,
 			style=wx.SL_HORIZONTAL | wx.SL_LABELS)
 		ctrl.SetValue(max(lo, min(hi, value)))
-		readout = row.addItem(wx.StaticText(self, label=self._fmt(ctrl.GetValue())))
-		ctrl.Bind(wx.EVT_SLIDER, lambda e, c=ctrl, r=readout: r.SetLabel(self._fmt(c.GetValue())))
-		helper.addItem(row.sizer)
-		return ctrl, readout
-
-	def _fmt(self, v):
-		return "%.2f" % (v / 100.0)
+		try:
+			ctrl.SetName(name)
+		except Exception:
+			pass
+		return ctrl
 
 	def _model(self):
 		return self.modelCtrl.GetStringSelection() or ttsstyles.DEFAULT_MODEL
 
 	def _gender(self):
-		return self.genderCtrl.GetStringSelection() or "Any"
+		return self.genderCtrl.GetStringSelection() or "Female"
 
-	def _reloadVoices(self, preferred=None):
-		voices = ttsstyles.speakers_for(self._model(), self._gender())
+	def _styleKey(self):
+		return self._styleKeys[self.styleCtrl.GetSelection()]
+
+	def _refreshVoices(self, evt=None):
+		prev = self.voiceCtrl.GetStringSelection()
+		voices = ttsstyles.voices_for(self._model(), self._gender(), self._styleKey())
 		self.voiceCtrl.Set(voices)
-		if preferred and preferred in voices:
-			self.voiceCtrl.SetSelection(voices.index(preferred))
+		if prev in voices:
+			self.voiceCtrl.SetSelection(voices.index(prev))
 		elif voices:
 			self.voiceCtrl.SetSelection(0)
 
-	def _onModelOrGender(self, evt):
-		self._reloadVoices(self.voiceCtrl.GetStringSelection())
-
 	def _onStyle(self, evt):
-		self._applyStyle(self._styleKeys[self.styleCtrl.GetSelection()], updateSliders=True)
+		self._applyStyle(self._styleKey(), sliders=True)
+		self._refreshVoices()
 		common.report(_("Style applied"))
 
-	def _applyStyle(self, key, updateSliders=False):
+	def _applyStyle(self, key, sliders=False):
 		p = ttsstyles.style_params(key)
 		self._temperature = p.get("temperature", 0.6)
-		self._loudness = p.get("loudness", 1.0)
-		if updateSliders:
+		if sliders:
 			self.speedCtrl.SetValue(int(p.get("pace", 1.0) * 100))
 			self.pitchCtrl.SetValue(int(p.get("pitch", 0.0) * 100))
-			self.speedLabel.SetLabel(self._fmt(self.speedCtrl.GetValue()))
-			self.pitchLabel.SetLabel(self._fmt(self.pitchCtrl.GetValue()))
+			self.volumeCtrl.SetValue(int(p.get("loudness", 1.0) * 100))
+
+	def _showResults(self, show):
+		for b in (self.listenBtn, self.stopBtn, self.mp3Btn, self.wavBtn):
+			b.Show(show)
+		self.Layout()
+		try:
+			self.Fit()
+		except Exception:
+			pass
 
 	# -- upload -------------------------------------------------------------
 	def onUpload(self, evt):
 		exts = ";".join("*" + e for e in textextract.SUPPORTED_EXTENSIONS)
-		with wx.FileDialog(
-				self, _("Upload a document"),
+		with wx.FileDialog(self, _("Upload a document"),
 				wildcard=_("Documents (%s)|%s|All files (*.*)|*.*") % (exts, exts),
 				style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST) as fd:
 			if fd.ShowModal() != wx.ID_OK:
 				return
 			path = fd.GetPath()
-
-		def work(cancel, progress):
-			return textextract.extract_text(path)
-
-		def ok(text):
-			self.textCtrl.SetValue(text)
-			common.report(_("File loaded: {n} characters").format(n=len(text)))
-			self.textCtrl.SetFocus()
-
-		tasks.run_task(work, on_success=ok,
+		tasks.run_task(lambda cancel, progress: textextract.extract_text(path),
+			on_success=lambda t: (self.textCtrl.SetValue(t), common.report(_("File loaded")), self.textCtrl.SetFocus()),
 			on_error=lambda e: common.error_dialog(self, e),
 			title=_("Sarvam AI"), message=_("Reading document..."), parent=self)
 
 	# -- convert / play / save ---------------------------------------------
-	def _selectedLang(self):
-		return self._langCodes[self.langCtrl.GetSelection()]
-
-	def _resolveLang(self, sel_lang, text, cancel):
-		"""Return a concrete TTS language code, detecting it when 'auto'."""
-		if sel_lang and sel_lang != constants.AUTO_DETECT:
-			return sel_lang
-		detected = None
-		try:
-			detected = self._cli.detect_language(text, cancel=cancel).get("language_code")
-		except errors.SarvamError:
-			detected = None
-		return constants.to_tts_language(detected)
-
 	def _params(self):
 		return dict(
 			speaker=self.voiceCtrl.GetStringSelection() or None,
 			model=self._model(),
 			pitch=self.pitchCtrl.GetValue() / 100.0,
 			pace=self.speedCtrl.GetValue() / 100.0,
-			loudness=self._loudness,
+			loudness=self.volumeCtrl.GetValue() / 100.0,
 			temperature=self._temperature,
 			sample_rate=config.conf().get("sampleRate"),
 			enable_preprocessing=config.conf().get("enablePreprocessing"))
+
+	def _selectedLang(self):
+		return self._langCodes[self.langCtrl.GetSelection()]
+
+	def _resolveLang(self, sel_lang, text, cancel):
+		if sel_lang and sel_lang != constants.AUTO_DETECT:
+			return sel_lang
+		try:
+			detected = self._cli.detect_language(text, cancel=cancel).get("language_code")
+		except errors.SarvamError:
+			detected = None
+		return constants.to_tts_language(detected)
 
 	def onConvert(self, evt):
 		text = self.textCtrl.GetValue().strip()
@@ -240,12 +233,13 @@ class TextToSpeechDialog(wx.Dialog):
 		def ok(wav):
 			self.convertBtn.Enable(True)
 			self._wav = wav
-			self._updateButtons()
+			self._showResults(True)
 			if config.conf().get("autoPlayTts"):
 				_player.play(wav)
-				common.report(_("Converted. Playing."))
+				common.report(_("Converted. Playing. Save options are now available."))
 			else:
-				common.report(_("Converted. Press Listen to play."))
+				common.report(_("Converted. Listen and Save options are now available."))
+			self.listenBtn.SetFocus()
 
 		def bad(exc):
 			self.convertBtn.Enable(True)
@@ -259,8 +253,6 @@ class TextToSpeechDialog(wx.Dialog):
 		if self._wav:
 			_player.play(self._wav)
 			common.report(_("Playing"))
-		else:
-			common.report(_("Convert first"))
 
 	def onStop(self, evt):
 		_player.stop()
@@ -268,7 +260,6 @@ class TextToSpeechDialog(wx.Dialog):
 
 	def onSaveWav(self, evt):
 		if not self._wav:
-			common.report(_("Convert first"))
 			return
 		path = self._askSave("sarvam_tts.wav", _("WAV audio (*.wav)|*.wav"))
 		if not path:
@@ -282,7 +273,6 @@ class TextToSpeechDialog(wx.Dialog):
 	def onSaveMp3(self, evt):
 		text = self.textCtrl.GetValue().strip()
 		if not text:
-			common.report(_("There is no text to convert"))
 			return
 		path = self._askSave("sarvam_tts.mp3", _("MP3 audio (*.mp3)|*.mp3"))
 		if not path:
@@ -313,18 +303,11 @@ class TextToSpeechDialog(wx.Dialog):
 			message=_("Generating MP3..."), parent=self)
 
 	def _askSave(self, default_name, wildcard):
-		with wx.FileDialog(
-				self, _("Save audio"), defaultDir=common.default_output_folder(),
+		with wx.FileDialog(self, _("Save audio"), defaultDir=common.default_output_folder(),
 				defaultFile=default_name, wildcard=wildcard,
 				style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fd:
 			return fd.GetPath() if fd.ShowModal() == wx.ID_OK else None
 
-	def _updateButtons(self):
-		has = self._wav is not None
-		self.listenBtn.Enable(has)
-		self.stopBtn.Enable(has)
-		self.wavBtn.Enable(has)
-		self.mp3Btn.Enable(True)
 
 # --- helpers still used by other modules (selection/clipboard readers) ------
 def _get_selection():

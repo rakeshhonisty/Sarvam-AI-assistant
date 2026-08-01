@@ -33,8 +33,8 @@ CONFIG_SPEC = {
 	"pace": "float(default=1.0)",
 	"loudness": "float(default=1.0)",
 	"ttsTemperature": "float(default=0.6)",
-	"ttsStyle": "string(default=\"neutral\")",
-	"ttsGender": "string(default=\"Any\")",
+	"ttsStyle": "string(default=\"news\")",
+	"ttsGender": "string(default=\"Female\")",
 	"ttsCodec": "string(default=\"%s\")" % constants.DEFAULT_TTS_CODEC,
 	"sampleRate": "integer(default=%d)" % constants.DEFAULT_TTS_SAMPLE_RATE,
 	"enablePreprocessing": "boolean(default=True)",
@@ -73,7 +73,8 @@ CONFIG_SPEC = {
 
 	# Behaviour.
 	"streaming": "boolean(default=False)",
-	"networkTimeout": "integer(default=60)",
+	"batchConcurrency": "string(default=\"%s\")" % constants.DEFAULT_BATCH_MULTIPLIER,
+	"networkTimeout": "integer(default=120)",
 	"maxRetries": "integer(default=2)",
 	"proxyUrl": "string(default=\"\")",
 	"debugLogging": "boolean(default=False)",

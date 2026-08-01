@@ -93,14 +93,13 @@ class SarvamSettingsPanel(SettingsPanel):
 		self.chatModelCtrl = self._choice(sh, _("&Chat model:"), constants.CHAT_MODELS, conf.get("chatModel"))
 
 		# --- OCR -----------------------------------------------------------
-		sh.addItem(wx.StaticText(self, label=_("OCR")))
-		self.ocrEngineCtrl = self._choice(
-			sh, _("Default OCR en&gine:"),
-			[constants.OCR_ENGINE_SARVAM, constants.OCR_ENGINE_WINDOWS], conf.get("ocrEngine"))
-		self._ocrLangCodes = list(constants.OCR_LANGUAGES.keys())
-		ocrLangLabels = ["%s (%s)" % (name, code) for code, name in constants.OCR_LANGUAGES.items()]
+		sh.addItem(wx.StaticText(self, label=_("OCR (Sarvam Document Intelligence)")))
+		self._ocrLangCodes = [constants.OCR_AUTO_LANGUAGE] + list(constants.OCR_LANGUAGES.keys())
+		ocrLangLabels = [_("Auto detect")] + [
+			"%s (%s)" % (name, code) for code, name in constants.OCR_LANGUAGES.items()]
 		self.ocrLangCtrl = sh.addLabeledControl(_("Default OCR l&anguage:"), wx.Choice, choices=ocrLangLabels)
-		common.select_in_combo(self.ocrLangCtrl, self._ocrLangCodes, conf.get("ocrLanguage"))
+		common.select_in_combo(self.ocrLangCtrl, self._ocrLangCodes,
+			conf.get("ocrLanguage") or constants.OCR_AUTO_LANGUAGE)
 		self.ocrFormatCtrl = self._choice(
 			sh, _("OCR output for&mat:"), constants.OCR_OUTPUT_FORMATS, conf.get("ocrOutputFormat"))
 
@@ -116,6 +115,11 @@ class SarvamSettingsPanel(SettingsPanel):
 		# Translators: checkbox to prefer streaming APIs where available.
 		self.streamingCtrl = sh.addItem(wx.CheckBox(self, label=_("Enable &streaming where supported")))
 		self.streamingCtrl.SetValue(bool(conf.get("streaming")))
+		# Batch processing speed: how many pieces of work (long-text chunks,
+		# multiple files) are processed at the same time.
+		self.batchCtrl = self._choice(
+			sh, _("&Batch processing speed:"),
+			constants.BATCH_MULTIPLIERS, conf.get("batchConcurrency"))
 		self.timeoutCtrl = self._spin_int(sh, _("Network t&imeout (seconds):"), conf.get("networkTimeout"), 5, 600)
 		self.retriesCtrl = self._spin_int(sh, _("Max &retries:"), conf.get("maxRetries"), 0, 10)
 		# Translators: proxy URL field.
@@ -255,12 +259,13 @@ class SarvamSettingsPanel(SettingsPanel):
 		conf["translateTargetLang"] = self._tgtCodes[self.translateTgtCtrl.GetSelection()]
 		conf["translateMode"] = self.translateModeCtrl._values[self.translateModeCtrl.GetSelection()]
 		conf["chatModel"] = self.chatModelCtrl._values[self.chatModelCtrl.GetSelection()]
-		conf["ocrEngine"] = self.ocrEngineCtrl._values[self.ocrEngineCtrl.GetSelection()]
+		conf["ocrEngine"] = constants.OCR_ENGINE_SARVAM
 		conf["ocrLanguage"] = self._ocrLangCodes[self.ocrLangCtrl.GetSelection()]
 		conf["ocrOutputFormat"] = self.ocrFormatCtrl._values[self.ocrFormatCtrl.GetSelection()]
 		conf["outputFolder"] = self.outputFolderCtrl.GetValue().strip()
 		conf["downloadFolder"] = self.downloadFolderCtrl.GetValue().strip()
 		conf["streaming"] = self.streamingCtrl.GetValue()
+		conf["batchConcurrency"] = self.batchCtrl._values[self.batchCtrl.GetSelection()]
 		conf["networkTimeout"] = int(self.timeoutCtrl.GetValue())
 		conf["maxRetries"] = int(self.retriesCtrl.GetValue())
 		conf["proxyUrl"] = self.proxyCtrl.GetValue().strip()

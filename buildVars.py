@@ -9,13 +9,15 @@ addon_info = {
 	"addon_summary": "Sarvam AI assistant",
 	# Longer description.
 	"addon_description": (
-		"Accessible NVDA add-on for the Sarvam AI platform. Provides text to "
-		"speech, speech to text, translation, transliteration, language "
-		"detection, AI chat and summarisation, and OCR (Sarvam Document OCR in "
-		"23 languages, plus an offline Windows OCR engine). Fully keyboard "
-		"accessible and screen-reader friendly."
+		"Accessible NVDA add-on for the Sarvam AI platform, built for blind and "
+		"visually-impaired users. Text to speech (with document upload and MP3 "
+		"export), speech to text including large audio files, translation, "
+		"transliteration, language detection, an AI Workforce reasoning layer "
+		"(Sarvam-105B), and OCR powered by Sarvam Document Intelligence in 23 "
+		"languages that preserves headings, tables and multi-column layout. "
+		"Results save as TXT, Word or Markdown. Fully keyboard accessible."
 	),
-	"addon_version": "1.0.3",
+	"addon_version": "1.0.4",
 	"addon_author": "Sarvam AI assistant contributors <rakesh.honistyboy@gmail.com>",
 	"addon_url": "https://github.com/rakeshhonisty/Sarvam-AI-assistant",
 	"addon_sourceURL": "https://github.com/rakeshhonisty/Sarvam-AI-assistant",
