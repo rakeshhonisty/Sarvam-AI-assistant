@@ -31,6 +31,7 @@ import addonHandler
 from . import constants
 from . import errors
 from . import logger
+from . import ttsstyles
 
 addonHandler.initTranslation()
 
@@ -249,14 +250,13 @@ class SarvamClient:
 				"enable_preprocessing": bool(enable_preprocessing),
 				"output_audio_codec": codec,
 			}
-			if pitch is not None:
-				payload["pitch"] = float(pitch)
+			# bulbul:v3 supports only pace and temperature. Sending pitch or
+			# loudness makes the API reject the whole request with HTTP 400,
+			# so they are deliberately never sent.
 			if pace is not None:
-				payload["pace"] = float(pace)
-			if loudness is not None:
-				payload["loudness"] = float(loudness)
+				payload["pace"] = ttsstyles.clamp_pace(pace)
 			if temperature is not None:
-				payload["temperature"] = float(temperature)
+				payload["temperature"] = ttsstyles.clamp_temperature(temperature)
 			if sample_rate:
 				payload["speech_sample_rate"] = int(sample_rate)
 			res = self._post_json(constants.EP_TEXT_TO_SPEECH, payload, cancel=cancel)

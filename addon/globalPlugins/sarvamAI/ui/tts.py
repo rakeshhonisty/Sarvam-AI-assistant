@@ -6,9 +6,12 @@
 """Text to speech dialog.
 
 Order: type or paste text (or upload a .txt/.docx/.epub file), choose a speaking
-style, gender and (dynamically filtered) voice, a language, and tune the speed,
-pitch and volume sliders. Press Convert. Only after a successful conversion do
-the Listen and Save (MP3 / WAV) controls appear.
+style, gender and (dynamically filtered) voice, a language, and tune the Speed
+and Expression sliders. Press Convert. Only after a successful conversion do the
+Listen and Save (MP3 / WAV) controls appear.
+
+Only bulbul:v3 is used. It supports pace and temperature but rejects pitch and
+loudness, so those controls are not offered.
 """
 
 import wx
@@ -55,9 +58,6 @@ class TextToSpeechDialog(wx.Dialog):
 
 		# 2) Model / style / gender.
 		row1 = guiHelper.BoxSizerHelper(self, orientation=wx.HORIZONTAL)
-		self.modelCtrl = row1.addLabeledControl(_("&Model:"), wx.Choice, choices=list(ttsstyles.MODELS))
-		self._sel(self.modelCtrl, conf.get("ttsModel") or ttsstyles.DEFAULT_MODEL)
-		self.modelCtrl.Bind(wx.EVT_CHOICE, self._refreshVoices)
 		self._styleKeys = list(ttsstyles.style_keys())
 		self.styleCtrl = row1.addLabeledControl(
 			_("Speaking s&tyle:"), wx.Choice,
@@ -79,13 +79,12 @@ class TextToSpeechDialog(wx.Dialog):
 		self._refreshVoices()
 
 		# 4) Sliders (each names itself so NVDA announces its purpose).
-		self.speedCtrl = self._slider(helper, _("Speech s&peed, percent:"), 30, 300,
+		# bulbul:v3 supports pace and temperature only - it rejects pitch and
+		# loudness, so those sliders are not offered.
+		self.speedCtrl = self._slider(helper, _("Speech s&peed, percent:"), 50, 200,
 			int(float(conf.get("pace") or 1.0) * 100), _("Speech speed percent"))
-		self.pitchCtrl = self._slider(helper, _("Pi&tch:"), -75, 75,
-			int(float(conf.get("pitch") or 0.0) * 100), _("Pitch"))
-		self.volumeCtrl = self._slider(helper, _("Vol&ume, percent:"), 10, 300,
-			int(float(conf.get("loudness") or 1.0) * 100), _("Volume percent"))
-		self._temperature = float(conf.get("ttsTemperature") or 0.6)
+		self.expressionCtrl = self._slider(helper, _("E&xpression, percent:"), 5, 100,
+			int(float(conf.get("ttsTemperature") or 0.6) * 100), _("Expression percent"))
 		self._applyStyle(conf.get("ttsStyle") or ttsstyles.default_style(), sliders=True)
 
 		# 5) Convert.
@@ -138,7 +137,7 @@ class TextToSpeechDialog(wx.Dialog):
 		return ctrl
 
 	def _model(self):
-		return self.modelCtrl.GetStringSelection() or ttsstyles.DEFAULT_MODEL
+		return ttsstyles.MODEL
 
 	def _gender(self):
 		return self.genderCtrl.GetStringSelection() or "Female"
@@ -148,7 +147,7 @@ class TextToSpeechDialog(wx.Dialog):
 
 	def _refreshVoices(self, evt=None):
 		prev = self.voiceCtrl.GetStringSelection()
-		voices = ttsstyles.voices_for(self._model(), self._gender(), self._styleKey())
+		voices = ttsstyles.voices_for(self._gender(), self._styleKey())
 		self.voiceCtrl.Set(voices)
 		if prev in voices:
 			self.voiceCtrl.SetSelection(voices.index(prev))
@@ -162,11 +161,9 @@ class TextToSpeechDialog(wx.Dialog):
 
 	def _applyStyle(self, key, sliders=False):
 		p = ttsstyles.style_params(key)
-		self._temperature = p.get("temperature", 0.6)
 		if sliders:
 			self.speedCtrl.SetValue(int(p.get("pace", 1.0) * 100))
-			self.pitchCtrl.SetValue(int(p.get("pitch", 0.0) * 100))
-			self.volumeCtrl.SetValue(int(p.get("loudness", 1.0) * 100))
+			self.expressionCtrl.SetValue(int(p.get("temperature", 0.6) * 100))
 
 	def _showResults(self, show):
 		for b in (self.listenBtn, self.stopBtn, self.mp3Btn, self.wavBtn):
@@ -194,12 +191,10 @@ class TextToSpeechDialog(wx.Dialog):
 	# -- convert / play / save ---------------------------------------------
 	def _params(self):
 		return dict(
-			speaker=self.voiceCtrl.GetStringSelection() or None,
-			model=self._model(),
-			pitch=self.pitchCtrl.GetValue() / 100.0,
+			speaker=self.voiceCtrl.GetStringSelection() or ttsstyles.DEFAULT_SPEAKER,
+			model=ttsstyles.MODEL,
 			pace=self.speedCtrl.GetValue() / 100.0,
-			loudness=self.volumeCtrl.GetValue() / 100.0,
-			temperature=self._temperature,
+			temperature=self.expressionCtrl.GetValue() / 100.0,
 			sample_rate=config.conf().get("sampleRate"),
 			enable_preprocessing=config.conf().get("enablePreprocessing"))
 

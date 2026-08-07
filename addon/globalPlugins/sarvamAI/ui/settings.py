@@ -52,17 +52,18 @@ class SarvamSettingsPanel(SettingsPanel):
 		# --- Text to speech ------------------------------------------------
 		sh.addItem(wx.StaticText(self, label=_("Text to speech")))
 		self.ttsModelCtrl = self._choice(sh, _("TTS &model:"), constants.TTS_MODELS, conf.get("ttsModel"))
-		_allVoices = tuple(ttsstyles.speakers_for("bulbul:v3", "Any")) + tuple(ttsstyles.speakers_for("bulbul:v2", "Any"))
-		self.speakerCtrl = self._choice(sh, _("Default &voice:"), _allVoices, conf.get("defaultSpeaker"))
+		self.speakerCtrl = self._choice(sh, _("Default &voice:"),
+			ttsstyles.ALL_SPEAKERS, conf.get("defaultSpeaker"))
 		labels, self._langCodes = common.language_choices(include_auto=True)
 		# Translators: default synthesis language ("Auto detect" detects the
 		# language of the text, including code-mixed text, before synthesis).
 		self.langCtrl = sh.addLabeledControl(_("Default &language:"), wx.Choice, choices=labels)
 		common.select_in_combo(self.langCtrl, self._langCodes, conf.get("defaultLanguage") or constants.AUTO_DETECT)
 
-		self.pitchCtrl = self._spin_float(sh, _("&Pitch (-0.75 to 0.75):"), conf.get("pitch"), constants.PITCH_RANGE)
-		self.paceCtrl = self._spin_float(sh, _("Pac&e (0.3 to 3.0):"), conf.get("pace"), constants.PACE_RANGE)
-		self.loudnessCtrl = self._spin_float(sh, _("&Loudness (0.1 to 3.0):"), conf.get("loudness"), constants.LOUDNESS_RANGE)
+		# bulbul:v3 supports pace and temperature only (pitch and loudness are
+		# rejected by the API), so only those two are configurable.
+		self.paceCtrl = self._spin_float(sh, _("Speech spee&d (0.5 to 2.0):"), conf.get("pace"), constants.PACE_RANGE)
+		self.temperatureCtrl = self._spin_float(sh, _("E&xpression (0.05 to 1.0):"), conf.get("ttsTemperature"), constants.TEMPERATURE_RANGE)
 		self.sampleRateCtrl = self._choice(
 			sh, _("Sample &rate:"), [str(r) for r in constants.TTS_SAMPLE_RATES], str(conf.get("sampleRate")))
 		# Translators: checkbox to enable text preprocessing before synthesis.
@@ -246,9 +247,8 @@ class SarvamSettingsPanel(SettingsPanel):
 		conf["ttsModel"] = self.ttsModelCtrl._values[self.ttsModelCtrl.GetSelection()]
 		conf["defaultSpeaker"] = self.speakerCtrl._values[self.speakerCtrl.GetSelection()]
 		conf["defaultLanguage"] = self._langCodes[self.langCtrl.GetSelection()]
-		conf["pitch"] = float(self.pitchCtrl.GetValue())
 		conf["pace"] = float(self.paceCtrl.GetValue())
-		conf["loudness"] = float(self.loudnessCtrl.GetValue())
+		conf["ttsTemperature"] = float(self.temperatureCtrl.GetValue())
 		conf["sampleRate"] = int(self.sampleRateCtrl._values[self.sampleRateCtrl.GetSelection()])
 		conf["enablePreprocessing"] = self.preprocCtrl.GetValue()
 		conf["autoPlayTts"] = self.autoPlayCtrl.GetValue()

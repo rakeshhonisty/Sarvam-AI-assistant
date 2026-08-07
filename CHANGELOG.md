@@ -3,6 +3,41 @@
 All notable changes to the Sarvam AI assistant NVDA add-on are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.5] - 2026-08-07
+
+Fixes text to speech, which could not produce audio with the current Sarvam
+model. All findings below were verified live against the Sarvam API.
+
+### Bug fixes
+- **Text to speech now works with bulbul:v3.** The add-on was sending `pitch`
+  and `loudness` with every request, but Sarvam's bulbul:v3 model rejects those
+  two parameters outright ("Pitch and loudness parameters are currently not
+  supported for the Bulbul V3 model"). Every v3 request therefore failed with
+  HTTP 400. They are no longer sent.
+- **The sliders now work.** Because the request above always failed, changing
+  any slider appeared to do nothing. The dialog now offers **Speech speed**
+  (0.5x - 2.0x) and **Expression** (5% - 100%), which are the two controls
+  bulbul:v3 actually supports, and both are applied and clamped to the API's
+  real ranges.
+- **The voice list was wrong.** Several bulbul:v2-only voices (anushka,
+  manisha, vidya, arya, abhilash, karun, hitesh) were being offered for
+  bulbul:v3, which the API rejects as incompatible. The catalogue is now the
+  verified bulbul:v3 voice set.
+
+### Improvements
+- **All 37 Sarvam bulbul:v3 voices are now included** - 14 female and 23 male -
+  each one verified live against the API. They are still filtered by speaking
+  style and gender so the list stays short and relevant.
+- **bulbul:v2 has been removed completely**, as Sarvam is deprecating it. The
+  add-on now targets bulbul:v3 only, and settings were simplified accordingly.
+- Speech speed and Expression are also configurable in Advanced settings, with
+  the correct bulbul:v3 ranges.
+
+### Verified
+Tested end to end with a Kannada Word document: upload -> automatic language
+detection (kn-IN) -> News reader / Female voice filtering -> Convert -> MP3
+export.
+
 ## [1.0.4] - 2026-07-30
 
 A large usability and quality release driven by user testing, focused on making

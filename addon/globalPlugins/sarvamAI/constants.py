@@ -103,7 +103,8 @@ OCR_ENGINE_SARVAM = "sarvam"
 OCR_ENGINE_WINDOWS = "windows"
 
 # --- Models -----------------------------------------------------------------
-TTS_MODELS = ("bulbul:v3", "bulbul:v2")
+# Only bulbul:v3 is supported; bulbul:v2 is being deprecated by Sarvam.
+TTS_MODELS = ("bulbul:v3",)
 
 # Output audio codecs accepted by /text-to-speech (verified from OpenAPI spec).
 # "wav" is used for in-app playback; "mp3" for saving a compact file.
@@ -174,24 +175,8 @@ DEFAULT_TRANSLATE_MODEL = "sarvam-translate:v1"
 DEFAULT_CHAT_MODEL = "sarvam-105b"
 
 # --- Speakers ---------------------------------------------------------------
-# bulbul:v2 speakers (default set).
-SPEAKERS_V2 = (
-	"anushka", "manisha", "vidya", "arya",
-	"abhilash", "karun", "hitesh",
-)
-# bulbul:v1 speakers (kept for compatibility if the user selects v1).
-SPEAKERS_V1 = (
-	"meera", "pavithra", "maitreyi", "arvind", "amol", "amartya",
-	"diya", "neel", "misha", "vian", "arjun", "maya",
-)
+# The authoritative bulbul:v3 speaker list lives in ttsstyles.ALL_SPEAKERS.
 DEFAULT_SPEAKER = "shubh"
-
-
-def speakers_for_model(model):
-	"""Return the tuple of speaker names appropriate for a TTS model."""
-	if model and model.startswith("bulbul:v1"):
-		return SPEAKERS_V1
-	return SPEAKERS_V2
 
 
 # --- Languages --------------------------------------------------------------
@@ -256,9 +241,10 @@ TTS_SAMPLE_RATES = (8000, 16000, 22050)
 DEFAULT_TTS_SAMPLE_RATE = 22050
 
 # Value bounds for the TTS prosody controls, matching the API.
-PITCH_RANGE = (-0.75, 0.75)
-PACE_RANGE = (0.3, 3.0)
-LOUDNESS_RANGE = (0.1, 3.0)
+# bulbul:v3 accepts pace 0.5-2.0 and temperature 0-1. It does NOT support
+# pitch or loudness (HTTP 400 if sent). See ttsstyles for the enforced ranges.
+PACE_RANGE = (0.5, 2.0)
+TEMPERATURE_RANGE = (0.05, 1.0)
 
 # Recognised audio extensions for STT input.
 AUDIO_EXTENSIONS = (".wav", ".mp3", ".m4a", ".aac", ".flac", ".ogg", ".opus", ".webm")

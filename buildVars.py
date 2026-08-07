@@ -17,7 +17,7 @@ addon_info = {
 		"languages that preserves headings, tables and multi-column layout. "
 		"Results save as TXT, Word or Markdown. Fully keyboard accessible."
 	),
-	"addon_version": "1.0.4",
+	"addon_version": "1.0.5",
 	"addon_author": "Sarvam AI assistant contributors <rakesh.honistyboy@gmail.com>",
 	"addon_url": "https://github.com/rakeshhonisty/Sarvam-AI-assistant",
 	"addon_sourceURL": "https://github.com/rakeshhonisty/Sarvam-AI-assistant",
