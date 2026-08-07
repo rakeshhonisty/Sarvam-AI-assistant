@@ -81,10 +81,18 @@ class TextToSpeechDialog(wx.Dialog):
 		# 4) Sliders (each names itself so NVDA announces its purpose).
 		# bulbul:v3 supports pace and temperature only - it rejects pitch and
 		# loudness, so those sliders are not offered.
-		self.speedCtrl = self._slider(helper, _("Speech s&peed, percent:"), 50, 200,
-			int(float(conf.get("pace") or 1.0) * 100), _("Speech speed percent"))
-		self.expressionCtrl = self._slider(helper, _("E&xpression, percent:"), 5, 100,
-			int(float(conf.get("ttsTemperature") or 0.6) * 100), _("Expression percent"))
+		self.speedCtrl = self._slider(
+			helper,
+			# Translators: speed slider. 100 is normal speed.
+			_("Speech s&peed in percent, 50 is slowest and 200 is fastest:"),
+			50, 200, int(float(conf.get("pace") or 1.0) * 100),
+			_("Speech speed in percent"))
+		self.expressionCtrl = self._slider(
+			helper,
+			# Translators: expression slider. Low values sound monotonous.
+			_("E&xpression in percent, 5 is flat and monotonous and 100 is most lively:"),
+			5, 100, int(float(conf.get("ttsTemperature") or 0.8) * 100),
+			_("Expression in percent"))
 		self._applyStyle(conf.get("ttsStyle") or ttsstyles.default_style(), sliders=True)
 
 		# 5) Convert.
@@ -126,10 +134,31 @@ class TextToSpeechDialog(wx.Dialog):
 		ctrl.SetSelection(items.index(value) if value in items else 0)
 
 	def _slider(self, helper, label, lo, hi, value, name):
+		"""Create a slider NVDA announces properly.
+
+		A plain wx.Slider does not reliably report its name or value changes to
+		screen readers, which is why these sliders were previously silent. NVDA
+		ships an accessible subclass (nvdaControls.EnhancedInputSlider) that
+		sends the required value-change events and supports arrow/page keys; it
+		is used here, with a graceful fall back to wx.Slider.
+		"""
+		sliderClass = wx.Slider
+		try:
+			from gui import nvdaControls
+			sliderClass = nvdaControls.EnhancedInputSlider
+		except Exception:
+			pass
+		# No SL_LABELS: the extra min/max labels it draws can interfere with the
+		# accessible name of the control.
 		ctrl = helper.addLabeledControl(
-			label, wx.Slider, minValue=lo, maxValue=hi,
-			style=wx.SL_HORIZONTAL | wx.SL_LABELS)
+			label, sliderClass, minValue=lo, maxValue=hi, style=wx.SL_HORIZONTAL)
 		ctrl.SetValue(max(lo, min(hi, value)))
+		try:
+			# Arrow keys move by 5, Page Up/Down by 25.
+			ctrl.SetLineSize(5)
+			ctrl.SetPageSize(25)
+		except Exception:
+			pass
 		try:
 			ctrl.SetName(name)
 		except Exception:

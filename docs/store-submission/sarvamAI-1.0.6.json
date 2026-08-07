@@ -1,15 +1,15 @@
 {
 	"addonId": "sarvamAI",
 	"displayName": "Sarvam AI assistant",
-	"URL": "https://github.com/rakeshhonisty/Sarvam-AI-assistant/releases/download/v1.0.5/sarvamAI-1.0.5.nvda-addon",
+	"URL": "https://github.com/rakeshhonisty/Sarvam-AI-assistant/releases/download/v1.0.6/sarvamAI-1.0.6.nvda-addon",
 	"description": "Accessible NVDA add-on for the Sarvam AI platform for blind and visually-impaired users: text to speech with document upload and MP3 export, speech to text including large audio, translation, transliteration, language detection, an AI Workforce reasoning layer (Sarvam-105B), and OCR via Sarvam Document Intelligence in 23 languages preserving tables and layout. Save results as TXT, Word or Markdown.",
-	"sha256": "1da20c098c341b3c8b3a58e50bea6c18886b37d118e7bd5ff6b14f74b9417240",
+	"sha256": "c6f75113252a7e4a51d6a7101718c42c2bbf57881a56ce1cd8d3159b052b7d80",
 	"homepage": "https://github.com/rakeshhonisty/Sarvam-AI-assistant",
-	"addonVersionName": "1.0.5",
+	"addonVersionName": "1.0.6",
 	"addonVersionNumber": {
 		"major": 1,
 		"minor": 0,
-		"patch": 5
+		"patch": 6
 	},
 	"minNVDAVersion": {
 		"major": 2021,

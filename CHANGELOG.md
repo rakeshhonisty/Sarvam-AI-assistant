@@ -3,6 +3,29 @@
 All notable changes to the Sarvam AI assistant NVDA add-on are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.6] - 2026-08-07
+
+Makes the text to speech sliders speak, and fixes speech sounding flat.
+
+### Bug fixes
+- **The sliders now announce what they are.** They were built with a plain
+  wx.Slider, which does not reliably report its name or value changes to a
+  screen reader - so NVDA said nothing useful. They now use NVDA's own
+  accessible slider (`nvdaControls.EnhancedInputSlider`), which sends the
+  required value-change events. Arrow keys move by 5, Page Up/Down by 25.
+- Slider labels now state their meaning and direction, for example
+  "Speech speed in percent, 50 is slowest and 200 is fastest" and
+  "Expression in percent, 5 is flat and monotonous and 100 is most lively".
+
+### Improvements
+- **Speech no longer sounds monotonous by default.** The default speaking style
+  is now **Conversational** with expression raised to 80% (it was News reader at
+  30%, which is deliberately flat). Expression was increased across every style.
+- **Speaking styles now describe how they sound**, so the effect is clear before
+  you choose: Conversational (natural everyday speech), Narration (warm
+  storytelling, for books and articles), Expressive (most lively), News reader
+  (crisp and steady, less emotion), Formal (measured and neutral).
+
 ## [1.0.5] - 2026-08-07
 
 Fixes text to speech, which could not produce audio with the current Sarvam

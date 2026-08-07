@@ -37,22 +37,26 @@ GENDERS = ("Female", "Male")
 PACE_MIN, PACE_MAX = 0.5, 2.0
 TEMPERATURE_MIN, TEMPERATURE_MAX = 0.05, 1.0
 
-# Ordered (key, human label).
+# Ordered (key, human label). The labels describe how each style sounds, so the
+# effect of the choice is clear from the name alone.
 STYLES = (
-	("news", "News reader"),
-	("conversational", "Conversational"),
-	("narration", "Narration"),
-	("formal", "Formal"),
-	("expressive", "Expressive"),
+	("conversational", "Conversational - natural, everyday speech"),
+	("narration", "Narration - warm storytelling, for books and articles"),
+	("expressive", "Expressive - most lively and emotional"),
+	("news", "News reader - crisp and steady, less emotion"),
+	("formal", "Formal - measured and neutral, for official text"),
 )
 
 # Prosody presets per style (only pace and temperature exist on v3).
+# "temperature" is the expression control: low values sound flat and
+# monotonous, high values sound varied and lively. Values were raised after
+# user feedback that the previous presets sounded too monotonous.
 _STYLE_PARAMS = {
-	"news": {"pace": 1.05, "temperature": 0.3},
-	"conversational": {"pace": 1.0, "temperature": 0.7},
-	"narration": {"pace": 0.9, "temperature": 0.5},
-	"formal": {"pace": 0.95, "temperature": 0.35},
-	"expressive": {"pace": 1.1, "temperature": 0.9},
+	"conversational": {"pace": 1.0, "temperature": 0.8},
+	"narration": {"pace": 0.95, "temperature": 0.75},
+	"expressive": {"pace": 1.05, "temperature": 0.95},
+	"news": {"pace": 1.05, "temperature": 0.55},
+	"formal": {"pace": 0.95, "temperature": 0.5},
 }
 
 _ALL_STYLES = tuple(k for k, _ in STYLES)
