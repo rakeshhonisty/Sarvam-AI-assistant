@@ -1,0 +1,1570 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2026-08-10 14:54+0300\n"
+"PO-Revision-Date: 2026-08-10 17:48+0300\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.9\n"
+"X-Poedit-Basepath: ../../../globalPlugins\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: sarvamAI/__init__.py:27 sarvamAI/__init__.py:192 sarvamAI/tasks.py:81
+#: sarvamAI/ui/settings.py:29 sarvamAI/ui/settings.py:211
+#: sarvamAI/ui/setup.py:105 sarvamAI/ui/setup.py:130
+#: sarvamAI/ui/translate.py:153 sarvamAI/ui/translate.py:203
+#: sarvamAI/ui/tts.py:218
+msgid "Sarvam AI"
+msgstr "Sarvam AI"
+
+#: sarvamAI/__init__.py:65
+msgid "&Text to Speech..."
+msgstr "&Текст в мовлення..."
+
+#: sarvamAI/__init__.py:66
+msgid "&Speech to Text..."
+msgstr "&Мовлення в текст..."
+
+#: sarvamAI/__init__.py:67
+msgid "&Translate..."
+msgstr "&Перекласти..."
+
+#: sarvamAI/__init__.py:68
+msgid "T&ransliterate..."
+msgstr "&Транслітерувати..."
+
+#: sarvamAI/__init__.py:69
+msgid "&Detect language..."
+msgstr "&Виявити мову..."
+
+#: sarvamAI/__init__.py:70
+msgid "&OCR..."
+msgstr "&OCR..."
+
+#: sarvamAI/__init__.py:73
+msgid "AI &Workforce (assistant, summary, analysis)..."
+msgstr "ШІ &Workforce  (помічник, підсумок, аналіз)..."
+
+#: sarvamAI/__init__.py:75
+msgid "Se&ttings (API key)..."
+msgstr "&Налаштування (ключ API)..."
+
+#: sarvamAI/__init__.py:76
+msgid "Ad&vanced settings..."
+msgstr "&Розширені налаштування..."
+
+#: sarvamAI/__init__.py:77
+msgid "&Logs..."
+msgstr "&Журнали..."
+
+#: sarvamAI/__init__.py:78
+msgid "Check for &updates..."
+msgstr "&Перевірити наявність оновлень..."
+
+#: sarvamAI/__init__.py:79
+msgid "&Help..."
+msgstr "&Допомога..."
+
+#: sarvamAI/__init__.py:80
+msgid "A&bout..."
+msgstr "&Про..."
+
+#: sarvamAI/__init__.py:92
+msgid "Sar&vam AI"
+msgstr "&Sarvam AI"
+
+#: sarvamAI/__init__.py:125
+#, python-brace-format
+msgid "Could not open the window: {err}"
+msgstr "Не вдалося відкрити діалог: {err}"
+
+#: sarvamAI/__init__.py:126 sarvamAI/ui/common.py:68
+msgid "Sarvam AI - Error"
+msgstr "Помилка Sarvam AI"
+
+#: sarvamAI/__init__.py:192
+msgid "Help file not found."
+msgstr "Файл довідки не знайдено."
+
+#: sarvamAI/__init__.py:196
+msgid "About Sarvam AI assistant"
+msgstr "Про помічника Sarvam AI"
+
+#: sarvamAI/__init__.py:205
+msgid "Opens the Sarvam AI menu"
+msgstr "Відкриває меню Sarvam AI"
+
+#: sarvamAI/__init__.py:213
+msgid "Opens the Sarvam AI Text to Speech window with the current selection"
+msgstr ""
+"Відкриває діалог перетворення тексту на мовлення Sarvam AI із поточним "
+"вибраним фрагментом"
+
+#: sarvamAI/__init__.py:220
+msgid "Speaks the current selection with Sarvam AI text to speech"
+msgstr ""
+"Промовляє поточний вибір за допомогою перетворення тексту на мовлення Sarvam "
+"AI"
+
+#: sarvamAI/__init__.py:226
+msgid "No selected text"
+msgstr "Немає вибраного тексту"
+
+#: sarvamAI/__init__.py:235
+msgid "Opens the Sarvam AI Speech to Text window"
+msgstr "Відкриває діалог перетворення мовлення на текст за допомогою Sarvam AI"
+
+#: sarvamAI/__init__.py:241
+msgid "Opens the Sarvam AI Translate window with the current selection"
+msgstr "Відкриває діалог перекладу Sarvam AI з поточним вибором"
+
+#: sarvamAI/__init__.py:247
+msgid "Opens the Sarvam AI OCR window"
+msgstr "Відкриває діалог Sarvam AI OCR"
+
+#: sarvamAI/__init__.py:253
+msgid "Opens the Sarvam AI Workforce (assistant, summary, analysis) window"
+msgstr "Відкриває діалог «Sarvam AI Workforce» (помічник, підсумок, аналіз)"
+
+#: sarvamAI/__init__.py:259
+msgid "Opens the Sarvam AI settings"
+msgstr "Відкриває налаштування Sarvam AI"
+
+#: sarvamAI/client.py:95
+msgid "Operation cancelled."
+msgstr "Операцію скасовано."
+
+#: sarvamAI/client.py:114
+msgid "No Sarvam API key set. Open Sarvam AI settings and enter your key."
+msgstr ""
+"Ключ Sarvam API не встановлено. Відкрийте налаштування Sarvam AI і введіть "
+"свій ключ."
+
+#: sarvamAI/client.py:186
+#, python-brace-format
+msgid "Could not reach Sarvam. Check your internet connection. ({reason})"
+msgstr ""
+"Не вдалося зв’язатися з Sarvam. Перевірте підключення до Інтернету. "
+"({reason})"
+
+#: sarvamAI/client.py:195
+#, python-brace-format
+msgid "Received an unexpected response from Sarvam. ({err})"
+msgstr "Отримано неочікувану відповідь від Sarvam. ({err})"
+
+#: sarvamAI/client.py:198
+msgid "Request failed for an unknown reason."
+msgstr "Не вдалося виконати запит із невідомої причини."
+
+#: sarvamAI/client.py:221
+#, python-brace-format
+msgid "Connection OK. {n} models available: {models}"
+msgstr "З'єднання встановлено. Доступно {n} моделей: {models}"
+
+#: sarvamAI/client.py:222
+msgid "none"
+msgstr "немає"
+
+#: sarvamAI/client.py:265
+msgid "Sarvam did not return any audio."
+msgstr "Sarvam не повернув жодного аудіофайлу."
+
+#: sarvamAI/client.py:341
+msgid "Sarvam did not return a transcription job id."
+msgstr "Sarvam не повернув ідентифікатор завдання транскрипції."
+
+#: sarvamAI/client.py:349
+msgid "Sarvam did not return an upload URL for the audio."
+msgstr "Sarvam не повернув URL для завантаження аудіо."
+
+#: sarvamAI/client.py:369
+#, python-brace-format
+msgid "Transcription failed: {msg}"
+msgstr "Помилка транскрипції: {msg}"
+
+#: sarvamAI/client.py:374
+msgid "Transcription timed out. Please try a shorter file."
+msgstr "Час очікування транскрипції минув. Спробуйте коротший файл."
+
+#: sarvamAI/client.py:389
+msgid "No transcript was produced from the audio."
+msgstr "Аудіозапис не було транскрибовано."
+
+#: sarvamAI/client.py:501
+msgid "Sarvam returned an empty chat response."
+msgstr "Sarvam повернув порожню відповідь у чаті."
+
+#: sarvamAI/client.py:504
+msgid "Summarise the following text clearly and concisely."
+msgstr "Чітко та лаконічно підсумуй наступний текст."
+
+#: sarvamAI/client.py:529
+#, python-brace-format
+msgid "Uploading the document failed (HTTP {code}). {body}"
+msgstr "Не вдалося завантажити документ (HTTP {code}). {body}"
+
+#: sarvamAI/client.py:533
+#, python-brace-format
+msgid "Could not upload the document: {err}"
+msgstr "Не вдалося завантажити документ: {err}"
+
+#: sarvamAI/client.py:543
+#, python-brace-format
+msgid "Downloading the OCR result failed (HTTP {code})."
+msgstr "Не вдалося завантажити результат OCR (HTTP {code})."
+
+#: sarvamAI/client.py:546
+#, python-brace-format
+msgid "Could not download the OCR result: {err}"
+msgstr "Не вдалося завантажити результат OCR: {err}"
+
+#: sarvamAI/client.py:576
+msgid "Sarvam did not return an OCR job id."
+msgstr "Sarvam не повернув ідентифікатор завдання OCR."
+
+#: sarvamAI/client.py:586
+msgid "Sarvam did not return an upload URL."
+msgstr "Sarvam не повернув URL завантаження."
+
+#: sarvamAI/client.py:612
+#, python-brace-format
+msgid "OCR failed: {msg}"
+msgstr "Помилка OCR: {msg}"
+
+#: sarvamAI/client.py:617
+msgid "OCR timed out. Please try again."
+msgstr "Час очікування OCR минув. Спробуйте ще раз."
+
+#: sarvamAI/client.py:624
+msgid "Sarvam returned no OCR output. The document may be empty."
+msgstr "Sarvam не надав результатів OCR. Можливо, документ порожній."
+
+#: sarvamAI/client.py:635
+msgid "No text could be extracted from the document."
+msgstr "Не вдалося видобути текст з документа."
+
+#: sarvamAI/client.py:658
+msgid "There is no text to synthesise."
+msgstr "Немає тексту для синтезу."
+
+#: sarvamAI/docwriter.py:41
+#, python-brace-format
+msgid "Could not save the text file: {err}"
+msgstr "Не вдалося зберегти текстовий файл: {err}"
+
+#: sarvamAI/docwriter.py:213
+#, python-brace-format
+msgid "Could not save the Word document: {err}"
+msgstr "Не вдалося зберегти документ Word: {err}"
+
+#: sarvamAI/errors.py:102
+#, python-brace-format
+msgid "Sarvam returned HTTP status {status}."
+msgstr "Sarvam повернув HTTP статус {status}."
+
+#: sarvamAI/errors.py:110 sarvamAI/errors.py:121
+#, python-brace-format
+msgid ""
+"Your Sarvam account has no credits available. Add credits in the Sarvam "
+"dashboard. ({msg})"
+msgstr ""
+"У вашому обліковому записі Sarvam немає доступних кредитів. Додайте кредити "
+"в особистому кабінеті Sarvam. ({msg})"
+
+#: sarvamAI/errors.py:116
+#, python-brace-format
+msgid "Authentication failed. Check your Sarvam API key in Settings. ({msg})"
+msgstr ""
+"Помилка автентифікації. Перевірте свій ключ API Sarvam у налаштуваннях. "
+"({msg})"
+
+#: sarvamAI/errors.py:126
+#, python-brace-format
+msgid "Rate limit reached. Please wait a moment and try again. ({msg})"
+msgstr ""
+"Досягнуто ліміту запитів. Будь ласка, зачекайте хвилинку і спробуйте знову. "
+"({msg})"
+
+#: sarvamAI/errors.py:133
+#, python-brace-format
+msgid "Sarvam server error. Please try again shortly. ({msg})"
+msgstr "Помилка сервера Sarvam. Будь ласка, спробуйте ще раз пізніше. ({msg})"
+
+#: sarvamAI/imaging.py:64
+#, python-brace-format
+msgid "Image file not found: {p}"
+msgstr "Файл зображення не знайдено: {p}"
+
+#: sarvamAI/imaging.py:69
+msgid "Could not initialise the image loader (GDI+)."
+msgstr "Не вдалося ініціалізувати завантажувач зображень (GDI+)."
+
+#: sarvamAI/imaging.py:73
+msgid "Could not open the image. Unsupported or corrupt file."
+msgstr "Не вдалося відкрити зображення. Файл не підтримується або пошкоджений."
+
+#: sarvamAI/imaging.py:84
+#, python-brace-format
+msgid "Could not convert the image to JPEG (GDI+ status {s})."
+msgstr "Не вдалося конвертувати зображення у формат JPEG (статус GDI+ {s})."
+
+#: sarvamAI/tasks.py:44 sarvamAI/ui/setup.py:82
+msgid "&Cancel"
+msgstr "&Скасувати"
+
+#: sarvamAI/tasks.py:54
+msgid "Cancelling..."
+msgstr "Скасування..."
+
+#: sarvamAI/tasks.py:82
+msgid "Working..."
+msgstr "Працюю..."
+
+#: sarvamAI/tasks.py:104
+#, python-brace-format
+msgid "Unexpected error: {err}"
+msgstr "Неочікувана помилка: {err}"
+
+#: sarvamAI/textextract.py:98
+#, python-brace-format
+msgid "Could not read the text file: {error}"
+msgstr "Не вдалося прочитати текстовий файл: {error}"
+
+#: sarvamAI/textextract.py:116
+msgid ""
+"This does not look like a valid Word document (word/document.xml is missing)."
+msgstr ""
+"Цей файл не схожий на коректний документ Word (відсутній файл word/"
+"document.xml)."
+
+#: sarvamAI/textextract.py:120
+#, python-brace-format
+msgid "Could not open the Word document: {error}"
+msgstr "Не вдалося відкрити документ Word: {error}"
+
+#: sarvamAI/textextract.py:201
+#, python-brace-format
+msgid "Could not open the e-book: {error}"
+msgstr "Не вдалося відкрити електронну книгу: {error}"
+
+#: sarvamAI/textextract.py:211
+msgid ""
+"This does not look like a valid e-book (META-INF/container.xml is missing)."
+msgstr ""
+"Це не схоже на дійсну електронну книгу (відсутній файл META-INF/"
+"container.xml)."
+
+#: sarvamAI/textextract.py:216
+msgid "The e-book is missing its package file reference."
+msgstr "В електронній книзі відсутнє посилання на файл пакета."
+
+#: sarvamAI/textextract.py:225
+#, python-brace-format
+msgid "The e-book package file could not be found: {path}"
+msgstr "Файл пакета електронної книги не знайдено: {path}"
+
+#: sarvamAI/textextract.py:274
+msgid "No readable text could be extracted from this e-book."
+msgstr ""
+"З цієї електронної книги не вдалося видобути жодного тексту, придатного для "
+"читання."
+
+#: sarvamAI/textextract.py:292
+msgid "No document path was provided."
+msgstr "Не вказано шлях до документа."
+
+#: sarvamAI/textextract.py:297
+#, python-brace-format
+msgid "The file could not be found: {path}"
+msgstr "Файл не знайдено: {path}"
+
+#: sarvamAI/textextract.py:311
+#, python-brace-format
+msgid "Unsupported file type '{ext}'. Supported types are: {supported}."
+msgstr "Непідтримуваний тип файлу '{ext}'. Підтримувані типи: {supported}."
+
+#: sarvamAI/textextract.py:312
+msgid "(none)"
+msgstr "(немає)"
+
+#: sarvamAI/ui/about.py:27
+#, python-brace-format
+msgid ""
+"Sarvam AI assistant for NVDA\n"
+"Version: {version}\n"
+"\n"
+"An accessible interface to the Sarvam AI platform: text to speech, speech to "
+"text, translation, transliteration, language detection, AI chat and "
+"summarisation, and OCR.\n"
+"\n"
+"Enter your Sarvam API key in the Sarvam AI settings to get started. Get a "
+"key from the Sarvam dashboard at https://dashboard.sarvam.ai.\n"
+"\n"
+"OCR uses Sarvam Document OCR (23 languages) by default, with an offline "
+"Windows OCR engine also available. Recognised text can be translated or "
+"summarised with Sarvam.\n"
+"\n"
+"Licensed under the GNU General Public License version 2."
+msgstr ""
+"Помічник Sarvam AI для NVDA\n"
+"Версія: {version}\n"
+"\n"
+"Доступний інтерфейс для платформи Sarvam AI: перетворення тексту в мовлення, "
+"перетворення мовлення в текст, переклад, транслітерація, визначення мови, "
+"чат на базі ШІ та узагальнення тексту, а також OCR.\n"
+"\n"
+"Щоб розпочати роботу, введіть свій ключ API Sarvam у налаштуваннях Sarvam "
+"AI. Отримати ключ можна на панелі керування Sarvam за адресою https://"
+"dashboard.sarvam.ai.\n"
+"\n"
+"OCR початково використовує Sarvam Document OCR (23 мовами), також доступний "
+"офлайн модуль OCR для Windows. Розпізнаний текст можна перекласти або "
+"узагальнити за допомогою Sarvam.\n"
+"\n"
+"Ліцензовано за Загальною публічною ліцензією GNU версії 2."
+
+#: sarvamAI/ui/common.py:65
+#, python-brace-format
+msgid "Reference: {rid}"
+msgstr "Посилання: {rid}"
+
+#: sarvamAI/ui/common.py:87
+msgid "Nothing to save"
+msgstr "Немає даних для збереження"
+
+#: sarvamAI/ui/common.py:90
+msgid "Word documents (*.docx)|*.docx"
+msgstr "Документи Word (*.docx)|*.docx"
+
+#: sarvamAI/ui/common.py:92
+msgid "Markdown files (*.md)|*.md"
+msgstr "Файли Markdown (*.md)|*.md"
+
+#: sarvamAI/ui/common.py:94 sarvamAI/ui/logs.py:57
+msgid "Text files (*.txt)|*.txt"
+msgstr "Текстові файли (*.txt)|*.txt"
+
+#: sarvamAI/ui/common.py:96
+msgid "Save as"
+msgstr "Зберегти як"
+
+#: sarvamAI/ui/common.py:110 sarvamAI/ui/common.py:298 sarvamAI/ui/setup.py:140
+msgid "Saved"
+msgstr "Збережено"
+
+#: sarvamAI/ui/common.py:133
+msgid "Save as &text (.txt)"
+msgstr "Зберегти як &текст (.txt)"
+
+#: sarvamAI/ui/common.py:136
+msgid "Save as &Word (.docx)"
+msgstr "Зберегти як &Word (.docx)"
+
+#: sarvamAI/ui/common.py:143
+msgid "Save as &Markdown (.md)"
+msgstr "Зберегти як &Markdown (.md)"
+
+#: sarvamAI/ui/common.py:146 sarvamAI/ui/common.py:255
+msgid "&Copy"
+msgstr "&Копіювати"
+
+#: sarvamAI/ui/common.py:185
+msgid "Copied"
+msgstr "Скопійовано"
+
+#: sarvamAI/ui/common.py:187
+msgid "Nothing to copy"
+msgstr "Немає даних для копіювання"
+
+#: sarvamAI/ui/common.py:195 sarvamAI/ui/ocr_dialog.py:57
+#: sarvamAI/ui/settings.py:99
+msgid "Auto detect"
+msgstr "Автоматичне визначення"
+
+#: sarvamAI/ui/common.py:198
+msgid "Unknown (auto)"
+msgstr "Невідомо (авто)"
+
+#: sarvamAI/ui/common.py:249 sarvamAI/ui/translate.py:88
+msgid "&Result:"
+msgstr "&Результат:"
+
+#: sarvamAI/ui/common.py:257
+msgid "&Save..."
+msgstr "&Зберегти..."
+
+#: sarvamAI/ui/common.py:260
+msgid "&Translate with Sarvam"
+msgstr "&Перекласти за допомогою Sarvam"
+
+#: sarvamAI/ui/common.py:263
+msgid "Su&mmarise with Sarvam"
+msgstr "Підсумувати за допомогою &Sarvam"
+
+#: sarvamAI/ui/common.py:265 sarvamAI/ui/logs.py:37
+#: sarvamAI/ui/ocr_dialog.py:92 sarvamAI/ui/setup.py:80 sarvamAI/ui/stt.py:81
+#: sarvamAI/ui/translate.py:94 sarvamAI/ui/tts.py:119
+#: sarvamAI/ui/workforce.py:103
+msgid "Cl&ose"
+msgstr "&Закрити"
+
+#: sarvamAI/ui/common.py:284
+msgid "Copied to clipboard"
+msgstr "Скопійовано в буфер обміну"
+
+#: sarvamAI/ui/common.py:288
+msgid "Save result"
+msgstr "Зберегти результат"
+
+#: sarvamAI/ui/common.py:290
+msgid "Text files (*.txt)|*.txt|All files (*.*)|*.*"
+msgstr "Текстові файли (*.txt)|*.txt|Усі файли (*.*)|*.*"
+
+#: sarvamAI/ui/logs.py:22
+msgid "Sarvam AI - Logs"
+msgstr "Журнали Sarvam AI"
+
+#: sarvamAI/ui/logs.py:26
+msgid "&Log:"
+msgstr "&Журнал:"
+
+#: sarvamAI/ui/logs.py:31
+msgid "&Refresh"
+msgstr "&Оновити"
+
+#: sarvamAI/ui/logs.py:33
+msgid "&Export..."
+msgstr "&Експорт..."
+
+#: sarvamAI/ui/logs.py:35
+msgid "C&lear log"
+msgstr "&Очистити журнал"
+
+#: sarvamAI/ui/logs.py:50
+msgid "(log is empty)"
+msgstr "(журнал порожній)"
+
+#: sarvamAI/ui/logs.py:55
+msgid "Export log"
+msgstr "Експорт журналу"
+
+#: sarvamAI/ui/logs.py:65
+msgid "Log exported"
+msgstr "Журнал експортовано"
+
+#: sarvamAI/ui/logs.py:72
+msgid "Log cleared"
+msgstr "Журнал очищено"
+
+#: sarvamAI/ui/ocr_dialog.py:39
+msgid "Sarvam AI - OCR (Document Intelligence)"
+msgstr "OCR Sarvam AI (розпізнавання документів)"
+
+#: sarvamAI/ui/ocr_dialog.py:48
+msgid "&Choose PDF or image..."
+msgstr "&Виберіть PDF або зображення..."
+
+#: sarvamAI/ui/ocr_dialog.py:52
+msgid "Document: none selected"
+msgstr "Документ: нічого не вибрано"
+
+#: sarvamAI/ui/ocr_dialog.py:59
+msgid "Document &language:"
+msgstr "&Мова документа:"
+
+#: sarvamAI/ui/ocr_dialog.py:64
+msgid "Output st&ructure:"
+msgstr "&Структура виводу:"
+
+#: sarvamAI/ui/ocr_dialog.py:65
+msgid "Markdown (keeps headings and tables)"
+msgstr "Markdown (збереження заголовків і таблиць)"
+
+#: sarvamAI/ui/ocr_dialog.py:65
+msgid "HTML"
+msgstr "HTML"
+
+#: sarvamAI/ui/ocr_dialog.py:65
+msgid "JSON"
+msgstr "JSON"
+
+#: sarvamAI/ui/ocr_dialog.py:72
+msgid "Perform &OCR"
+msgstr "Виконати &OCR"
+
+#: sarvamAI/ui/ocr_dialog.py:78
+msgid "Recognised &text:"
+msgstr "Розпізнаний &текст:"
+
+#: sarvamAI/ui/ocr_dialog.py:88
+msgid "Tr&anslate this text"
+msgstr "&Перекласти цей текст"
+
+#: sarvamAI/ui/ocr_dialog.py:90
+msgid "Send to AI &Workforce"
+msgstr "Надіслати до ШІ &Workforce"
+
+#: sarvamAI/ui/ocr_dialog.py:121
+msgid "Choose a PDF or image"
+msgstr "Виберіть PDF-файл або зображення"
+
+#: sarvamAI/ui/ocr_dialog.py:122
+#, python-format
+msgid "PDF and images (%s)|%s|All files (*.*)|*.*"
+msgstr "PDF та зображення (%s)|%s|Усі файли (*.*)|*.*"
+
+#: sarvamAI/ui/ocr_dialog.py:130
+#, python-brace-format
+msgid "Document: {name} ({size:.1f} MB)"
+msgstr "Документ: {name} ({size:.1f} МБ)"
+
+#: sarvamAI/ui/ocr_dialog.py:132
+#, python-brace-format
+msgid "Document: {name}"
+msgstr "Документ: {name}"
+
+#: sarvamAI/ui/ocr_dialog.py:133
+msgid "Document selected. Press Perform OCR."
+msgstr "Документ вибрано. Натисніть «Виконати OCR»."
+
+#: sarvamAI/ui/ocr_dialog.py:140
+msgid "Choose a PDF or image first"
+msgstr "Спочатку виберіть PDF-файл або зображення"
+
+#: sarvamAI/ui/ocr_dialog.py:170
+#, python-brace-format
+msgid "Recognised {n} characters. Save options are now available."
+msgstr "Розпізнано {n} символів. Тепер доступні параметри збереження."
+
+#: sarvamAI/ui/ocr_dialog.py:178
+msgid "Sarvam AI - OCR"
+msgstr "OCR Sarvam AI"
+
+#: sarvamAI/ui/ocr_dialog.py:179
+msgid "Recognising document with Sarvam Document Intelligence..."
+msgstr "Розпізнавання документів за допомогою Sarvam Document Intelligence..."
+
+#: sarvamAI/ui/settings.py:38 sarvamAI/ui/setup.py:44
+msgid "Sarvam API &key:"
+msgstr "Ключ API Sarvam:"
+
+#: sarvamAI/ui/settings.py:42 sarvamAI/ui/setup.py:51
+msgid "&Validate key / Test connection"
+msgstr "&Перевірити ключ / з'єднання"
+
+#: sarvamAI/ui/settings.py:44 sarvamAI/ui/setup.py:53
+msgid "Sho&w key"
+msgstr "&Показати ключ"
+
+#: sarvamAI/ui/settings.py:49 sarvamAI/ui/setup.py:59
+msgid "API &base URL:"
+msgstr "Базова URL API:"
+
+#: sarvamAI/ui/settings.py:53
+msgid "Text to speech"
+msgstr "Текст у мовлення"
+
+#: sarvamAI/ui/settings.py:54
+msgid "TTS &model:"
+msgstr "&модель TTS:"
+
+#: sarvamAI/ui/settings.py:55
+msgid "Default &voice:"
+msgstr "Початковий &голос:"
+
+#: sarvamAI/ui/settings.py:60 sarvamAI/ui/setup.py:65
+msgid "Default &language:"
+msgstr "&Початкова мова:"
+
+#: sarvamAI/ui/settings.py:65
+msgid "Speech spee&d (0.5 to 2.0):"
+msgstr "&Швидкість мовлення (від 0,5 до 2,0):"
+
+#: sarvamAI/ui/settings.py:66
+msgid "E&xpression (0.05 to 1.0):"
+msgstr "&Вираз (від 0,05 до 1,0):"
+
+#: sarvamAI/ui/settings.py:68
+msgid "Sample &rate:"
+msgstr "&Частота дискретизації:"
+
+#: sarvamAI/ui/settings.py:70
+msgid "Enable text &preprocessing"
+msgstr "&Увімкнути попередню обробку тексту"
+
+#: sarvamAI/ui/settings.py:73
+msgid "&Play audio automatically after synthesis"
+msgstr "&Автоматичне відтворення аудіо після синтезу"
+
+#: sarvamAI/ui/settings.py:77
+msgid "Speech to text"
+msgstr "Мовлення в текст"
+
+#: sarvamAI/ui/settings.py:78
+msgid "STT mo&del:"
+msgstr "&Модель STT:"
+
+#: sarvamAI/ui/settings.py:79
+msgid "Speech &translate model:"
+msgstr "Модель мовлення &перекладу:"
+
+#: sarvamAI/ui/settings.py:82 sarvamAI/ui/translate.py:56
+msgid "Translation"
+msgstr "Переклад"
+
+#: sarvamAI/ui/settings.py:83
+msgid "Translatio&n model:"
+msgstr "&Модель перекладу:"
+
+#: sarvamAI/ui/settings.py:85
+msgid "Default so&urce language:"
+msgstr "&Початкова мова оригіналу:"
+
+#: sarvamAI/ui/settings.py:88
+msgid "Default targe&t language:"
+msgstr "&Початкова мова для перекладу:"
+
+#: sarvamAI/ui/settings.py:90 sarvamAI/ui/translate.py:77
+msgid "Translation st&yle:"
+msgstr "&Стиль перекладу:"
+
+#: sarvamAI/ui/settings.py:93
+msgid "AI chat and summarisation"
+msgstr "Чат та підсумок зі ШІ"
+
+#: sarvamAI/ui/settings.py:94
+msgid "&Chat model:"
+msgstr "&Модель чату:"
+
+#: sarvamAI/ui/settings.py:97
+msgid "OCR (Sarvam Document Intelligence)"
+msgstr "OCR (Sarvam Document Intelligence)"
+
+#: sarvamAI/ui/settings.py:101
+msgid "Default OCR l&anguage:"
+msgstr "&Початкова мова OCR:"
+
+#: sarvamAI/ui/settings.py:105
+msgid "OCR output for&mat:"
+msgstr "&Формат виводу OCR:"
+
+#: sarvamAI/ui/settings.py:108
+msgid "Folders"
+msgstr "Папки"
+
+#: sarvamAI/ui/settings.py:109
+msgid "&Output folder:"
+msgstr "&Вихідна папка:"
+
+#: sarvamAI/ui/settings.py:111
+msgid "Do&wnload folder:"
+msgstr "&Папка для завантаження:"
+
+#: sarvamAI/ui/settings.py:115
+msgid "Advanced"
+msgstr "Розширене"
+
+#: sarvamAI/ui/settings.py:117
+msgid "Enable &streaming where supported"
+msgstr "&Увімкнути потокове передавання, де це підтримується"
+
+#: sarvamAI/ui/settings.py:122
+msgid "&Batch processing speed:"
+msgstr "&Швидкість пакетної обробки:"
+
+#: sarvamAI/ui/settings.py:124
+msgid "Network t&imeout (seconds):"
+msgstr "&Час очікування мережі (секунди):"
+
+#: sarvamAI/ui/settings.py:125
+msgid "Max &retries:"
+msgstr "&Максимальна кількість спроб:"
+
+#: sarvamAI/ui/settings.py:127
+msgid "Pro&xy URL (optional):"
+msgstr "&URL проксі-сервера (необов'язково):"
+
+#: sarvamAI/ui/settings.py:130
+msgid "Enable &debug logging"
+msgstr "&Увімкнути журнал налагодження"
+
+#: sarvamAI/ui/settings.py:133
+msgid "Check for &add-on updates"
+msgstr "&Перевірити наявність оновлень додатка"
+
+#: sarvamAI/ui/settings.py:136
+msgid "Restore &defaults"
+msgstr "&Відновити початкові налаштування"
+
+#: sarvamAI/ui/settings.py:173
+msgid "&Browse..."
+msgstr "&Огляд..."
+
+#: sarvamAI/ui/settings.py:178
+msgid "Choose a folder"
+msgstr "Вибрати папку"
+
+#: sarvamAI/ui/settings.py:188 sarvamAI/ui/setup.py:110
+msgid "No key entered"
+msgstr "Ключ не введено"
+
+#: sarvamAI/ui/settings.py:190 sarvamAI/ui/setup.py:112
+msgid "Sarvam API key"
+msgstr "Ключ API Sarvam"
+
+#: sarvamAI/ui/settings.py:204 sarvamAI/ui/setup.py:123
+msgid "Sarvam AI - Connection"
+msgstr "З'єднання Sarvam AI"
+
+#: sarvamAI/ui/settings.py:211 sarvamAI/ui/setup.py:131
+msgid "Testing connection..."
+msgstr "Перевірка з'єднання..."
+
+#: sarvamAI/ui/settings.py:215
+msgid ""
+"Restore all Sarvam AI settings to their defaults? Your API key will be kept."
+msgstr ""
+"Відновити всі налаштування Sarvam AI до початкових значень? Ваш ключ API "
+"буде збережено."
+
+#: sarvamAI/ui/settings.py:216 sarvamAI/ui/settings.py:224
+msgid "Restore defaults"
+msgstr "Відновити початкові налаштування"
+
+#: sarvamAI/ui/settings.py:223
+msgid "Defaults restored. Close and reopen this dialog to see all changes."
+msgstr ""
+"Відновлено початкові налаштування. Закрийте та знову відкрийте цей діалог, "
+"щоб переглянути всі зміни."
+
+#: sarvamAI/ui/settings.py:231
+msgid "The API base URL must start with http:// or https://."
+msgstr "Базовий URL API повинен починатися з http:// або https://."
+
+#: sarvamAI/ui/settings.py:232 sarvamAI/ui/settings.py:239
+msgid "Invalid setting"
+msgstr "Недійсне налаштування"
+
+#: sarvamAI/ui/settings.py:234
+msgid "output"
+msgstr "вивід"
+
+#: sarvamAI/ui/settings.py:234
+msgid "download"
+msgstr "завантажити"
+
+#: sarvamAI/ui/settings.py:238
+#, python-brace-format
+msgid ""
+"The {which} folder does not exist:\n"
+"{path}"
+msgstr ""
+"Папка {which} не існує:\n"
+"{path}"
+
+#: sarvamAI/ui/setup.py:32
+msgid "Sarvam AI - Setup"
+msgstr "Налаштування Sarvam AI"
+
+#: sarvamAI/ui/setup.py:38
+msgid ""
+"Enter your Sarvam API key below. Get a key (with credits) from https://"
+"dashboard.sarvam.ai. Press Enter in the key box to test it."
+msgstr ""
+"Введіть свій ключ API Sarvam нижче. Отримати ключ (разом із кредитами) можна "
+"на сайті https://dashboard.sarvam.ai. Натисніть клавішу Enter у полі для "
+"введення ключа, щоб перевірити його."
+
+#: sarvamAI/ui/setup.py:49
+msgid "&Generate API key (opens Sarvam website)"
+msgstr "&Створити ключ API (відкриває веб-сайт Sarvam)"
+
+#: sarvamAI/ui/setup.py:68
+msgid "Default TTS &model:"
+msgstr "&Початкова модель тексту :"
+
+#: sarvamAI/ui/setup.py:74
+msgid "&Save"
+msgstr "&Зберегти"
+
+#: sarvamAI/ui/setup.py:76
+msgid "Advanced se&ttings..."
+msgstr "&Розширені налаштування..."
+
+#: sarvamAI/ui/setup.py:100
+msgid "Opening the Sarvam dashboard in your browser"
+msgstr "Відкриття панелі інструментів Sarvam у вашому браузері"
+
+#: sarvamAI/ui/setup.py:103
+#, python-brace-format
+msgid "Could not open the browser. Please visit {url} to create an API key."
+msgstr ""
+"Не вдалося відкрити браузер. Будь ласка, перейдіть за посиланням {url}, щоб "
+"створити ключ API."
+
+#: sarvamAI/ui/stt.py:36 sarvamAI/ui/stt.py:174
+msgid "Sarvam AI - Speech to Text"
+msgstr "Перетворення мовлення на текст Sarvam AI"
+
+#: sarvamAI/ui/stt.py:47
+msgid "Choose audio &file..."
+msgstr "&Вибрати аудіо файл..."
+
+#: sarvamAI/ui/stt.py:49 sarvamAI/ui/stt.py:118 sarvamAI/ui/stt.py:120
+msgid "Start &recording"
+msgstr "&Почати запис"
+
+#: sarvamAI/ui/stt.py:54
+msgid "Source: none selected"
+msgstr "Джерело: нічого не вибрано"
+
+#: sarvamAI/ui/stt.py:59
+msgid "Audio la&nguage:"
+msgstr "&Мова аудіо:"
+
+#: sarvamAI/ui/stt.py:62
+msgid "Translate to &English"
+msgstr "Перекласти на &англійську"
+
+#: sarvamAI/ui/stt.py:67
+msgid "&Transcribe"
+msgstr "&Транскрибувати"
+
+#: sarvamAI/ui/stt.py:73
+msgid "&Transcript:"
+msgstr "&Транскрипт:"
+
+#: sarvamAI/ui/stt.py:97
+msgid "Open audio file"
+msgstr "Відкрити аудіофайл"
+
+#: sarvamAI/ui/stt.py:98
+#, python-format
+msgid "Audio files (%s)|%s|All files (*.*)|*.*"
+msgstr "Аудіофайли (%s)|%s|Усі файли (*.*)|*.*"
+
+#: sarvamAI/ui/stt.py:106
+#, python-brace-format
+msgid "Source: {name} ({size:.1f} MB)"
+msgstr "Джерело: {name} ({size:.1f} МБ)"
+
+#: sarvamAI/ui/stt.py:108
+#, python-brace-format
+msgid "Source: {name}"
+msgstr "Джерело: {name}"
+
+#: sarvamAI/ui/stt.py:109
+msgid "Audio file selected. Press Transcribe."
+msgstr "Аудіофайл вибрано. Натисніть «Транскрибувати»."
+
+#: sarvamAI/ui/stt.py:122
+msgid "Source: microphone recording"
+msgstr "Джерело: запис з мікрофона"
+
+#: sarvamAI/ui/stt.py:123
+msgid "Recording stopped. Press Transcribe."
+msgstr "Запис зупинено. Натисніть кнопку «Транскрибувати»."
+
+#: sarvamAI/ui/stt.py:131
+msgid "&Stop recording"
+msgstr "&Зупинити запис"
+
+#: sarvamAI/ui/stt.py:132
+msgid "Recording. Press the button again to stop."
+msgstr "Запис. Натисніть кнопку ще раз, щоб зупинити."
+
+#: sarvamAI/ui/stt.py:140
+msgid "Choose an audio file or record first"
+msgstr "Спочатку виберіть аудіофайл або запис"
+
+#: sarvamAI/ui/stt.py:164
+#, python-brace-format
+msgid ""
+"Transcribed ({n} characters). Detected language {lang}. Save options are now "
+"available."
+msgstr ""
+"Транскрибовано ({n} символів). Виявлено мову {lang}. Тепер доступні "
+"параметри збереження."
+
+#: sarvamAI/ui/stt.py:166
+#, python-brace-format
+msgid "Transcribed ({n} characters). Save options are now available."
+msgstr "Транскрибовано ({n} символів). Тепер доступні параметри збереження."
+
+#: sarvamAI/ui/stt.py:175
+msgid "Transcribing audio (large files are processed in batches)..."
+msgstr "Транскрибування аудіо (великі файли обробляються пакетами)..."
+
+#: sarvamAI/ui/translate.py:41
+msgid "Sarvam AI - Translate"
+msgstr "Переклад Sarvam AI"
+
+#: sarvamAI/ui/translate.py:49
+msgid "&Input text:"
+msgstr "&Введіть текст:"
+
+#: sarvamAI/ui/translate.py:55
+msgid "&Operation:"
+msgstr "&Операція:"
+
+#: sarvamAI/ui/translate.py:56
+msgid "Transliteration"
+msgstr "Транслітерація"
+
+#: sarvamAI/ui/translate.py:56
+msgid "Language detection"
+msgstr "Визначення мови"
+
+#: sarvamAI/ui/translate.py:62
+msgid "&Upload document (text, Word, EPUB, PDF, image)..."
+msgstr "&Завантажити документ (текст, Word, EPUB, PDF, зображення)..."
+
+#: sarvamAI/ui/translate.py:69
+msgid "&Source language:"
+msgstr "&Мова оригіналу:"
+
+#: sarvamAI/ui/translate.py:72
+msgid "&Target language:"
+msgstr "&Мова перекладу:"
+
+#: sarvamAI/ui/translate.py:82
+msgid "&Go"
+msgstr "&Перейти"
+
+#: sarvamAI/ui/translate.py:118 sarvamAI/ui/tts.py:209
+msgid "Upload a document"
+msgstr "Завантажити документ"
+
+#: sarvamAI/ui/translate.py:119 sarvamAI/ui/tts.py:210
+#, python-format
+msgid "Documents (%s)|%s|All files (*.*)|*.*"
+msgstr "Документи (%s)|%s|Усі файли (*.*)|*.*"
+
+#: sarvamAI/ui/translate.py:148
+#, python-brace-format
+msgid "Document loaded ({n} characters)"
+msgstr "Документ завантажено ({n} символів)"
+
+#: sarvamAI/ui/translate.py:154
+msgid "Reading document with OCR..."
+msgstr "Читання документа за допомогою OCR..."
+
+#: sarvamAI/ui/translate.py:154 sarvamAI/ui/tts.py:218
+msgid "Reading document..."
+msgstr "Читання документа..."
+
+#: sarvamAI/ui/translate.py:161
+msgid "There is no text"
+msgstr "Немає тексту"
+
+#: sarvamAI/ui/translate.py:183
+msgid "unknown"
+msgstr "невідомо"
+
+#: sarvamAI/ui/translate.py:185
+#, python-brace-format
+msgid "Detected language: {name} ({code})"
+msgstr "Виявлена мова: {name} ({code})"
+
+#: sarvamAI/ui/translate.py:188
+#, python-brace-format
+msgid "Script: {script}"
+msgstr "Скрипт: {script}"
+
+#: sarvamAI/ui/translate.py:195
+msgid "Done. Save options are now available."
+msgstr "Готово. Тепер доступні параметри збереження."
+
+#: sarvamAI/ui/translate.py:203
+msgid "Processing..."
+msgstr "Обробка..."
+
+#: sarvamAI/ui/tts.py:41 sarvamAI/ui/tts.py:273 sarvamAI/ui/tts.py:326
+msgid "Sarvam AI - Text to Speech"
+msgstr "Перетворення тексту в мовлення Sarvam AI"
+
+#: sarvamAI/ui/tts.py:51
+msgid "&Text to speak (type or paste):"
+msgstr "&Текст для озвучування (введіть або вставте):"
+
+#: sarvamAI/ui/tts.py:55
+msgid "&Upload file (text, Word, EPUB)..."
+msgstr "&Завантажити файл (текст, Word, EPUB)..."
+
+#: sarvamAI/ui/tts.py:63
+msgid "Speaking s&tyle:"
+msgstr "&Стиль мовлення:"
+
+#: sarvamAI/ui/tts.py:67
+msgid "&Gender:"
+msgstr "&Стать:"
+
+#: sarvamAI/ui/tts.py:74
+msgid "&Voice:"
+msgstr "&Голос:"
+
+#: sarvamAI/ui/tts.py:76
+msgid "&Language:"
+msgstr "&Мова:"
+
+#: sarvamAI/ui/tts.py:87
+msgid "Speech s&peed in percent, 50 is slowest and 200 is fastest:"
+msgstr ""
+"&Швидкість мовлення у відсотках, 50 – найповільніше, а 200 – найшвидше:"
+
+#: sarvamAI/ui/tts.py:89
+msgid "Speech speed in percent"
+msgstr "Швидкість мовлення у відсотках"
+
+#: sarvamAI/ui/tts.py:93
+msgid ""
+"E&xpression in percent, 5 is flat and monotonous and 100 is most lively:"
+msgstr "&Вираз у відсотках, 5 — мляво і монотонно, а 100 — більш жваво:"
+
+#: sarvamAI/ui/tts.py:95
+msgid "Expression in percent"
+msgstr "Вираз у відсотках"
+
+#: sarvamAI/ui/tts.py:100
+msgid "&Convert"
+msgstr "&Конвертувати"
+
+#: sarvamAI/ui/tts.py:106
+msgid "&Listen"
+msgstr "&Прослухати"
+
+#: sarvamAI/ui/tts.py:108
+msgid "St&op"
+msgstr "&Зупинити"
+
+#: sarvamAI/ui/tts.py:110
+msgid "Save as &MP3..."
+msgstr "Зберегти як &MP3..."
+
+#: sarvamAI/ui/tts.py:112
+msgid "Save as &WAV..."
+msgstr "Зберегти як &WAV..."
+
+#: sarvamAI/ui/tts.py:189
+msgid "Style applied"
+msgstr "Стиль застосовано"
+
+#: sarvamAI/ui/tts.py:216
+msgid "File loaded"
+msgstr "Файл завантажено"
+
+#: sarvamAI/ui/tts.py:245
+msgid "There is no text to convert"
+msgstr "Немає тексту для конвертації"
+
+#: sarvamAI/ui/tts.py:263
+msgid "Converted. Playing. Save options are now available."
+msgstr "Конвертовано. Відтворюється. Тепер доступні параметри збереження."
+
+#: sarvamAI/ui/tts.py:265
+msgid "Converted. Listen and Save options are now available."
+msgstr "Конвертовано. Тепер доступні параметри прослуховування та збереження."
+
+#: sarvamAI/ui/tts.py:274
+msgid "Converting to speech..."
+msgstr "Перетворення на мовлення..."
+
+#: sarvamAI/ui/tts.py:279
+msgid "Playing"
+msgstr "Відтворення"
+
+#: sarvamAI/ui/tts.py:283
+msgid "Stopped"
+msgstr "Зупинено"
+
+#: sarvamAI/ui/tts.py:288
+msgid "WAV audio (*.wav)|*.wav"
+msgstr "Аудіо WAV (*.wav)|*.wav"
+
+#: sarvamAI/ui/tts.py:293
+msgid "WAV saved"
+msgstr "WAV-файл збережено"
+
+#: sarvamAI/ui/tts.py:301
+msgid "MP3 audio (*.mp3)|*.mp3"
+msgstr "Аудіо MP3 (*.mp3)|*.mp3"
+
+#: sarvamAI/ui/tts.py:319
+msgid "MP3 saved"
+msgstr "MP3 збережено"
+
+#: sarvamAI/ui/tts.py:327
+msgid "Generating MP3..."
+msgstr "Генерування MP3..."
+
+#: sarvamAI/ui/tts.py:330
+msgid "Save audio"
+msgstr "Зберегти аудіо"
+
+#: sarvamAI/ui/workforce.py:45 sarvamAI/ui/workforce.py:174
+#: sarvamAI/ui/workforce.py:223
+msgid "Sarvam AI - AI Workforce"
+msgstr "Sarvam AI - AI Workforce"
+
+#: sarvamAI/ui/workforce.py:49
+msgid "pasted text"
+msgstr "вставлений текст"
+
+#: sarvamAI/ui/workforce.py:55
+msgid "&Upload file for analysis..."
+msgstr "&Завантажити файл для аналізу..."
+
+#: sarvamAI/ui/workforce.py:63
+msgid "&Ask a question or describe the task:"
+msgstr "&Задати питання або описати завдання:"
+
+#: sarvamAI/ui/workforce.py:70
+msgid "&Response:"
+msgstr "&Відповідь:"
+
+#: sarvamAI/ui/workforce.py:77
+msgid "&Task mode:"
+msgstr "&Режим завдання:"
+
+#: sarvamAI/ui/workforce.py:83
+msgid "&Reasoning effort:"
+msgstr "&Зусилля для міркування:"
+
+#: sarvamAI/ui/workforce.py:86
+msgid "Wiki &grounding"
+msgstr "Wiki &ґрунтування"
+
+#: sarvamAI/ui/workforce.py:92
+msgid "&Run"
+msgstr "&Виконати"
+
+#: sarvamAI/ui/workforce.py:118
+#, python-brace-format
+msgid "Loaded context: {name} ({n} characters)"
+msgstr "Завантажений контекст: {name} ({n} символів)"
+
+#: sarvamAI/ui/workforce.py:120
+msgid "No file loaded (optional)"
+msgstr "Файл не завантажено (необов'язково)"
+
+#: sarvamAI/ui/workforce.py:135
+msgid "Upload a file for analysis"
+msgstr "Завантажити файл для аналізу"
+
+#: sarvamAI/ui/workforce.py:136
+#, python-format
+msgid "Supported files (%s)|%s|All files (*.*)|*.*"
+msgstr "Підтримувані файли (%s)|%s|Усі файли (*.*)|*.*"
+
+#: sarvamAI/ui/workforce.py:169
+#, python-brace-format
+msgid "File loaded: {n} characters. Now ask your question."
+msgstr "Файл завантажено: {n} символів. Тепер задайте своє питання."
+
+#: sarvamAI/ui/workforce.py:175
+msgid "Reading file..."
+msgstr "Читання файлу..."
+
+#: sarvamAI/ui/workforce.py:181
+msgid "Ask a question or upload a file first"
+msgstr "Спочатку задайте питання або завантажте файл"
+
+#: sarvamAI/ui/workforce.py:193
+msgid "Here is the document to work with:"
+msgstr "Ось документ, з яким потрібно працювати:"
+
+#: sarvamAI/ui/workforce.py:197
+msgid "Perform the selected task on the document above."
+msgstr "Виконай вказане завдання щодо наведеного вище документа."
+
+#: sarvamAI/ui/workforce.py:215
+#, python-brace-format
+msgid "Response ready ({n} characters). Save options are now available."
+msgstr "Відповідь готова ({n} символів). Тепер доступні параметри збереження."
+
+#: sarvamAI/ui/workforce.py:224
+msgid "The 105B model is reasoning through your task..."
+msgstr "Модель 105B обмірковує ваше завдання..."
+
+#: sarvamAI/updatecheck.py:67
+msgid "Could not check for updates. Please try again later."
+msgstr "Не вдалося перевірити наявність оновлень. Спробуйте пізніше."
+
+#: sarvamAI/updatecheck.py:68 sarvamAI/updatecheck.py:84
+msgid "Sarvam AI - Updates"
+msgstr "Оновлення Sarvam AI"
+
+#: sarvamAI/updatecheck.py:74
+#, python-brace-format
+msgid ""
+"A new version {latest} is available (you have {current}).\n"
+"Open the download page?"
+msgstr ""
+"Доступна нова версія {latest} (у вас встановлена версія {current}).\n"
+"Відкрити сторінку завантаження?"
+
+#: sarvamAI/updatecheck.py:76
+msgid "Sarvam AI - Update available"
+msgstr "Доступне оновлення Sarvam AI"
+
+#: sarvamAI/updatecheck.py:83
+#, python-brace-format
+msgid "You are using the latest version ({current})."
+msgstr "Ви використовуєте останню версію ({current})."
+
+#~ msgid "&AI Assistant / Summarise..."
+#~ msgstr "ШІ помічник / Узагальнити..."
+
+#~ msgid "Recognises the current screen or object with Windows OCR"
+#~ msgstr ""
+#~ "Розпізнає поточний екран або об’єкт за допомогою функції Windows OCR"
+
+#~ msgid "Windows OCR is not available"
+#~ msgstr "Функція Windows OCR недоступна"
+
+#~ msgid "Recognising"
+#~ msgstr "Розпізнавання"
+
+#~ msgid "Sarvam AI - OCR result"
+#~ msgstr "Результат розпізнавання Sarvam AI OCR"
+
+#~ msgid "Opens the Sarvam AI Workforce (105B reasoning) window"
+#~ msgstr "Відкриває діалог Sarvam AI Workforce (модель міркування 105B)"
+
+#, python-brace-format
+#~ msgid "Image file not found: {path}"
+#~ msgstr "Файл зображення не знайдено: {path}"
+
+#~ msgid "The image has no pixels."
+#~ msgstr "Зображення не має пікселів."
+
+#~ msgid "Could not read the image pixels."
+#~ msgstr "Не вдалося прочитати пікселі зображення."
+
+#, python-brace-format
+#~ msgid "Windows OCR failed: {err}"
+#~ msgstr "Помилка Windows OCR: {err}"
+
+#~ msgid "No text was recognised in the image."
+#~ msgstr "Текст на зображенні не розпізнано."
+
+#, python-brace-format
+#~ msgid "Could not start OCR: {err}"
+#~ msgstr "Не вдалося запустити OCR: {err}"
+
+#~ msgid "Windows OCR is not available on this system."
+#~ msgstr "Функція Windows OCR недоступна в цій системі."
+
+#~ msgid "Nothing to recognise here."
+#~ msgstr "Немає нічого для розпізнавання."
+
+#, python-brace-format
+#~ msgid "Could not capture the screen for OCR: {err}"
+#~ msgstr "Не вдалося захопити екран для OCR: {err}"
+
+#~ msgid "Nothing to capture here."
+#~ msgstr "Немає даних для захоплення."
+
+#~ msgid "Could not save the screen capture."
+#~ msgstr "Не вдалося зберегти знімок екрана."
+
+#~ msgid "Sarvam AI - Assistant"
+#~ msgstr "Помічник Sarvam AI"
+
+#~ msgid "Chat / ask a question"
+#~ msgstr "Задати питання / чат"
+
+#~ msgid "Summarise text"
+#~ msgstr "Підсумувати текст"
+
+#~ msgid "Explain / understand a document"
+#~ msgstr "Пояснити / зрозуміти документ"
+
+#~ msgid "&Conversation:"
+#~ msgstr "&Розмова:"
+
+#~ msgid "&Your message or text:"
+#~ msgstr "&Ваше повідомлення або текст:"
+
+#~ msgid "From se&lection"
+#~ msgstr "&З вибраного"
+
+#~ msgid "From cli&pboard"
+#~ msgstr "&З буфера обміну"
+
+#~ msgid "Open te&xt file..."
+#~ msgstr "Відкрити текстовий файл..."
+
+#~ msgid "&Send"
+#~ msgstr "&Надіслати"
+
+#~ msgid "&Copy conversation"
+#~ msgstr "&Копіювати розмову"
+
+#~ msgid "C&lear"
+#~ msgstr "&Очистити"
+
+#~ msgid "Loaded"
+#~ msgstr "Завантажено"
+
+#~ msgid "Nothing to load"
+#~ msgstr "Немає даних для завантаження"
+
+#~ msgid "Open text file"
+#~ msgstr "Відкрити текстовий файл"
+
+#~ msgid "Type a message first"
+#~ msgstr "Спочатку введіть повідомлення"
+
+#~ msgid ""
+#~ "Summarise the following text clearly and concisely, preserving key facts."
+#~ msgstr ""
+#~ "Чітко та лаконічно підсумуй наступний текст, зберігаючи ключові факти."
+
+#~ msgid "You (summarise): "
+#~ msgstr "Ви (підсумувати): "
+
+#~ msgid ""
+#~ "You are a helpful assistant. Read the document the user provides and "
+#~ "answer questions or explain it clearly."
+#~ msgstr ""
+#~ "Ти — корисний помічник. Прочитай документ, наданий користувачем, і дай "
+#~ "відповіді на питання або чітко поясни його зміст."
+
+#~ msgid "You (document): "
+#~ msgstr "Ви (документ): "
+
+#~ msgid "You: "
+#~ msgstr "Ви: "
+
+#~ msgid "Sarvam: "
+#~ msgstr "Sarvam: "
+
+#~ msgid "Reply received"
+#~ msgstr "Отримана Відповідь"
+
+#~ msgid "Thinking..."
+#~ msgstr "Думаю..."
+
+#~ msgid "Cleared"
+#~ msgstr "Очищено"
+
+#~ msgid "OCR &engine:"
+#~ msgstr "&Система OCR:"
+
+#~ msgid "Windows OCR (offline, instant)"
+#~ msgstr "Windows OCR (офлайн, миттєво)"
+
+#~ msgid "Use clip&board image"
+#~ msgstr "&Використати зображення з буфера обміну"
+
+#~ msgid "Use current &screen / object"
+#~ msgstr "Використовувати поточний &екран / об'єкт"
+
+#~ msgid "Recognised &text (editable):"
+#~ msgstr "Розпізнаний &текст (з можливістю редагування):"
+
+#~ msgid "&Copy text"
+#~ msgstr "&Копіювати текст"
+
+#, python-brace-format
+#~ msgid "Source: {what}"
+#~ msgstr "Джерело: {what}"
+
+#~ msgid "Open image"
+#~ msgstr "Відкрити зображення"
+
+#~ msgid "clipboard image"
+#~ msgstr "зображення з буфера обміну"
+
+#~ msgid "current screen / object"
+#~ msgstr "поточний екран / об'єкт"
+
+#~ msgid "The clipboard has no image"
+#~ msgstr "У буфері обміну немає зображення"
+
+#~ msgid "Text recognised"
+#~ msgstr "Розпізнаний текст"
+
+#~ msgid "Nothing to translate"
+#~ msgstr "Немає даних для перекладу"
+
+#~ msgid "Nothing to summarise"
+#~ msgstr "Немає що підсумовувати"
+
+#~ msgid "&Pitch (-0.75 to 0.75):"
+#~ msgstr "&Висота (від -0,75 до 0,75):"
+
+#~ msgid "OCR"
+#~ msgstr "OCR"
+
+#~ msgid "Default OCR en&gine:"
+#~ msgstr "&Початкова система OCR:"
+
+#, python-brace-format
+#~ msgid "Transcribed. Detected language {lang}"
+#~ msgstr "Транскрибовано. Виявлена {lang} мова"
+
+#~ msgid "Transcribed"
+#~ msgstr "Транскрибовано"
+
+#~ msgid "Transcribing audio..."
+#~ msgstr "Транскрибування аудіо..."
+
+#~ msgid "Save transcript"
+#~ msgstr "Зберегти транскрипт"
+
+#~ msgid "Translate"
+#~ msgstr "Перекласти"
+
+#~ msgid "Detect language"
+#~ msgstr "Визначити мову"
+
+#~ msgid "&Source:"
+#~ msgstr "&Джерело:"
+
+#~ msgid "&Target:"
+#~ msgstr "&Ціль:"
+
+#~ msgid "&Copy result"
+#~ msgstr "&Копіювати результат"
+
+#~ msgid "Done"
+#~ msgstr "Готово"
+
+#~ msgid "&Model:"
+#~ msgstr "&Модель:"
+
+#~ msgid "&Speed:"
+#~ msgstr "&Швидкість:"
+
+#~ msgid "&Pitch:"
+#~ msgstr "&Висота:"
+
+#~ msgid "Converted. Playing."
+#~ msgstr "Перетворено. Відтворюється."
+
+#~ msgid "Converted. Press Listen to play."
+#~ msgstr "Конвертовано. Натисніть «Прослухати», щоб відтворити."
+
+#~ msgid "Convert first"
+#~ msgstr "Спочатку конвертуйте"
+
+#~ msgid "Sarvam AI - AI Workforce (105B)"
+#~ msgstr "Sarvam AI - AI Workforce (105B)"
+
+#~ msgid "&Worker (role):"
+#~ msgstr "&Працівник (роль):"
+
+#~ msgid "&Task or question:"
+#~ msgstr "&Завдання або питання:"
+
+#~ msgid "R&esult:"
+#~ msgstr "&Результат:"
+
+#~ msgid "Enter a task first"
+#~ msgstr "Спочатку введіть завдання"
