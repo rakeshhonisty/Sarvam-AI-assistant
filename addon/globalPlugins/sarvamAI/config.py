@@ -44,6 +44,9 @@ CONFIG_SPEC = {
 	"sttModel": "string(default=\"%s\")" % constants.DEFAULT_STT_MODEL,
 	"sttTranslateModel": "string(default=\"%s\")" % constants.DEFAULT_STT_TRANSLATE_MODEL,
 	"sttLanguage": "string(default=\"unknown\")",
+	# When the audio language is Auto, ask Sarvam for code-mixed output so
+	# naturally mixed speech (e.g. Kannada + English) is transcribed as spoken.
+	"sttCodeSwitching": "boolean(default=True)",
 
 	# Translation defaults.
 	"translateModel": "string(default=\"%s\")" % constants.DEFAULT_TRANSLATE_MODEL,
@@ -92,6 +95,7 @@ def initialize():
 	"""
 	config.conf.spec[SECTION] = CONFIG_SPEC
 	_ensureDefaults()
+	_migrateStaleValues()
 
 
 def conf():
@@ -141,6 +145,32 @@ def _ensureDefaults():
 				section[key] = _defaultFromSpec(spec)
 			except Exception:
 				pass
+
+
+def _migrateStaleValues():
+	"""Repair settings saved by an earlier version that name a model Sarvam has
+	since retired (for example the saarika:* speech-to-text models or
+	bulbul:v2). Without this, an upgraded install would keep sending a model
+	name the API no longer accepts."""
+	section = conf()
+	for key, valid, default in (
+		("sttModel", constants.STT_MODELS, constants.DEFAULT_STT_MODEL),
+		("sttTranslateModel", constants.STT_TRANSLATE_MODELS, constants.DEFAULT_STT_TRANSLATE_MODEL),
+		("ttsModel", constants.TTS_MODELS, constants.DEFAULT_TTS_MODEL),
+		("chatModel", constants.CHAT_MODELS, constants.DEFAULT_CHAT_MODEL),
+	):
+		try:
+			if section.get(key) not in valid:
+				section[key] = default
+		except Exception:
+			pass
+	# A voice saved for the removed bulbul:v2 model is not valid for v3.
+	try:
+		from . import ttsstyles
+		if section.get("defaultSpeaker") not in ttsstyles.ALL_SPEAKERS:
+			section["defaultSpeaker"] = constants.DEFAULT_SPEAKER
+	except Exception:
+		pass
 
 
 # --- API key obfuscation ----------------------------------------------------

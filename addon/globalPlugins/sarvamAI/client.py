@@ -272,14 +272,28 @@ class SarvamClient:
 
 	# -- speech to text -----------------------------------------------------
 	def speech_to_text(self, audio_path, language_code=None, model=None,
-			with_timestamps=False, cancel=None):
+			with_timestamps=False, mode=None, cancel=None):
 		"""Transcribe an audio file. Returns a dict with ``transcript`` and
-		``language_code``."""
+		``language_code``.
+
+		``mode`` selects the output form supported by saaras:v3 / v4
+		(transcribe, translate, verbatim, translit, codemix). ``codemix`` keeps
+		English words in English and Indic words in their native script, which
+		is what makes naturally code-switched speech transcribe correctly.
+
+		``language_code`` is always sent: "unknown" asks Sarvam to work the
+		language out itself, and is what allows a single utterance to contain
+		more than one language. Pinning it to one language would force the whole
+		utterance into that language.
+		"""
 		with open(audio_path, "rb") as f:
 			data = f.read()
-		fields = {"model": model or constants.DEFAULT_STT_MODEL}
-		if language_code:
-			fields["language_code"] = language_code
+		fields = {
+			"model": model or constants.DEFAULT_STT_MODEL,
+			"language_code": language_code or constants.STT_AUTO_LANGUAGE,
+		}
+		if mode:
+			fields["mode"] = mode
 		if with_timestamps:
 			fields["with_timestamps"] = "true"
 		files = [("file", os.path.basename(audio_path), data, _guess_audio_ctype(audio_path))]
@@ -298,7 +312,7 @@ class SarvamClient:
 		return _normalise_transcript(res)
 
 	def transcribe(self, audio_path, language_code=None, model=None,
-			translate=False, cancel=None, progress=None):
+			translate=False, mode=None, cancel=None, progress=None):
 		"""Transcribe audio, automatically using the batch job API for large
 		files (long audio) and the real-time API for short clips. Returns a
 		dict with ``transcript`` and ``language_code``."""
@@ -311,7 +325,8 @@ class SarvamClient:
 			return self.speech_to_text_translate(audio_path, model=model, cancel=cancel)
 		if size <= constants.STT_REALTIME_MAX_BYTES:
 			return self.speech_to_text(
-				audio_path, language_code=language_code, model=model, cancel=cancel)
+				audio_path, language_code=language_code, model=model,
+				mode=mode, cancel=cancel)
 		logger.info("Large audio (%d bytes); using batch transcription." % size)
 		return self.speech_to_text_batch(
 			audio_path, language_code=language_code, model=model,

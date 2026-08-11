@@ -3,6 +3,51 @@
 All notable changes to the Sarvam AI assistant NVDA add-on are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.7] - 2026-08-11
+
+Fixes a crash that stopped the settings panel opening, and makes Speech to Text
+handle naturally mixed-language speech.
+
+### Bug fixes
+- **The Sarvam AI settings panel could not be opened** (reported by George on
+  NVDA 2026.1.1): it failed with
+  `UnboundLocalError: cannot access local variable 'sizer'`.
+  Cause: the Speech speed and Expression controls were built with
+  `wx.SpinCtrlDouble`, but NVDA's `guiHelper.associateElements()` only lays out
+  a fixed set of control types (`wx.Button`, `wx.Choice`, `wx.ComboBox`,
+  `wx.Slider`, `wx.SpinCtrl`, `wx.TextCtrl`). `wx.SpinCtrlDouble` is not in that
+  set and is not a subclass of `wx.SpinCtrl`, so no layout branch ran and the
+  helper's `sizer` variable was never assigned.
+  Fix: those two settings now use `wx.SpinCtrl` and are edited as whole
+  percentages. The range is preserved (speed 50-200%, expression 5-100%), the
+  step is finer than before (1% instead of 0.05), and label association,
+  keyboard navigation, speech and braille all behave normally. The exception is
+  not caught or suppressed - the unsupported control is simply no longer used.
+  Every other settings control was audited for the same problem; none remained.
+- Settings saved by an older version that name a model Sarvam has since retired
+  (the `saarika:*` speech-to-text models, or `bulbul:v2`) are now repaired
+  automatically on start, instead of being sent to the API and failing.
+
+### Speech to Text: mixed-language speech
+- **Speaking Kannada and English in one sentence now transcribes as spoken.**
+  For example "ನಾನು ಇಂದು office ಗೆ ಹೋಗಬೇಕು because I have a meeting." keeps the
+  Kannada in Kannada script and the English words in English.
+- This uses Sarvam's own documented mechanism - the `codemix` output mode of
+  the speech-to-text API - not a second model, a second API, or a separate
+  language-detection step.
+- **Audio language = Auto** is now the recommended setting for mixed speech.
+  Previously Auto left the language unspecified; it now explicitly asks Sarvam
+  to determine the language *and* return code-mixed output, so an utterance is
+  no longer forced into a single language. Choosing a specific language still
+  gives normal single-language transcription.
+- Speech-to-text now uses Sarvam's current models (`saaras:v3` default, or
+  `saaras:v4`); the retired `saarika:*` models were removed.
+- Code-switching can be turned off in Advanced settings if you prefer plain
+  single-language transcription.
+- NVDA no longer announces a detected language after transcribing: for mixed
+  speech a single language name is misleading, and repeating it is just noise.
+  You simply get the transcript.
+
 ## [1.0.6] - 2026-08-07
 
 Makes the text to speech sliders speak, and fixes speech sounding flat.

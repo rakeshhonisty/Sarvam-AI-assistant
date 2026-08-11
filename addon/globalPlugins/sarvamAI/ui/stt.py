@@ -56,7 +56,11 @@ class SpeechToTextDialog(wx.Dialog):
 		# Options.
 		row = guiHelper.BoxSizerHelper(self, orientation=wx.HORIZONTAL)
 		labels, self._langCodes = common.language_choices(include_unknown=True)
-		self.langCtrl = row.addLabeledControl(_("Audio la&nguage:"), wx.Choice, choices=labels)
+		# "Auto" is the recommended choice: it also allows a single utterance to
+		# mix languages (see onTranscribe).
+		self.langCtrl = row.addLabeledControl(
+			_("Audio la&nguage (Auto also handles mixed-language speech):"),
+			wx.Choice, choices=labels)
 		common.select_in_combo(self.langCtrl, self._langCodes, conf.get("sttLanguage"))
 		# Translators: checkbox to translate transcription to English.
 		self.translateCtrl = row.addItem(wx.CheckBox(self, label=_("Translate to &English")))
@@ -147,11 +151,23 @@ class SpeechToTextDialog(wx.Dialog):
 		self.saveBar.show(False)
 
 		def work(cancel, progress):
-			language = None if lang in ("unknown", constants.AUTO_DETECT) else lang
 			model = conf.get("sttTranslateModel") if translate else conf.get("sttModel")
+			# Auto: let Sarvam work the language out itself ("unknown") and ask
+			# for code-mixed output, so a sentence that naturally mixes, say,
+			# Kannada and English is transcribed as spoken instead of being
+			# forced into a single language. An explicit language keeps the
+			# normal single-language transcription behaviour.
+			isAuto = lang in ("unknown", constants.AUTO_DETECT)
+			if isAuto:
+				language = constants.STT_AUTO_LANGUAGE
+				mode = (constants.STT_CODEMIX_MODE
+					if conf.get("sttCodeSwitching") else constants.DEFAULT_STT_MODE)
+			else:
+				language = lang
+				mode = constants.DEFAULT_STT_MODE
 			return self._cli.transcribe(
 				path, language_code=language, model=model, translate=translate,
-				cancel=cancel, progress=progress)
+				mode=mode, cancel=cancel, progress=progress)
 
 		def ok(result):
 			self.transcribeBtn.Enable(True)
@@ -159,11 +175,10 @@ class SpeechToTextDialog(wx.Dialog):
 			# ChangeValue avoids firing text events for very large transcripts.
 			self.transcriptCtrl.ChangeValue(text)
 			self.saveBar.show(True)
-			detected = result.get("language_code")
-			if detected:
-				common.report(_("Transcribed ({n} characters). Detected language {lang}. Save options are now available.").format(n=len(text), lang=detected))
-			else:
-				common.report(_("Transcribed ({n} characters). Save options are now available.").format(n=len(text)))
+			# Deliberately not announcing a detected language: for mixed-language
+			# speech a single language name is misleading, and repeating it adds
+			# noise. The user just gets the transcript.
+			common.report(_("Transcribed, {n} characters. Save options are now available.").format(n=len(text)))
 			self.transcriptCtrl.SetFocus()
 
 		def bad(exc):

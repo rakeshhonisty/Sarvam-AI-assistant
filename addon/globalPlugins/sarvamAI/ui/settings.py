@@ -62,8 +62,14 @@ class SarvamSettingsPanel(SettingsPanel):
 
 		# bulbul:v3 supports pace and temperature only (pitch and loudness are
 		# rejected by the API), so only those two are configurable.
-		self.paceCtrl = self._spin_float(sh, _("Speech spee&d (0.5 to 2.0):"), conf.get("pace"), constants.PACE_RANGE)
-		self.temperatureCtrl = self._spin_float(sh, _("E&xpression (0.05 to 1.0):"), conf.get("ttsTemperature"), constants.TEMPERATURE_RANGE)
+		self.paceCtrl = self._spin_percent(
+			# Translators: default speech speed, as a percentage.
+			sh, _("Speech spee&d in percent, 50 is slowest and 200 is fastest:"),
+			conf.get("pace"), constants.PACE_RANGE)
+		self.temperatureCtrl = self._spin_percent(
+			# Translators: default expression level, as a percentage.
+			sh, _("E&xpression in percent, 5 is flat and 100 is most lively:"),
+			conf.get("ttsTemperature"), constants.TEMPERATURE_RANGE)
 		self.sampleRateCtrl = self._choice(
 			sh, _("Sample &rate:"), [str(r) for r in constants.TTS_SAMPLE_RATES], str(conf.get("sampleRate")))
 		# Translators: checkbox to enable text preprocessing before synthesis.
@@ -77,6 +83,11 @@ class SarvamSettingsPanel(SettingsPanel):
 		sh.addItem(wx.StaticText(self, label=_("Speech to text")))
 		self.sttModelCtrl = self._choice(sh, _("STT mo&del:"), constants.STT_MODELS, conf.get("sttModel"))
 		self.sttTransModelCtrl = self._choice(sh, _("Speech &translate model:"), constants.STT_TRANSLATE_MODELS, conf.get("sttTranslateModel"))
+		# Translators: checkbox controlling mixed-language transcription.
+		self.codeSwitchCtrl = sh.addItem(wx.CheckBox(self, label=_(
+			"When the audio language is Auto, keep &mixed-language speech as spoken "
+			"(for example Kannada with English words)")))
+		self.codeSwitchCtrl.SetValue(bool(conf.get("sttCodeSwitching")))
 
 		# --- Translation ---------------------------------------------------
 		sh.addItem(wx.StaticText(self, label=_("Translation")))
@@ -155,16 +166,37 @@ class SarvamSettingsPanel(SettingsPanel):
 			ctrl.SetValue(lo)
 		return ctrl
 
-	def _spin_float(self, sh, label, current, rng):
+	def _spin_percent(self, sh, label, current, rng):
+		"""A fractional setting (e.g. 0.5 - 2.0) edited as a whole percentage.
+
+		NVDA's guiHelper.associateElements() only knows how to lay out a
+		specific set of control types (wx.Button, wx.Choice, wx.ComboBox,
+		wx.Slider, wx.SpinCtrl, wx.TextCtrl). wx.SpinCtrlDouble is not one of
+		them - and it is not a subclass of wx.SpinCtrl - so no layout branch
+		matched and associateElements raised
+		"UnboundLocalError: cannot access local variable 'sizer'", which
+		prevented this settings panel from opening at all.
+
+		Using wx.SpinCtrl with whole percentages keeps the control inside the
+		supported set, so the label/control association, keyboard navigation,
+		speech and braille reporting all work as NVDA expects. Percent also
+		gives 1% steps (0.01), finer than the previous 0.05 increment, and
+		matches how these values are presented in the Text to Speech dialog.
+		"""
 		lo, hi = rng
 		ctrl = sh.addLabeledControl(
-			label, wx.SpinCtrlDouble, min=float(lo), max=float(hi), inc=0.05)
+			label, wx.SpinCtrl, min=int(round(lo * 100)), max=int(round(hi * 100)))
 		try:
-			ctrl.SetValue(float(current))
-		except Exception:
-			ctrl.SetValue(float(lo))
-		ctrl.SetDigits(2)
+			value = int(round(float(current) * 100))
+		except (TypeError, ValueError):
+			value = int(round(lo * 100))
+		ctrl.SetValue(max(int(round(lo * 100)), min(int(round(hi * 100)), value)))
 		return ctrl
+
+	@staticmethod
+	def _percent_to_fraction(ctrl):
+		"""Read a percentage spin control back as a fraction."""
+		return ctrl.GetValue() / 100.0
 
 	def _folder(self, sh, label, current):
 		row = guiHelper.BoxSizerHelper(self, orientation=wx.HORIZONTAL)
@@ -247,13 +279,14 @@ class SarvamSettingsPanel(SettingsPanel):
 		conf["ttsModel"] = self.ttsModelCtrl._values[self.ttsModelCtrl.GetSelection()]
 		conf["defaultSpeaker"] = self.speakerCtrl._values[self.speakerCtrl.GetSelection()]
 		conf["defaultLanguage"] = self._langCodes[self.langCtrl.GetSelection()]
-		conf["pace"] = float(self.paceCtrl.GetValue())
-		conf["ttsTemperature"] = float(self.temperatureCtrl.GetValue())
+		conf["pace"] = self._percent_to_fraction(self.paceCtrl)
+		conf["ttsTemperature"] = self._percent_to_fraction(self.temperatureCtrl)
 		conf["sampleRate"] = int(self.sampleRateCtrl._values[self.sampleRateCtrl.GetSelection()])
 		conf["enablePreprocessing"] = self.preprocCtrl.GetValue()
 		conf["autoPlayTts"] = self.autoPlayCtrl.GetValue()
 		conf["sttModel"] = self.sttModelCtrl._values[self.sttModelCtrl.GetSelection()]
 		conf["sttTranslateModel"] = self.sttTransModelCtrl._values[self.sttTransModelCtrl.GetSelection()]
+		conf["sttCodeSwitching"] = self.codeSwitchCtrl.GetValue()
 		conf["translateModel"] = self.translateModelCtrl._values[self.translateModelCtrl.GetSelection()]
 		conf["translateSourceLang"] = self._srcCodes[self.translateSrcCtrl.GetSelection()]
 		conf["translateTargetLang"] = self._tgtCodes[self.translateTgtCtrl.GetSelection()]

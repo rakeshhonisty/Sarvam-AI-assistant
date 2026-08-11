@@ -110,8 +110,28 @@ TTS_MODELS = ("bulbul:v3",)
 # "wav" is used for in-app playback; "mp3" for saving a compact file.
 TTS_OUTPUT_CODECS = ("mp3", "wav", "opus", "flac", "aac")
 DEFAULT_TTS_CODEC = "mp3"
-STT_MODELS = ("saarika:v2.5", "saarika:v2", "saarika:v1", "saarika:flash")
-STT_TRANSLATE_MODELS = ("saaras:v2.5", "saaras:v2", "saaras:v1", "saaras:flash")
+# Speech-to-text models offered by /speech-to-text. The older saarika:* models
+# are no longer part of the API contract.
+STT_MODELS = ("saaras:v3", "saaras:v4")
+# /speech-to-text-translate is a separate endpoint with its own model.
+STT_TRANSLATE_MODELS = ("saaras:v2.5",)
+
+# Output modes supported by /speech-to-text (saaras:v3 / v4):
+#   transcribe - standard transcription in the original language (default)
+#   translate  - translate speech to English
+#   verbatim   - word-for-word, no normalisation
+#   translit   - romanise to Latin script
+#   codemix    - keep English words in English and Indic words in native script
+# "codemix" is Sarvam's documented mechanism for code-switched speech, e.g.
+# "नानु इंदु office गे होगबेकु because I have a meeting."
+STT_MODES = ("transcribe", "translate", "verbatim", "translit", "codemix")
+DEFAULT_STT_MODE = "transcribe"
+STT_CODEMIX_MODE = "codemix"
+
+# Value that tells /speech-to-text to detect the language itself. Sending this
+# (rather than omitting language_code) is what keeps a mixed-language utterance
+# from being forced into a single language.
+STT_AUTO_LANGUAGE = "unknown"
 TRANSLATE_MODELS = ("sarvam-translate:v1", "mayura:v1")
 # Chat models. sarvam-105b (128K context) is the current reasoning model.
 CHAT_MODELS = ("sarvam-105b",)
@@ -169,7 +189,7 @@ def batch_multiplier_value(label):
 		return 1
 
 DEFAULT_TTS_MODEL = "bulbul:v3"
-DEFAULT_STT_MODEL = "saarika:v2.5"
+DEFAULT_STT_MODEL = "saaras:v3"
 DEFAULT_STT_TRANSLATE_MODEL = "saaras:v2.5"
 DEFAULT_TRANSLATE_MODEL = "sarvam-translate:v1"
 DEFAULT_CHAT_MODEL = "sarvam-105b"

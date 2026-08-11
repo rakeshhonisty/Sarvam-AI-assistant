@@ -84,24 +84,36 @@ even while the cursor is inside a text box.</p>
 <h2>Text to Speech</h2>
 <p>Type or paste text into the edit box, or press <strong>Upload file</strong>
 to load a text, Word (.docx) or EPUB (.epub) file. Choose a <strong>speaking
-style</strong> (News reader, Conversational, Narration, Formal, Expressive) and
+style</strong> (Conversational, Narration, Expressive, News reader, Formal) and
 a <strong>gender</strong> — the <strong>voice</strong> list is filtered
 automatically so only matching voices are offered. Choose a language (Auto
 detect by default, which also handles mixed-language text) and adjust the
-<strong>Speech speed</strong>, <strong>Pitch</strong> and <strong>Volume</strong>
-sliders, each of which announces its purpose and value. Press
+<strong>Speech speed</strong> and <strong>Expression</strong> sliders, each of
+which announces its purpose and value (higher expression sounds livelier, lower
+sounds flatter). Press
 <strong>Convert</strong>. Only after the audio is ready do
 <strong>Listen</strong>, <strong>Save as MP3</strong> and <strong>Save as
 WAV</strong> appear.</p>
 
 <h2>Speech to Text</h2>
 <p>Press <strong>Choose audio file</strong> or <strong>Start recording</strong>,
-pick the audio language (or leave it automatic), then press
-<strong>Transcribe</strong>. Large audio files are handled for you: anything
-beyond the real-time limit is processed through Sarvam's batch transcription
-service and merged into one complete transcript. Tick <strong>Translate to
-English</strong> for an English transcript. After transcription finishes, save
-the result as plain text or a Word document.</p>
+pick the audio language, then press <strong>Transcribe</strong>. Large audio
+files are handled for you: anything beyond the real-time limit is processed
+through Sarvam's batch transcription service and merged into one complete
+transcript. Tick <strong>Translate to English</strong> for an English
+transcript. After transcription finishes, save the result as plain text or a
+Word document.</p>
+
+<div class="note">
+<p><strong>Mixed-language speech:</strong> leave the audio language on
+<em>Auto</em> (the default) if you naturally mix languages in one sentence, for
+example <em>"&#3240;&#3262;&#3240;&#3265; &#3234;&#3202;&#3238;&#3265; office &#3223;&#3270; &#3257;&#3275;&#3223;&#3244;&#3270;&#3221;&#3265; because I have a meeting."</em>
+Auto asks Sarvam to work out the language itself and to return code-mixed text,
+so the Kannada stays in Kannada script and the English words stay in English.
+Choosing a specific language instead gives normal single-language
+transcription. If you would rather always get single-language output, turn off
+the mixed-language option in Advanced settings.</p>
+</div>
 
 <h2>Translate, Transliterate, Detect language</h2>
 <p>Enter or paste text, or press <strong>Upload document</strong> to load a
