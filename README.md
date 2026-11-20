@@ -50,6 +50,10 @@ Indian-language accessibility community in particular.
   PowerPoint, HTML).
 - **Data extraction to spreadsheets.** Describe the fields in plain words and
   download them as Excel or CSV.
+- **Dubbing (2.1).** Dub a video or audio file into 12 Indian languages,
+  keeping the original voices (voice cloning). You get back a dubbed MP4, WAV
+  audio and/or subtitles.
+- **NVDA+Alt+A (2.1)** describes the current window with AI vision.
 
 See the [CHANGELOG](CHANGELOG.md) for the full list.
 
@@ -129,7 +133,8 @@ Everything is reachable from **Tools → Sarvam AI** in the NVDA menu:
 | Documents and OCR… | Sarvam Document AI: read documents, or extract data to Excel/CSV/JSON. |
 | AI Workforce… | Assistant, summary, analysis, content, Q&A, with any model. |
 | Sarvam Agent… | Multi-step tasks done for you with tools (translate, speak, save files). |
-| Describe the screen with AI vision | Describes the current window. |
+| Dubbing… | Dub video or audio into Indian languages with voice cloning; download MP4, WAV, SRT. |
+| Describe the screen with AI vision (NVDA+Alt+A) | Describes the current window. |
 | Model switching… | Choose the model behind every feature. |
 | Settings (API key)… | API key, Generate API key, and core defaults. |
 | Advanced settings… | All options, including batch processing speed. |
@@ -139,11 +144,13 @@ Everything is reachable from **Tools → Sarvam AI** in the NVDA menu:
 
 ### Keyboard shortcuts
 
-No shortcut is bound by default, so nothing clashes with NVDA's own commands
-(an earlier default clashed with NVDA's sound-split command). Assign your own in
+**NVDA+Alt+A** describes the current window with AI vision. It is the one key
+bound by default, and NVDA itself does not use it. Every other command is
+unbound so nothing clashes with NVDA (an earlier default clashed with NVDA's
+sound-split command). Change NVDA+Alt+A or assign your own keys in
 **NVDA → Preferences → Input Gestures → Sarvam AI** — for example "Opens the
 Sarvam AI menu", or go straight to Text to Speech, Speech to Text, Translate,
-OCR, AI Workforce, the Agent, Model switching, "Describe the current window",
+OCR, AI Workforce, the Agent, Dubbing, Model switching, "Describe the current window",
 "Describe the whole screen" or "Switch to the next chat model".
 
 Inside any Sarvam AI window, **Escape closes it** — even from inside a text box.

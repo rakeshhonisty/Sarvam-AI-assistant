@@ -14,7 +14,7 @@ th, td { border: 1px solid #ccc; padding: .4em .6em; text-align: left; }
 </style>
 </head>
 <body>
-<h1>Sarvam AI assistant for NVDA, version 2.0</h1>
+<h1>Sarvam AI assistant for NVDA, version 2.1</h1>
 <p><strong>Purpose:</strong> Sarvam AI assistant lets you use the Sarvam AI
 platform from NVDA, by keyboard and screen reader. It covers speech, languages,
 documents, AI reasoning, an agent that does work for you, and AI vision.</p>
@@ -25,6 +25,13 @@ documents, AI reasoning, an agent that does work for you, and AI vision.</p>
 under <em>Preferences &rarr; Input Gestures &rarr; Sarvam AI</em>. Settings are
 in that menu and under NVDA <em>Preferences &rarr; Settings &rarr; Sarvam AI</em>.</p>
 </div>
+
+<h2>What is new in 2.1</h2>
+<ul>
+<li><strong>Dubbing</strong>: dub a video or audio file into 12 Indian languages,
+keeping the original voices.</li>
+<li><kbd>NVDA+Alt+A</kbd> describes the current window with AI vision.</li>
+</ul>
 
 <h2>What is new in 2.0</h2>
 <ul>
@@ -159,13 +166,39 @@ is announced and listed under <strong>Agent steps</strong>. The agent can read
 only the files you attached and can only create new files in your output
 folder. It never overwrites or deletes files, and it cannot run programs.</p>
 
+<h2>Dubbing</h2>
+<p>Open <em>Tools &rarr; Sarvam AI &rarr; Dubbing</em> and press <strong>Choose
+video or audio file</strong>. Video can be MP4, MOV, MKV, WebM, AVI, FLV or
+WMV, and audio can be WAV, MP3 or M4A. Then set:</p>
+<ul>
+<li><strong>Spoken language in the file</strong>: Auto detect, or one of the
+Indian or international languages.</li>
+<li><strong>Dub into</strong>: a list of 12 languages (English, Hindi, Bengali,
+Gujarati, Kannada, Malayalam, Marathi, Odia, Punjabi, Tamil, Telugu, Assamese).
+Press <kbd>Space</kbd> to check each language you want.</li>
+<li><strong>Files to get back</strong>: dubbed video (MP4), dubbed audio (WAV)
+and/or subtitles (SRT).</li>
+<li><strong>Clone the original speakers' voices</strong> (on by default) and the
+<strong>number of speakers</strong>, with 0 to detect them. With cloning off,
+type a preset voice name, for example <em>ishita</em>, and choose a pace.</li>
+<li><strong>Language style</strong>, and whether to remove the video
+watermark.</li>
+</ul>
+<p>Press <strong>Dub</strong>. The add-on states the cost: about 40 rupees of
+Sarvam credit per minute of media for each language. It asks you to confirm,
+then asks where to save. Dubbing can take several minutes. When it finishes,
+one file per language and format is saved, named like
+<code>talk_kn-IN.mp4</code>.</p>
+
 <h2>AI vision: images and the screen</h2>
 <p>Attach a photo or screenshot in AI Workforce and choose <em>Describe images
 and screenshots</em>. If the chosen model cannot see images, the vision model
-from Model switching (Gemma 4 by default) is used for that request. The
-gestures "Describes the current window" and "Describes the whole screen", and
-the menu item, take a screenshot and describe it, including all visible
-text.</p>
+from Model switching (Gemma 4 by default) is used for that request.</p>
+<p>Press <kbd>NVDA+Alt+A</kbd> anywhere to describe the current window,
+including all visible text. The menu item does the same, and an assignable
+gesture "Describes the whole screen" describes the entire screen. The
+description opens in AI Workforce, so you can ask follow-up questions about
+what is on screen.</p>
 
 <h2>Downloading results</h2>
 <p>When a task finishes, a <strong>Download format</strong> list and a
@@ -183,9 +216,10 @@ Word, HTML and Excel. The add-on remembers the format you used last.</p>
 </table>
 
 <h2>Keyboard shortcuts</h2>
-<p>No shortcut is assigned by default, so nothing clashes with NVDA's own
-commands. Assign your own in <em>NVDA &rarr; Preferences &rarr; Input Gestures
-&rarr; Sarvam AI</em>, for example for the Sarvam AI menu, Text to Speech,
+<p><kbd>NVDA+Alt+A</kbd> describes the current window with AI vision. It is the
+only shortcut assigned by default, and NVDA itself does not use it. Change it,
+or assign your own keys, in <em>NVDA &rarr; Preferences &rarr; Input Gestures
+&rarr; Sarvam AI</em>, for example for the Sarvam AI menu, Dubbing, Text to Speech,
 Speech to Text, Translate, OCR, AI Workforce, the Agent, Model switching,
 describing the window or the whole screen, or switching to the next chat model.
 Inside any Sarvam AI window, <kbd>Escape</kbd> closes it, even from inside a
@@ -221,7 +255,7 @@ Access. You need your own Sarvam API key, with credits, to use the online
 features.</p>
 
 <h2>Version and changelog</h2>
-<p>Version 2.0. See the
+<p>Version 2.1. See the
 <a href="https://github.com/rakeshhonisty/Sarvam-AI-assistant/blob/main/CHANGELOG.md">CHANGELOG</a>
 for the list of changes.</p>
 

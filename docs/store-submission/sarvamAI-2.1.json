@@ -1,0 +1,29 @@
+{
+	"addonId": "sarvamAI",
+	"displayName": "Sarvam AI assistant",
+	"URL": "https://github.com/rakeshhonisty/Sarvam-AI-assistant/releases/download/v2.1/sarvamAI-2.1.nvda-addon",
+	"description": "Accessible NVDA add-on for the Sarvam AI platform, built for blind and visually-impaired users: Bulbul v4 Flash persona voices chosen by gender, purpose and language; Saaras v4 speech to text with key terms, speaker separation and subtitles; translation of text and of whole PDF, Word, Excel and PowerPoint files in their own format; Sarvam Document AI OCR and data extraction to Excel or CSV in 23 languages; the AI Workforce and a tool-using Sarvam Agent; dubbing of video and audio into 12 Indian languages with voice cloning; AI vision to describe images and the screen (NVDA+Alt+A); and model switching between Sarvam 105B and Sarvam's open models (GLM 5.3, Gemma 4, DeepSeek V4.1 Flash and more). Upload almost any file and download results as Word, Markdown, HTML, RTF, Excel, CSV, JSON, text or audio. Fully keyboard accessible.",
+	"sha256": "d49f0a7d1e9f0fdc888b7e479d6c0cabe75c85101ff77a253ca0fbdc0f398b90",
+	"homepage": "https://github.com/rakeshhonisty/Sarvam-AI-assistant",
+	"addonVersionName": "2.1",
+	"addonVersionNumber": {
+		"major": 2,
+		"minor": 1,
+		"patch": 0
+	},
+	"minNVDAVersion": {
+		"major": 2021,
+		"minor": 1,
+		"patch": 0
+	},
+	"lastTestedVersion": {
+		"major": 2026,
+		"minor": 2,
+		"patch": 0
+	},
+	"channel": "stable",
+	"publisher": "Rakesh Honisty",
+	"sourceURL": "https://github.com/rakeshhonisty/Sarvam-AI-assistant",
+	"license": "GPL v2",
+	"licenseURL": "https://www.gnu.org/licenses/old-licenses/gpl-2.0.html"
+}

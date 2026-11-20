@@ -65,6 +65,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		# Translators: items in the Sarvam AI menu.
 		add(_("&Text to Speech..."), self.onTextToSpeech)
 		add(_("&Speech to Text..."), self.onSpeechToText)
+		add(_("Dubbin&g (dub video or audio into Indian languages)..."), self.onDubbing)
 		add(_("&Translate..."), self.onTranslate)
 		add(_("T&ransliterate..."), self.onTransliterate)
 		add(_("&Detect language..."), self.onDetectLanguage)
@@ -72,7 +73,8 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		# AI Assistant and AI Summarise are Task modes inside AI Workforce.
 		add(_("AI &Workforce (assistant, summary, analysis)..."), self.onWorkforce)
 		add(_("Sarvam &Agent (does multi-step work for you)..."), self.onAgent)
-		add(_("Describe the &screen with AI vision"), self.onDescribeScreen)
+		# Translators: NVDA+Alt+A is the default shortcut for this command.
+		add(_("Describe the &screen with AI vision (NVDA+Alt+A)"), self.onDescribeScreen)
 		menu.AppendSeparator()
 		add(_("&Model switching..."), self.onModels)
 		add(_("Se&ttings (API key)..."), self.onSettings)
@@ -172,6 +174,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		from .ui.workforce import WorkforceDialog
 		self._open(lambda: WorkforceDialog(gui.mainFrame, mode=constants.AGENT_ROLE))
 
+	def onDubbing(self, evt=None):
+		from .ui.dubbing import DubbingDialog
+		self._open(lambda: DubbingDialog(gui.mainFrame))
+
 	def onModels(self, evt=None):
 		from .ui.models import ModelCenterDialog
 		self._open(lambda: ModelCenterDialog(gui.mainFrame))
@@ -232,9 +238,10 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 			wx.OK | wx.ICON_INFORMATION)
 
 	# -- gestures -----------------------------------------------------------
-	# No gesture is bound by default (NVDA+Alt+S is taken by NVDA's built-in
-	# "sound split" command). Assign your own key to "Opens the Sarvam AI menu"
-	# under Input Gestures > Sarvam AI.
+	# One gesture is bound by default: NVDA+Alt+A describes the current window
+	# with AI vision (used often, so it gets a key). Everything else is unbound
+	# (NVDA+Alt+S, for example, is NVDA's own "sound split" command); assign
+	# keys under Input Gestures > Sarvam AI. NVDA+Alt+A can be changed there too.
 	@script(
 		# Translators: input help for opening the Sarvam AI menu.
 		description=_("Opens the Sarvam AI menu"),
@@ -298,7 +305,7 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	@script(
 		description=_("Describes the current window with Sarvam AI vision"),
-		category=SCRIPT_CATEGORY, gesture=None)
+		category=SCRIPT_CATEGORY, gesture="kb:NVDA+alt+a")
 	def script_describeScreen(self, gesture):
 		wx.CallAfter(self.onDescribeScreen)
 
@@ -307,6 +314,12 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		category=SCRIPT_CATEGORY, gesture=None)
 	def script_describeWholeScreen(self, gesture):
 		wx.CallAfter(self.onDescribeScreen, None, False)
+
+	@script(
+		description=_("Opens the Sarvam AI Dubbing window"),
+		category=SCRIPT_CATEGORY, gesture=None)
+	def script_dubbing(self, gesture):
+		self.onDubbing()
 
 	@script(
 		description=_("Opens Sarvam AI model switching"),

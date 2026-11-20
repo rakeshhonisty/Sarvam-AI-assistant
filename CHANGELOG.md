@@ -3,6 +3,36 @@
 All notable changes to the Sarvam AI assistant NVDA add-on are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.1] - 2026-11-20
+
+### New: Dubbing
+- **Dub a video or audio file into Indian languages** with the Sarvam Dubbing
+  API (menu: Dubbing). The input can be a video (MP4, MOV, MKV, WebM, AVI, FLV,
+  WMV) or audio (WAV, MP3, M4A) in Auto-detected, Indian or international
+  languages. Dub into one or more of 12 languages: English, Hindi, Bengali,
+  Gujarati, Kannada, Malayalam, Marathi, Odia, Punjabi, Tamil, Telugu and
+  Assamese.
+- **Voice cloning** keeps the original speakers' voices (up to 10 speakers, or
+  detected automatically). Or turn it off and use a preset Sarvam voice with a
+  chosen pace.
+- Choose what you get back for each language: **dubbed video (MP4)**, **dubbed
+  audio (WAV)** and/or **subtitles (SRT)**. Also choose the language style
+  (formal, colloquial, academic and so on) and whether to remove the watermark.
+- The price is shown and confirmed before starting: about ₹40 per minute per
+  language, Sarvam's pay-as-you-go rate. The files are saved into the folder
+  you choose, as `<name>_<language>.<ext>`.
+
+### New default shortcut: NVDA+Alt+A
+- **NVDA+Alt+A describes the current window with AI vision.** It is the only
+  key the add-on binds by default, because many users will use this command
+  often. NVDA itself does not use NVDA+Alt+A. You can change or remove it in
+  Preferences → Input Gestures → Sarvam AI.
+
+### Other
+- `lastTestedNVDAVersion` raised to 2026.2, the newest stable NVDA in NV
+  Access's official list.
+- 35 automated tests (dubbing flow and default gesture added).
+
 ## [2.0] - 2026-11-20 - "sarvamAI-2.0"
 
 A landmark release that brings the add-on up to date with Sarvam's latest

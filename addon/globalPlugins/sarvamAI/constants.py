@@ -89,6 +89,56 @@ DOCTR_EXTENSIONS = (
 DOCTR_GENRES = ("", "NON_FICTION", "ADULT_FICTION", "CHILDREN_FICTION",
 	"RELIGIOUS", "LEGAL", "ACADEMIC")
 
+# Dubbing (Sarvam Content Studio API): dub a video or audio file into Indian
+# languages, with voice cloning, and get back MP4 video, WAV audio and
+# subtitles. Create -> PUT media to upload_url -> start -> live-status ->
+# export-status (source of truth for downloads).
+EP_DUB_CREATE = "/dubbing/jobs"
+EP_DUB_START = "/dubbing/jobs/{job_id}/start"
+EP_DUB_STATUS = "/dubbing/jobs/{job_id}/live-status"
+EP_DUB_EXPORTS = "/dubbing/jobs/{job_id}/export-status?limit=100"
+DUB_DONE_STATES = ("completed", "partial_failure")
+DUB_FAILED_STATES = ("failed", "deleted")
+DUB_VIDEO_EXTENSIONS = (".mp4", ".mov", ".mkv", ".webm", ".avi", ".flv", ".wmv")
+DUB_AUDIO_EXTENSIONS = (".wav", ".mp3", ".m4a")
+DUB_EXTENSIONS = DUB_VIDEO_EXTENSIONS + DUB_AUDIO_EXTENSIONS
+# Dubbing target languages (Odia is "or-IN" on this API; "od-IN" is rejected).
+DUB_TARGET_LANGUAGES = {
+	"en-IN": "English (India)", "hi-IN": "Hindi", "bn-IN": "Bengali",
+	"gu-IN": "Gujarati", "kn-IN": "Kannada", "ml-IN": "Malayalam",
+	"mr-IN": "Marathi", "or-IN": "Odia", "pa-IN": "Punjabi", "ta-IN": "Tamil",
+	"te-IN": "Telugu", "as-IN": "Assamese",
+}
+# Extra source languages (besides the targets and "auto").
+DUB_EXTRA_SOURCE_LANGUAGES = {
+	"ur-IN": "Urdu", "ne-IN": "Nepali", "kok-IN": "Konkani", "brx-IN": "Bodo",
+	"doi-IN": "Dogri", "ks-IN": "Kashmiri", "mai-IN": "Maithili",
+	"mni-IN": "Manipuri", "sa-IN": "Sanskrit", "sat-IN": "Santali", "sd-IN": "Sindhi",
+	"ar-SA": "Arabic", "zh-CN": "Chinese", "nl-NL": "Dutch", "fr-FR": "French",
+	"de-DE": "German", "id-ID": "Indonesian", "it-IT": "Italian", "ja-JP": "Japanese",
+	"ko-KR": "Korean", "pl-PL": "Polish", "pt-BR": "Portuguese (Brazil)",
+	"ru-RU": "Russian", "es-ES": "Spanish", "tr-TR": "Turkish", "vi-VN": "Vietnamese",
+}
+# (export option, label, file extension)
+DUB_EXPORTS = (
+	("video", "Dubbed video (MP4)", ".mp4"),
+	("audio", "Dubbed audio with background (WAV)", ".wav"),
+	("srt", "Subtitles of the dubbed speech (SRT)", ".srt"),
+)
+DUB_EXPORT_EXTENSIONS = {"video": ".mp4", "audio": ".wav", "audio_vocals": "_vocals.wav",
+	"mp3": ".mp3", "srt": ".srt", "vtt": ".vtt"}
+DUB_REGISTERS = ("auto", "formal", "common-indic", "modern-colloquial",
+	"classic-colloquial", "academic")
+DUB_PACE_PRESETS = ("normal", "slow", "moderate", "fast")
+# Published pay-as-you-go price, rupees per minute of source per target language.
+DUB_PRICE_PER_MINUTE = 40
+
+
+def to_dub_language(code):
+	"""Dubbing uses or-IN for Odia."""
+	return "or-IN" if code in ("od-IN", "ory-IN") else code
+
+
 # Document output formats (delivered inside a ZIP). "md" = Markdown (not
 # "markdown", which the API rejects).
 OCR_OUTPUT_FORMATS = ("md", "html", "json")

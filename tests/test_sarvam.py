@@ -493,6 +493,82 @@ class ClientTests(unittest.TestCase):
 		self.assertTrue(any(c[0] == "PUT" for c in t.calls))
 
 
+class DubbingTests(unittest.TestCase):
+
+	def test_dub_flow(self):
+		cli = make_client()
+		states = iter(["queued", "in_progress", "completed"])
+		export_polls = {"n": 0}
+
+		def handler(method, path, body):
+			if path == constants.EP_DUB_CREATE:
+				self.assertEqual(body["src_lang"], "en-IN")
+				self.assertEqual(body["target_langs"], ["kn-IN", "or-IN"])  # od-IN mapped
+				self.assertEqual(body["export_options"], ["video", "srt"])
+				self.assertTrue(body["voice_cloning"])
+				self.assertNotIn("voice_id", body)
+				return {"status": "success", "data": {"job_id": "dub_1",
+					"upload_url": "https://api.sarvam.ai/dubbing/uploads/dub_1?sig=x"}}
+			if path.endswith("/start"):
+				return {"status": "success"}
+			if path.endswith("/live-status"):
+				return {"data": {"job_id": "dub_1", "status": next(states), "progress": 50}}
+			if "/export-status" in path:
+				export_polls["n"] += 1
+				if export_polls["n"] == 1:
+					return {"data": {"exports": []}}  # empty right after completion
+				return {"data": {"exports": [
+					{"id": "e1", "export_type": "video", "target_language": "kn-IN", "status": "completed",
+						"is_stale": False, "download_url": "https://dl/1"},
+					{"id": "e2", "export_type": "srt", "target_language": "kn-IN", "status": "completed",
+						"is_stale": False, "download_url": "https://dl/2"},
+					{"id": "e3", "export_type": "video", "target_language": "or-IN", "status": "completed",
+						"is_stale": False, "download_url": "https://dl/3"},
+					{"id": "e4", "export_type": "srt", "target_language": "or-IN", "status": "failed",
+						"is_stale": False}]}}
+			if method == "GETURL":
+				return b"media:" + path.encode()
+			raise AssertionError(path)
+
+		t = FakeTransport(cli, handler)
+		d = tempfile.mkdtemp()
+		try:
+			src = os.path.join(d, "talk.mp4")
+			with open(src, "wb") as f:
+				f.write(b"\x00" * 64)
+			saved = cli.dub(src, "en-IN", ["kn-IN", "od-IN"], d, export_options=["video", "srt"])
+			names = sorted(os.path.basename(p) for p in saved)
+			self.assertEqual(names, ["talk_kn-IN.mp4", "talk_kn-IN.srt", "talk_or-IN.mp4"])
+		finally:
+			shutil.rmtree(d, ignore_errors=True)
+		self.assertTrue(any(c[0] == "PUT" for c in t.calls))
+		self.assertEqual(export_polls["n"], 2)
+
+	def test_dub_rejects_same_source_and_target(self):
+		cli = make_client()
+		FakeTransport(cli, lambda m, p, b: {})
+		with self.assertRaises(errors.InvalidRequestError):
+			cli.dub("x.mp4", "hi-IN", ["hi-IN"], tempfile.gettempdir())
+
+	def test_preset_voice_sent_only_without_cloning(self):
+		cli = make_client()
+		seen = {}
+
+		def handler(method, path, body):
+			if path == constants.EP_DUB_CREATE:
+				seen.update(body)
+				raise errors.InvalidRequestError("stop here", status=400)
+			raise AssertionError(path)
+
+		FakeTransport(cli, handler)
+		with self.assertRaises(errors.InvalidRequestError):
+			cli.dub("x.wav", "auto", ["ta-IN"], tempfile.gettempdir(), export_options=["audio"],
+				voice_cloning=False, voice_id=" Ishita ", pace_preset="slow", num_speakers=-1)
+		self.assertEqual(seen["voice_id"], "ishita")
+		self.assertEqual(seen["pace_preset"], "slow")
+		self.assertEqual(seen["num_speakers"], -1)
+
+
 class AgentTests(unittest.TestCase):
 
 	def test_safe_file_name(self):
@@ -569,9 +645,10 @@ class DialogSmokeTests(unittest.TestCase):
 	errors in constructors and handlers."""
 
 	def test_construct_dialogs(self):
-		from sarvamAI.ui import tts, stt, translate, ocr_dialog, workforce, models as models_ui, setup
+		from sarvamAI.ui import tts, stt, translate, ocr_dialog, workforce, models as models_ui, setup, dubbing
 		import sarvamAI
 		for factory in (
+				lambda: dubbing.DubbingDialog(None),
 				lambda: tts.TextToSpeechDialog(None, initial_text="hello"),
 				lambda: stt.SpeechToTextDialog(None),
 				lambda: translate.TranslateDialog(None, initial_text="x"),
@@ -585,6 +662,17 @@ class DialogSmokeTests(unittest.TestCase):
 		plugin = sarvamAI.GlobalPlugin()
 		self.assertTrue(hasattr(plugin, "onModels"))
 		self.assertIn("Chat model", models_ui.cycle_chat_model(1))
+
+	def test_default_gestures(self):
+		import sarvamAI
+		bound = {}
+		for name in dir(sarvamAI.GlobalPlugin):
+			if name.startswith("script_"):
+				info = getattr(getattr(sarvamAI.GlobalPlugin, name), "_scriptInfo", {})
+				if info.get("gesture"):
+					bound[info["gesture"]] = name
+		# Exactly one default key: NVDA+Alt+A describes the screen.
+		self.assertEqual(bound, {"kb:NVDA+alt+a": "script_describeScreen"})
 
 	def test_tts_dialog_classification_flow(self):
 		from sarvamAI.ui import tts

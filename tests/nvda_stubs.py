@@ -119,6 +119,18 @@ class _ChoiceMixin(Dummy):
 		self._items = list(k.get("choices") or [])
 
 
+class _CheckList(_ChoiceMixin):
+	def __init__(self, *a, **k):
+		super().__init__(*a, **k)
+		self._checked = set()
+
+	def Check(self, i, check=True):
+		(self._checked.add if check else self._checked.discard)(i)
+
+	def IsChecked(self, i):
+		return i in self._checked
+
+
 def _install_wx():
 	wx = DummyModule("wx")
 	for name in ("Dialog", "Frame", "Panel", "Window", "Menu", "BoxSizer", "StaticText",
@@ -127,6 +139,7 @@ def _install_wx():
 		setattr(wx, name, Dummy)
 	wx.Choice = _ChoiceMixin
 	wx.ComboBox = _ChoiceMixin
+	wx.CheckListBox = _CheckList
 	wx.CallAfter = lambda fn, *a, **k: None
 	for const in ("ID_ANY", "ID_OK", "ID_CLOSE", "ID_CANCEL", "VERTICAL", "HORIZONTAL",
 			"ALL", "EXPAND", "TE_MULTILINE", "TE_READONLY", "TE_RICH2", "TE_PASSWORD",
@@ -136,7 +149,7 @@ def _install_wx():
 			"WXK_RETURN", "WXK_NUMPAD_ENTER", "WXK_ESCAPE", "ALIGN_RIGHT"):
 		setattr(wx, const, 1)
 	for evt in ("EVT_BUTTON", "EVT_CHOICE", "EVT_MENU", "EVT_CLOSE", "EVT_CHAR_HOOK",
-			"EVT_KEY_DOWN", "EVT_TEXT_ENTER", "EVT_SLIDER"):
+			"EVT_KEY_DOWN", "EVT_TEXT_ENTER", "EVT_SLIDER", "EVT_CHECKBOX"):
 		setattr(wx, evt, 1)
 	wx.TheClipboard = Dummy()
 	sys.modules["wx"] = wx
@@ -206,7 +219,12 @@ def install(translation=True):
 	globalVars.appArgs = types.SimpleNamespace(configPath=tempfile.gettempdir())
 	sys.modules["globalVars"] = globalVars
 	sys.modules["globalPluginHandler"].GlobalPlugin = Dummy
-	sys.modules["scriptHandler"].script = lambda **k: (lambda f: f)
+	def script(**k):
+		def deco(f):
+			f._scriptInfo = k  # lets tests check descriptions and gestures
+			return f
+		return deco
+	sys.modules["scriptHandler"].script = script
 	ui = types.ModuleType("ui")
 	ui.message = lambda *a, **k: None
 	sys.modules["ui"] = ui

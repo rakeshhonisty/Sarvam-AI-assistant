@@ -81,6 +81,27 @@ for "Check which models my key can use" and as the connection test.
   `POST .../{job_id}/export?lang=<code>`, poll
   `GET .../{job_id}/export/status`, and finally download from `download_url`.
 
+## Dubbing - `/dubbing`
+
+1. `POST /dubbing/jobs` with `{src_lang ("auto" or a code), target_langs[]
+   (12 codes; Odia is or-IN), export_options ["video","audio","srt"],
+   voice_cloning, num_speakers (1-10, -1 = auto), register, voice_id and
+   pace_preset (only without cloning), disable_watermark, job_name}` returns
+   `{"data": {job_id, upload_url}}`.
+2. `PUT <upload_url>` with the media bytes, `Content-Type` and
+   `x-ms-blob-type: BlockBlob`, and no API key.
+3. `POST /dubbing/jobs/{job_id}/start`.
+4. Poll `GET /dubbing/jobs/{job_id}/live-status`. `data.status` is one of
+   `queued`, `in_progress`, `completed`, `partial_failure`, `failed`,
+   `deleted`; `data.progress` gives 0-100.
+5. Poll `GET /dubbing/jobs/{job_id}/export-status?limit=100`, the source of
+   truth. `data.exports[]` holds one entry per (language, format) with
+   `export_type`, `target_language`, `status`, `is_stale` and `download_url`
+   (signed, about 24 h). It can be empty just after completion. Download every
+   entry that is `completed` and not stale.
+
+Price: about ₹40 per minute of source per target language (pay-as-you-go).
+
 ## Document AI (Sarvam Vision 2.1) - `/doc-ai/v1`
 
 | Step | Call |

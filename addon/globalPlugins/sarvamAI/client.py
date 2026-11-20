@@ -1003,6 +1003,108 @@ class SarvamClient:
 		return saved
 
 
+	# -- dubbing --------------------------------------------------------------
+	def dub(self, path, source_language, target_languages, out_dir,
+			export_options=("video",), voice_cloning=True, num_speakers=1,
+			register=None, voice_id=None, pace_preset=None,
+			disable_watermark=False, cancel=None, progress=None,
+			poll_interval=10.0, max_wait=6 * 3600):
+		"""Dub a video or audio file into one or more Indian languages.
+
+		Flow (Sarvam Dubbing API): POST /dubbing/jobs -> PUT the media to the
+		signed upload_url -> POST start -> poll live-status until the job
+		finishes -> poll export-status (the source of truth for downloads)
+		until every requested (language, format) export is done -> download
+		each one. Files are saved into ``out_dir`` as
+		``<name>_<language>.<ext>``; the saved paths are returned.
+		"""
+		targets = [constants.to_dub_language(t) for t in target_languages if t]
+		src = constants.to_dub_language(source_language or "auto")
+		targets = [t for t in targets if t != src]
+		if not targets:
+			raise errors.InvalidRequestError(
+				_("Choose at least one target language different from the source language."))
+		exports = [e for e in (export_options or ("video",))]
+		name = os.path.basename(path)
+		body = {
+			"src_lang": src,
+			"target_langs": targets,
+			"export_options": exports,
+			"voice_cloning": bool(voice_cloning),
+			"job_name": os.path.splitext(name)[0][:200] or "dub",
+		}
+		if num_speakers:
+			body["num_speakers"] = int(num_speakers)
+		if register and register != "auto":
+			body["register"] = register
+		if not voice_cloning:
+			if voice_id:
+				body["voice_id"] = voice_id.strip().lower()
+			if pace_preset:
+				body["pace_preset"] = pace_preset
+		if disable_watermark:
+			body["disable_watermark"] = True
+		if progress:
+			progress(0, 100)
+		created = self._post_json(constants.EP_DUB_CREATE, body, cancel=cancel)
+		data = created.get("data") if isinstance(created.get("data"), dict) else created
+		job_id = data.get("job_id")
+		upload_url = data.get("upload_url")
+		if not job_id or not upload_url:
+			raise errors.SarvamError(_("Sarvam did not return a dubbing job."))
+		with open(path, "rb") as f:
+			self._put_url(upload_url, f.read(), storage_type="azure", content_type=mime_type(path))
+		if cancel:
+			cancel.check()
+		self._request("POST", constants.EP_DUB_START.format(job_id=job_id), cancel=cancel)
+
+		def unwrap(res):
+			return res.get("data") if isinstance(res, dict) and isinstance(res.get("data"), dict) else (res or {})
+
+		def fetch():
+			s = unwrap(self._request("GET", constants.EP_DUB_STATUS.format(job_id=job_id), cancel=cancel))
+			if progress and isinstance(s.get("progress"), (int, float)):
+				progress(min(95, int(s["progress"])), 100)
+			return s
+
+		self._poll(fetch, lambda s: (s.get("status") or "").lower(),
+			constants.DUB_DONE_STATES, constants.DUB_FAILED_STATES,
+			cancel, poll_interval, max_wait, _("Dubbing"))
+
+		# Wait for every requested export; the list can be empty for a short
+		# while right after the job completes.
+		wanted = len(targets) * len(exports)
+		waited = 0.0
+		items = []
+		while True:
+			res = unwrap(self._request("GET", constants.EP_DUB_EXPORTS.format(job_id=job_id), cancel=cancel))
+			items = [e for e in (res.get("exports") or []) if isinstance(e, dict)]
+			settled = [e for e in items if e.get("status") in ("completed", "failed")]
+			if items and len(items) >= wanted and len(settled) == len(items):
+				break
+			if waited >= 1800:
+				break
+			_sleep(5.0, cancel)
+			waited += 5.0
+		saved = []
+		base = os.path.splitext(name)[0]
+		for e in items:
+			if e.get("status") != "completed" or e.get("is_stale") or not e.get("download_url"):
+				continue
+			ext = constants.DUB_EXPORT_EXTENSIONS.get(e.get("export_type"), ".bin")
+			out = unique_path(os.path.join(out_dir, "%s_%s%s" % (base, e.get("target_language", ""), ext)))
+			with open(out, "wb") as f:
+				f.write(self._get_url(e["download_url"]))
+			saved.append(out)
+		if progress:
+			progress(100, 100)
+		if not saved:
+			failed = [e for e in items if e.get("status") == "failed"]
+			raise errors.SarvamError(
+				_("Dubbing finished but no file could be downloaded ({n} exports failed).").format(n=len(failed)))
+		return saved
+
+
 # --- module-level helpers ---------------------------------------------------
 def image_part(image_bytes, mime="image/jpeg", detail="auto"):
 	"""A chat content part carrying an inline base64 image."""
