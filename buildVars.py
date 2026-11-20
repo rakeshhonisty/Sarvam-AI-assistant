@@ -10,14 +10,18 @@ addon_info = {
 	# Longer description.
 	"addon_description": (
 		"Accessible NVDA add-on for the Sarvam AI platform, built for blind and "
-		"visually-impaired users. Text to speech (with document upload and MP3 "
-		"export), speech to text including large audio files, translation, "
-		"transliteration, language detection, an AI Workforce reasoning layer "
-		"(Sarvam-105B), and OCR powered by Sarvam Document Intelligence in 23 "
-		"languages that preserves headings, tables and multi-column layout. "
-		"Results save as TXT, Word or Markdown. Fully keyboard accessible."
+		"visually-impaired users. Version 2.0: Bulbul v4 Flash persona voices "
+		"chosen by gender, purpose and language; Saaras v4 speech to text with "
+		"key terms, speaker separation and subtitles; translation of text and of "
+		"whole PDF, Word, Excel and PowerPoint files in their own format; Sarvam "
+		"Document AI OCR and data extraction to Excel or CSV in 23 languages; "
+		"the AI Workforce and a tool-using Sarvam Agent; AI vision to describe "
+		"images and the screen; and model switching between Sarvam 105B and "
+		"Sarvam's open models (GLM 5.3, Gemma 4, DeepSeek V4.1 Flash and more). "
+		"Upload almost any file and download results as Word, Markdown, HTML, "
+		"RTF, Excel, CSV, JSON, text or audio. Fully keyboard accessible."
 	),
-	"addon_version": "1.0.7",
+	"addon_version": "2.0",
 	"addon_author": "Sarvam AI assistant contributors <rakesh.honistyboy@gmail.com>",
 	"addon_url": "https://github.com/rakeshhonisty/Sarvam-AI-assistant",
 	"addon_sourceURL": "https://github.com/rakeshhonisty/Sarvam-AI-assistant",

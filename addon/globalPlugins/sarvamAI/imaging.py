@@ -150,6 +150,122 @@ def image_file_to_pdf(src_path):
 	return pdf_path
 
 
+class _RECT(ctypes.Structure):
+	_fields_ = [("left", ctypes.c_long), ("top", ctypes.c_long),
+		("right", ctypes.c_long), ("bottom", ctypes.c_long)]
+
+
+class _BITMAPINFOHEADER(ctypes.Structure):
+	_fields_ = [
+		("biSize", ctypes.c_uint32), ("biWidth", ctypes.c_int32),
+		("biHeight", ctypes.c_int32), ("biPlanes", ctypes.c_uint16),
+		("biBitCount", ctypes.c_uint16), ("biCompression", ctypes.c_uint32),
+		("biSizeImage", ctypes.c_uint32), ("biXPelsPerMeter", ctypes.c_int32),
+		("biYPelsPerMeter", ctypes.c_int32), ("biClrUsed", ctypes.c_uint32),
+		("biClrImportant", ctypes.c_uint32)]
+
+
+def _screen_rect(foreground=True):
+	user32 = ctypes.WinDLL("user32")
+	user32.GetForegroundWindow.restype = ctypes.c_void_p
+	user32.GetWindowRect.argtypes = [ctypes.c_void_p, ctypes.POINTER(_RECT)]
+	rect = _RECT()
+	if foreground:
+		hwnd = user32.GetForegroundWindow()
+		if hwnd and user32.GetWindowRect(hwnd, ctypes.byref(rect)):
+			# Clamp to the virtual screen (SM_X/Y/CX/CYVIRTUALSCREEN).
+			vx, vy = user32.GetSystemMetrics(76), user32.GetSystemMetrics(77)
+			vw, vh = user32.GetSystemMetrics(78), user32.GetSystemMetrics(79)
+			left, top = max(rect.left, vx), max(rect.top, vy)
+			right, bottom = min(rect.right, vx + vw), min(rect.bottom, vy + vh)
+			if right - left > 20 and bottom - top > 20:
+				return left, top, right - left, bottom - top
+	# Whole primary screen.
+	return 0, 0, user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+
+
+def capture_screen_bmp(foreground=True):
+	"""Capture the foreground window (or the whole screen) as BMP bytes.
+
+	Pure ctypes/GDI: BitBlt from the screen into a 24-bit DIB, then wrap the
+	pixels with a BMP file header.
+	"""
+	import struct
+	left, top, w, h = _screen_rect(foreground)
+	user32 = ctypes.WinDLL("user32")
+	gdi32 = ctypes.WinDLL("gdi32")
+	user32.GetDC.restype = ctypes.c_void_p
+	user32.GetDC.argtypes = [ctypes.c_void_p]
+	user32.ReleaseDC.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+	gdi32.CreateCompatibleDC.restype = ctypes.c_void_p
+	gdi32.CreateCompatibleDC.argtypes = [ctypes.c_void_p]
+	gdi32.CreateCompatibleBitmap.restype = ctypes.c_void_p
+	gdi32.CreateCompatibleBitmap.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int]
+	gdi32.SelectObject.restype = ctypes.c_void_p
+	gdi32.SelectObject.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+	gdi32.BitBlt.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+		ctypes.c_int, ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_uint32]
+	gdi32.GetDIBits.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint, ctypes.c_uint,
+		ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint]
+	gdi32.DeleteObject.argtypes = [ctypes.c_void_p]
+	gdi32.DeleteDC.argtypes = [ctypes.c_void_p]
+	screen = user32.GetDC(None)
+	if not screen:
+		raise errors.SarvamError(_("Could not capture the screen."))
+	mem = gdi32.CreateCompatibleDC(screen)
+	bmp = gdi32.CreateCompatibleBitmap(screen, w, h)
+	old = gdi32.SelectObject(mem, bmp)
+	try:
+		SRCCOPY, CAPTUREBLT = 0x00CC0020, 0x40000000
+		if not gdi32.BitBlt(mem, 0, 0, w, h, screen, left, top, SRCCOPY | CAPTUREBLT):
+			raise errors.SarvamError(_("Could not capture the screen."))
+		header = _BITMAPINFOHEADER()
+		header.biSize = ctypes.sizeof(_BITMAPINFOHEADER)
+		header.biWidth = w
+		header.biHeight = h  # bottom-up, as BMP files expect
+		header.biPlanes = 1
+		header.biBitCount = 24
+		header.biCompression = 0
+		stride = ((w * 3 + 3) // 4) * 4
+		buf = ctypes.create_string_buffer(stride * h)
+		lines = gdi32.GetDIBits(mem, bmp, 0, h, buf, ctypes.byref(header), 0)
+		if lines != h:
+			raise errors.SarvamError(_("Could not capture the screen."))
+		pixels = buf.raw
+		info = bytes(header)
+		file_header = struct.pack("<2sIHHI", b"BM", 14 + len(info) + len(pixels), 0, 0, 14 + len(info))
+		return file_header + info + pixels
+	finally:
+		gdi32.SelectObject(mem, old)
+		gdi32.DeleteObject(bmp)
+		gdi32.DeleteDC(mem)
+		user32.ReleaseDC(None, screen)
+
+
+def capture_screen_jpeg(foreground=True):
+	"""Capture the screen and return JPEG bytes (small enough for a vision model)."""
+	bmp = capture_screen_bmp(foreground)
+	fd, bmp_path = tempfile.mkstemp(suffix=".bmp", prefix="sarvamAI_screen_")
+	os.close(fd)
+	try:
+		with open(bmp_path, "wb") as f:
+			f.write(bmp)
+		jpeg_path, _w, _h = image_to_jpeg(bmp_path)
+		try:
+			with open(jpeg_path, "rb") as f:
+				return f.read()
+		finally:
+			try:
+				os.remove(jpeg_path)
+			except OSError:
+				pass
+	finally:
+		try:
+			os.remove(bmp_path)
+		except OSError:
+			pass
+
+
 def ensure_pdf(src_path):
 	"""Return ``(pdf_path, is_temp)``. If ``src_path`` is already a PDF it is
 	returned unchanged; otherwise an image is converted to a temporary PDF."""

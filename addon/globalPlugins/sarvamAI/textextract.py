@@ -57,7 +57,11 @@ except Exception:
 	pass
 
 
-SUPPORTED_EXTENSIONS = (".txt", ".text", ".md", ".docx", ".epub")
+PLAIN_EXTENSIONS = (".txt", ".text", ".md", ".markdown", ".log", ".csv", ".tsv",
+	".json", ".xml", ".srt", ".vtt", ".py", ".ini")
+SUPPORTED_EXTENSIONS = PLAIN_EXTENSIONS + (
+	".docx", ".epub", ".html", ".htm", ".xhtml", ".rtf", ".pptx", ".xlsx",
+	".odt", ".odp", ".ods")
 
 
 # --- shared regex helpers --------------------------------------------------
@@ -96,6 +100,18 @@ def _extract_plain(path):
 		raise errors.SarvamError(
 			# Translators: shown when a text file cannot be read.
 			_("Could not read the text file: {error}").format(error=e))
+
+
+def _extract_subtitles(path):
+	"""Subtitles (.srt / .vtt) without cue numbers and timings."""
+	text = _extract_plain(path)
+	keep = []
+	for line in text.split("\n"):
+		s = line.strip()
+		if not s or s.isdigit() or "-->" in s or s.upper().startswith("WEBVTT"):
+			continue
+		keep.append(re.sub(r"<[^>]+>", "", s))
+	return "\n".join(keep)
 
 
 # --- docx ------------------------------------------------------------------
@@ -278,10 +294,167 @@ def _extract_epub(path):
 		zf.close()
 
 
+# --- html ------------------------------------------------------------------
+
+def _extract_html(path):
+	try:
+		with open(path, "rb") as f:
+			raw = f.read()
+	except OSError as e:
+		raise errors.SarvamError(_("Could not read the file: {error}").format(error=e))
+	text = raw.decode("utf-8", errors="replace")
+	return _normalise(_html_to_text(text))
+
+
+# --- rtf -------------------------------------------------------------------
+
+def _extract_rtf(path):
+	"""Minimal RTF reader: keeps text, paragraphs and \\uN unicode escapes."""
+	try:
+		with open(path, "rb") as f:
+			rtf = f.read().decode("latin-1")
+	except OSError as e:
+		raise errors.SarvamError(_("Could not read the file: {error}").format(error=e))
+	# Drop font tables, colour tables, pictures and other destinations.
+	rtf = re.sub(r"\{\\\*[^{}]*(\{[^{}]*\}[^{}]*)*\}", "", rtf)
+	rtf = re.sub(r"\{\\(fonttbl|colortbl|stylesheet|info|pict)[^{}]*(\{[^{}]*\}[^{}]*)*\}", "", rtf)
+
+	def uni(m):
+		n = int(m.group(1))
+		if n < 0:
+			n += 65536
+		return _safe_chr_any(n)
+	rtf = re.sub(r"\\u(-?\d+)\??", uni, rtf)
+	rtf = re.sub(r"\\'([0-9a-fA-F]{2})", lambda m: bytes([int(m.group(1), 16)]).decode("cp1252", "replace"), rtf)
+	rtf = re.sub(r"\\(par|line)\b ?", "\n", rtf)
+	rtf = re.sub(r"\\tab\b ?", "\t", rtf)
+	rtf = re.sub(r"\\[a-zA-Z]+-?\d* ?", "", rtf)
+	rtf = rtf.replace("\\{", "{").replace("\\}", "}").replace("\\\\", "\\")
+	rtf = rtf.replace("{", "").replace("}", "")
+	return _normalise(rtf)
+
+
+def _safe_chr_any(n):
+	try:
+		return chr(n)
+	except (ValueError, OverflowError):
+		return ""
+
+
+# --- Office Open XML / OpenDocument ----------------------------------------
+
+_AT_RE = re.compile(r"<a:t>(.*?)</a:t>", re.DOTALL)
+_AP_END_RE = re.compile(r"</a:p>")
+
+
+def _extract_pptx(path):
+	try:
+		zf = zipfile.ZipFile(path)
+	except (zipfile.BadZipFile, OSError) as e:
+		raise errors.SarvamError(_("Could not open the presentation: {error}").format(error=e))
+	with zf:
+		slides = [n for n in zf.namelist() if re.match(r"ppt/slides/slide\d+\.xml$", n)]
+		slides.sort(key=lambda n: int(re.search(r"(\d+)", n.rsplit("/", 1)[1]).group(1)))
+		out = []
+		for i, name in enumerate(slides, 1):
+			xml = zf.read(name).decode("utf-8", errors="replace")
+			xml = _AP_END_RE.sub("\n", xml)
+			lines = []
+			for chunk in xml.split("\n"):
+				text = "".join(_unescape(t) for t in _AT_RE.findall(chunk)).strip()
+				if text:
+					lines.append(text)
+			out.append("## " + (_("Slide {n}").format(n=i)) + "\n\n" + "\n".join(lines))
+		if not out:
+			raise errors.SarvamError(_("No slides were found in this presentation."))
+		return _normalise("\n\n".join(out))
+
+
+def _col_index(ref):
+	letters = re.match(r"([A-Z]+)", ref or "A")
+	n = 0
+	for ch in (letters.group(1) if letters else "A"):
+		n = n * 26 + (ord(ch) - 64)
+	return n - 1
+
+
+def _extract_xlsx(path):
+	"""Every sheet as a Markdown table (so structure survives TTS/AI/export)."""
+	try:
+		zf = zipfile.ZipFile(path)
+	except (zipfile.BadZipFile, OSError) as e:
+		raise errors.SarvamError(_("Could not open the spreadsheet: {error}").format(error=e))
+	with zf:
+		shared = []
+		if "xl/sharedStrings.xml" in zf.namelist():
+			sx = zf.read("xl/sharedStrings.xml").decode("utf-8", errors="replace")
+			for si in re.findall(r"<si>(.*?)</si>", sx, re.DOTALL):
+				shared.append(_unescape("".join(re.findall(r"<t[^>]*>(.*?)</t>", si, re.DOTALL))))
+		names = {}
+		if "xl/workbook.xml" in zf.namelist():
+			wb = zf.read("xl/workbook.xml").decode("utf-8", errors="replace")
+			for i, m in enumerate(re.finditer(r'<sheet\b[^>]*name="([^"]*)"', wb), 1):
+				names[i] = _unescape(m.group(1))
+		sheets = [n for n in zf.namelist() if re.match(r"xl/worksheets/sheet\d+\.xml$", n)]
+		sheets.sort(key=lambda n: int(re.search(r"sheet(\d+)", n).group(1)))
+		out = []
+		for name in sheets:
+			idx = int(re.search(r"sheet(\d+)", name).group(1))
+			xml = zf.read(name).decode("utf-8", errors="replace")
+			rows = []
+			for row in re.findall(r"<row\b[^>]*>(.*?)</row>", xml, re.DOTALL):
+				cells = {}
+				for m in re.finditer(r"<c\b([^>]*?)(?:/>|>(.*?)</c>)", row, re.DOTALL):
+					attrs, inner = m.group(1), m.group(2) or ""
+					ref = re.search(r'\br="([A-Z]+)\d+"', attrs)
+					typ = re.search(r'\bt="(\w+)"', attrs)
+					val = re.search(r"<v>(.*?)</v>", inner, re.DOTALL)
+					if typ and typ.group(1) == "inlineStr":
+						text = "".join(re.findall(r"<t[^>]*>(.*?)</t>", inner, re.DOTALL))
+					elif typ and typ.group(1) == "s" and val:
+						try:
+							text = shared[int(val.group(1))]
+						except (ValueError, IndexError):
+							text = ""
+					else:
+						text = val.group(1) if val else ""
+					cells[_col_index(ref.group(1) if ref else "A")] = _unescape(text).replace("|", "/").strip()
+				if cells:
+					width = max(cells) + 1
+					rows.append([cells.get(i, "") for i in range(width)])
+			if not rows:
+				continue
+			width = max(len(r) for r in rows)
+			rows = [r + [""] * (width - len(r)) for r in rows]
+			lines = ["## " + names.get(idx, _("Sheet {n}").format(n=idx)), ""]
+			lines.append("| " + " | ".join(rows[0]) + " |")
+			lines.append("|" + "---|" * width)
+			for r in rows[1:]:
+				lines.append("| " + " | ".join(r) + " |")
+			out.append("\n".join(lines))
+		if not out:
+			raise errors.SarvamError(_("No data was found in this spreadsheet."))
+		return "\n\n".join(out)
+
+
+def _extract_odf(path):
+	"""OpenDocument text, presentation or spreadsheet (content.xml)."""
+	try:
+		with zipfile.ZipFile(path) as zf:
+			xml = zf.read("content.xml").decode("utf-8", errors="replace")
+	except (KeyError, zipfile.BadZipFile, OSError) as e:
+		raise errors.SarvamError(_("Could not open the document: {error}").format(error=e))
+	xml = re.sub(r"</text:(p|h)>|<text:line-break/>|</table:table-row>", "\n", xml)
+	xml = re.sub(r"</table:table-cell>", "\t", xml)
+	xml = re.sub(r"<text:tab/>", "\t", xml)
+	xml = re.sub(r'<text:s(?: text:c="(\d+)")?/>', lambda m: " " * int(m.group(1) or 1), xml)
+	return _normalise(_strip_tags_to_text(xml))
+
+
 # --- public interface ------------------------------------------------------
 
 def extract_text(path):
-	"""Return plain text extracted from a .txt/.md/.docx/.epub file.
+	"""Return plain text extracted from any supported document.
 
 	Raises errors.InvalidRequestError for unsupported/missing files and
 	errors.SarvamError if parsing fails.
@@ -298,12 +471,24 @@ def extract_text(path):
 
 	ext = os.path.splitext(path)[1].lower()
 
-	if ext in (".txt", ".text", ".md"):
+	if ext in (".srt", ".vtt"):
+		return _extract_subtitles(path)
+	if ext in PLAIN_EXTENSIONS:
 		return _extract_plain(path)
 	if ext == ".docx":
 		return _extract_docx(path)
 	if ext == ".epub":
 		return _extract_epub(path)
+	if ext in (".html", ".htm", ".xhtml"):
+		return _extract_html(path)
+	if ext == ".rtf":
+		return _extract_rtf(path)
+	if ext == ".pptx":
+		return _extract_pptx(path)
+	if ext == ".xlsx":
+		return _extract_xlsx(path)
+	if ext in (".odt", ".odp", ".ods"):
+		return _extract_odf(path)
 
 	raise errors.InvalidRequestError(
 		# Translators: shown when the file type is not supported. {ext} is the

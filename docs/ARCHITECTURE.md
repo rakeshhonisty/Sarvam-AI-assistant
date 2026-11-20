@@ -44,12 +44,28 @@ input gestures. All feature UIs are standard `wx` dialogs built with NVDA's
 - **Service** (`client.py`): the only module that talks HTTP. Uses `urllib` with
   retry/backoff, timeout, optional proxy, multipart encoding, the batch job
   lifecycle for OCR, and maps every HTTP failure to a typed `SarvamError`.
-- **Domain data** (`constants.py`): endpoints, model names, voices, languages —
-  the single place to adjust if Sarvam changes something.
-- **Support**: `config.py` (NVDA config spec + key obfuscation), `errors.py`
-  (typed exceptions + friendly messages), `logger.py`, `audioutils.py`,
-  `recorder.py` (MCI mic capture), `imaging.py` (GDI+ image→PDF), `ocr.py`
-  (Windows OCR + screen capture), `updatecheck.py`.
+- **Domain data**: `constants.py` holds endpoints, languages and file formats;
+  `models.py` is the model catalogue behind Model switching, with what each
+  model can do; `ttsstyles.py` is the voice catalogue and the
+  gender / purpose / language classification for Bulbul v4 Flash and v3.
+  Together they are the single place to adjust when Sarvam changes something.
+- **Agent** (`agent.py`): the tool definitions, the tool executor (read
+  attachments, translate, transliterate, detect language, create speech files,
+  save documents; writes only into the output folder) and the tool loop. It
+  also builds Document AI extraction schemas from plain-language
+  descriptions.
+- **Files**: `fileio.py` reads any upload (text formats locally, PDFs and
+  images via Document AI, audio via speech to text); `textextract.py` holds the
+  dependency-free readers; `exporter.py` holds the dependency-free writers
+  (DOCX, MD, HTML, RTF, XLSX, CSV, JSON, SRT, TXT).
+- **Support**: `config.py` (NVDA config spec, key obfuscation and 1.x → 2.0
+  migration), `errors.py` (typed exceptions and friendly messages),
+  `logger.py`, `audioutils.py`, `recorder.py` (MCI mic capture), `imaging.py`
+  (GDI+ image→JPEG/PDF and GDI screen capture), `docwriter.py`,
+  `updatecheck.py`.
+- **Tests** (`tests/`): NVDA and wx stubs, plus 31 tests covering the
+  catalogues, the exporters and readers, the agent loop and the API request
+  shapes.
 
 ## Key design decisions
 

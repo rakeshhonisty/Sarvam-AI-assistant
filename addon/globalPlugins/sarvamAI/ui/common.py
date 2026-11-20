@@ -114,44 +114,67 @@ def save_result(parent, text, default_name, as_docx=False, markdown=False):
 		return None
 
 
+def ask_save_path(parent, default_name, wildcard_text, title=None):
+	"""Standard Save As dialog in the output folder; returns a path or None."""
+	with wx.FileDialog(
+			parent, title or _("Save as"), defaultDir=default_output_folder(),
+			defaultFile=default_name, wildcard=wildcard_text,
+			style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as fd:
+		if fd.ShowModal() != wx.ID_OK:
+			return None
+		return fd.GetPath()
+
+
 class SaveBar:
-	"""A row of Save buttons that stays hidden until a task succeeds.
+	"""The "Download as" bar, hidden until a task succeeds.
 
 	Every Sarvam feature follows the same rule: perform task -> show result ->
-	only then reveal Save as TXT / Save as DOCX. This small helper keeps that
-	behaviour identical everywhere.
+	only then reveal the download controls. The bar offers a format list
+	(plain text, Word, Markdown, web page, rich text, Excel, CSV, JSON and,
+	for timed transcripts, subtitles), a Download button that saves in the
+	chosen format, and Copy. The last format used is remembered.
 	"""
 
 	def __init__(self, dialog, helper, get_text, base_name, markdown=False,
-			include_md=False):
+			include_md=False, formats=None, get_segments=None, title=None):
+		from .. import exporter
 		self._dialog = dialog
 		self._get_text = get_text
+		self._get_segments = get_segments
 		self._base = base_name
 		self._markdown = markdown
+		self._title = title or base_name
+		self._formats = list(formats or exporter.format_keys(include_tables=True,
+			include_srt=bool(get_segments)))
+		row = guiHelper.BoxSizerHelper(dialog, orientation=wx.HORIZONTAL)
+		# Translators: label of the list of file formats a result can be saved in.
+		self.formatCtrl = row.addLabeledControl(
+			_("Download f&ormat:"), wx.Choice,
+			choices=[_(exporter.label(f)) for f in self._formats])
+		last = config.conf().get("exportFormat") or "docx"
+		select_in_combo(self.formatCtrl, self._formats, last if last in self._formats else "docx")
 		bar = guiHelper.ButtonHelper(wx.HORIZONTAL)
-		self._buttons = []
-		self.txtBtn = bar.addButton(dialog, label=_("Save as &text (.txt)"))
-		self.txtBtn.Bind(wx.EVT_BUTTON, self._onTxt)
-		self._buttons.append(self.txtBtn)
-		self.docBtn = bar.addButton(dialog, label=_("Save as &Word (.docx)"))
-		self.docBtn.Bind(wx.EVT_BUTTON, self._onDocx)
-		self._buttons.append(self.docBtn)
-		self.mdBtn = None
-		if include_md:
-			# Markdown keeps Sarvam's original converted structure (headings,
-			# tables, lists) so the user can convert it to any format later.
-			self.mdBtn = bar.addButton(dialog, label=_("Save as &Markdown (.md)"))
-			self.mdBtn.Bind(wx.EVT_BUTTON, self._onMd)
-			self._buttons.append(self.mdBtn)
+		# Translators: saves the result in the chosen format.
+		self.downloadBtn = bar.addButton(dialog, label=_("&Download..."))
+		self.downloadBtn.Bind(wx.EVT_BUTTON, self._onDownload)
 		self.copyBtn = bar.addButton(dialog, label=_("&Copy"))
 		self.copyBtn.Bind(wx.EVT_BUTTON, self._onCopy)
-		self._buttons.append(self.copyBtn)
-		helper.addItem(bar)
+		row.addItem(bar)
+		helper.addItem(row.sizer)
+		self._controls = [self.formatCtrl, self.downloadBtn, self.copyBtn]
+		# The label StaticText created by addLabeledControl must hide too.
+		try:
+			self._controls.append(self.formatCtrl.GetPrevSibling())
+		except Exception:
+			pass
 		self.show(False)
 
 	def show(self, visible):
-		for b in self._buttons:
-			b.Show(visible)
+		for b in self._controls:
+			try:
+				b.Show(visible)
+			except Exception:
+				pass
 		self._dialog.Layout()
 		try:
 			self._dialog.Fit()
@@ -160,19 +183,35 @@ class SaveBar:
 
 	def focus(self):
 		try:
-			self.txtBtn.SetFocus()
+			self.formatCtrl.SetFocus()
 		except Exception:
 			pass
 
-	def _onTxt(self, evt):
-		save_result(self._dialog, self._get_text(), self._base + ".txt", as_docx=False)
+	def selected_format(self):
+		return self._formats[max(0, self.formatCtrl.GetSelection())]
 
-	def _onDocx(self, evt):
-		save_result(self._dialog, self._get_text(), self._base + ".docx",
-			as_docx=True, markdown=self._markdown)
-
-	def _onMd(self, evt):
-		save_result(self._dialog, self._get_text(), self._base + ".md", as_docx=False)
+	def _onDownload(self, evt):
+		from .. import exporter
+		text = self._get_text()
+		if not (text or "").strip():
+			report(_("Nothing to save"))
+			return
+		fmt = self.selected_format()
+		ext = exporter.extension(fmt)
+		path = ask_save_path(self._dialog, self._base + ext,
+			"%s|*%s" % (_(exporter.label(fmt)), ext))
+		if not path:
+			return
+		if not path.lower().endswith(ext):
+			path += ext
+		segments = self._get_segments() if self._get_segments else None
+		try:
+			exporter.export(text, path, fmt, title=self._title, segments=segments,
+				markdown=self._markdown or fmt != "docx")
+			config.conf()["exportFormat"] = fmt
+			report(_("Saved {name}").format(name=os.path.basename(path)))
+		except Exception as e:  # noqa: BLE001
+			error_dialog(self._dialog, e)
 
 	def _onCopy(self, evt):
 		text = self._get_text()
@@ -187,17 +226,22 @@ class SaveBar:
 			report(_("Nothing to copy"))
 
 
-def language_choices(include_auto=False, include_unknown=False):
-	"""Return parallel lists ``(labels, codes)`` for a language combo box."""
+def language_choices(include_auto=False, include_unknown=False, extended=False):
+	"""Return parallel lists ``(labels, codes)`` for a language combo box.
+
+	``extended`` adds the further scheduled Indian languages supported by
+	Sarvam-Translate and speech to text (Assamese, Bodo, Urdu, ...).
+	"""
 	labels = []
 	codes = []
 	if include_auto:
 		labels.append(_("Auto detect"))
 		codes.append(constants.AUTO_DETECT)
 	if include_unknown:
-		labels.append(_("Unknown (auto)"))
+		labels.append(_("Auto detect (also handles mixed languages)"))
 		codes.append("unknown")
-	for code, name in constants.LANGUAGES.items():
+	langs = constants.ALL_LANGUAGES if extended else constants.LANGUAGES
+	for code, name in langs.items():
 		labels.append("%s (%s)" % (name, code))
 		codes.append(code)
 	return labels, codes

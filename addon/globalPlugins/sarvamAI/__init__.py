@@ -5,9 +5,10 @@
 # See the file LICENSE for more details.
 
 """Sarvam AI assistant - a global plugin exposing the Sarvam AI platform
-(text to speech, speech to text, translation, transliteration, language
-detection, an AI Workforce reasoning layer and Sarvam Document OCR) through an accessible,
-keyboard-driven NVDA interface."""
+(text to speech, speech to text, translation and document translation,
+transliteration, language detection, Document AI, the AI Workforce and Agent,
+AI vision and model switching) through an accessible, keyboard-driven NVDA
+interface."""
 
 import wx
 
@@ -67,11 +68,13 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		add(_("&Translate..."), self.onTranslate)
 		add(_("T&ransliterate..."), self.onTransliterate)
 		add(_("&Detect language..."), self.onDetectLanguage)
-		add(_("&OCR..."), self.onOcr)
-		# AI Assistant and AI Summarise are Task modes inside AI Workforce now,
-		# rather than separate windows.
+		add(_("D&ocuments and OCR (read, extract data)..."), self.onOcr)
+		# AI Assistant and AI Summarise are Task modes inside AI Workforce.
 		add(_("AI &Workforce (assistant, summary, analysis)..."), self.onWorkforce)
+		add(_("Sarvam &Agent (does multi-step work for you)..."), self.onAgent)
+		add(_("Describe the &screen with AI vision"), self.onDescribeScreen)
 		menu.AppendSeparator()
+		add(_("&Model switching..."), self.onModels)
 		add(_("Se&ttings (API key)..."), self.onSettings)
 		add(_("Ad&vanced settings..."), self.onAdvancedSettings)
 		add(_("&Logs..."), self.onLogs)
@@ -162,7 +165,39 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 
 	def onWorkforce(self, evt=None):
 		from .ui.workforce import WorkforceDialog
-		self._open(lambda: WorkforceDialog(gui.mainFrame))
+		from .ui.tts import _get_selection
+		self._open(lambda: WorkforceDialog(gui.mainFrame, initial_text=_get_selection()))
+
+	def onAgent(self, evt=None):
+		from .ui.workforce import WorkforceDialog
+		self._open(lambda: WorkforceDialog(gui.mainFrame, mode=constants.AGENT_ROLE))
+
+	def onModels(self, evt=None):
+		from .ui.models import ModelCenterDialog
+		self._open(lambda: ModelCenterDialog(gui.mainFrame))
+
+	def onDescribeScreen(self, evt=None, foreground=True):
+		"""Capture the foreground window and have a vision model describe it.
+
+		The capture happens before any Sarvam window opens, so it shows what
+		the user was looking at.
+		"""
+		if evt is not None:
+			# Chosen from a menu: let the menu close and the previous window
+			# regain the foreground before capturing.
+			wx.CallLater(700, self.onDescribeScreen, None, foreground)
+			return
+		from . import imaging
+		try:
+			jpeg = imaging.capture_screen_jpeg(foreground=foreground)
+		except Exception as e:
+			logger.exception("Screen capture failed")
+			nvdaUi.message(_("Could not capture the screen: {err}").format(err=e))
+			return
+		nvdaUi.message(_("Screen captured. Describing..."))
+		from .ui.workforce import WorkforceDialog
+		self._open(lambda: WorkforceDialog(gui.mainFrame, mode=constants.VISION_ROLE,
+			initial_image=(jpeg, "image/jpeg", _("screenshot"))))
 
 	def onSettings(self, evt=None):
 		from .ui.setup import SetupDialog
@@ -254,6 +289,37 @@ class GlobalPlugin(globalPluginHandler.GlobalPlugin):
 		category=SCRIPT_CATEGORY, gesture=None)
 	def script_workforce(self, gesture):
 		self.onWorkforce()
+
+	@script(
+		description=_("Opens the Sarvam Agent, which carries out multi-step tasks"),
+		category=SCRIPT_CATEGORY, gesture=None)
+	def script_agent(self, gesture):
+		self.onAgent()
+
+	@script(
+		description=_("Describes the current window with Sarvam AI vision"),
+		category=SCRIPT_CATEGORY, gesture=None)
+	def script_describeScreen(self, gesture):
+		wx.CallAfter(self.onDescribeScreen)
+
+	@script(
+		description=_("Describes the whole screen with Sarvam AI vision"),
+		category=SCRIPT_CATEGORY, gesture=None)
+	def script_describeWholeScreen(self, gesture):
+		wx.CallAfter(self.onDescribeScreen, None, False)
+
+	@script(
+		description=_("Opens Sarvam AI model switching"),
+		category=SCRIPT_CATEGORY, gesture=None)
+	def script_models(self, gesture):
+		self.onModels()
+
+	@script(
+		description=_("Switches to the next Sarvam AI chat model and announces it"),
+		category=SCRIPT_CATEGORY, gesture=None)
+	def script_nextChatModel(self, gesture):
+		from .ui.models import cycle_chat_model
+		nvdaUi.message(cycle_chat_model(1))
 
 	@script(
 		description=_("Opens the Sarvam AI settings"),

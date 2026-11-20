@@ -33,33 +33,58 @@ Indian-language accessibility community in particular.
 - **Free and open source (GPL v2).** No lock-in; you bring your own Sarvam API
   key.
 
+## What's new in 2.0 ("sarvamAI-2.0")
+
+- **New and open models, plus Model switching.** Sarvam 105B, plus Sarvam's hosted
+  open models: GLM 5.3 and GLM 5.3 Flash, Gemma 4, DeepSeek V4.1 Flash, and
+  (with Provisioned Throughput) DeepSeek V4 Pro, Kimi K3.1 Pro and Qwen 3.8.
+  Bulbul v4 Flash voices and Saaras v4 speech recognition. One **Model
+  switching** window chooses the model for every feature and says what each
+  one can do.
+- **Sarvam Agent.** It does multi-step work for you, such as translating, making
+  speech files and saving documents, and tells you each step.
+- **AI vision.** It describes photos, screenshots and the current screen.
+- **Upload almost any file. Download in the format you want.** Word, Markdown,
+  HTML, RTF, Excel, CSV, JSON, text, SRT subtitles, and MP3/WAV/FLAC/AAC audio.
+- **Whole-document translation that keeps the format** (PDF, Word, Excel,
+  PowerPoint, HTML).
+- **Data extraction to spreadsheets.** Describe the fields in plain words and
+  download them as Excel or CSV.
+
+See the [CHANGELOG](CHANGELOG.md) for the full list.
+
 ## Features
 
-- **Text to Speech** – synthesise speech from typed/pasted text or an uploaded
-  **text, Word (.docx) or EPUB** file. Choose a **speaking style** (News reader,
-  Conversational, Narration, Formal, Expressive) and a **gender**, and the
-  **voice list filters itself** to matching voices. Speed, Pitch and Volume
-  sliders announce their purpose. After Convert: **Listen, Save as MP3, Save as
-  WAV**.
-- **Speech to Text** – transcribe an audio file or your microphone. **Large
-  audio is handled automatically** via Sarvam's batch transcription service and
-  merged into one complete transcript. Optional translate-to-English. Save as
-  TXT or DOCX.
-- **Translation, Transliteration & Language detection** – one dialog with a
-  single **Operation** dropdown. **Upload a document** (TXT/DOCX/EPUB/PDF/image
-  — PDFs and images are read with OCR first). Text of any length is chunked and
-  rejoined automatically.
-- **OCR — Sarvam Document Intelligence** – layout analysis **preserves
-  headings, lists, tables, multi-column text and reading order** instead of
-  flattening them. Multi-page PDFs keep page order. **Auto detect** language or
-  choose from 23. Save as **Markdown** (Sarvam's original structure), **Word**
-  (real headings and tables) or plain text.
-- **AI Workforce (Sarvam-105B)** – one module for **AI Assistant, AI Summary,
-  Document Analysis, General AI Workforce, Content Generation, Question
-  Answering and File Analysis**. Upload any supported file (documents, PDFs,
-  images, audio) as context, ask a question, choose reasoning effort, and save
-  the result as TXT, DOCX or Markdown.
-- **Accessibility-first** – save options appear only once a task succeeds,
+- **Text to Speech**: speak typed or pasted text, or an uploaded file of almost
+  any type. You pick a voice in steps, **Voice model → Language → Gender →
+  Purpose (nature of work) → Voice**. Purposes include news, narration and
+  audiobooks, customer support and banking, education and children, ads and
+  social media, devotional, drama, companion, sports and more. Both
+  **Bulbul v4 Flash** (222 persona voices) and **Bulbul v3** (37 voices) use
+  this classification. Malayalam and Odia switch to v3 automatically. Speed
+  and Expression sliders. **Listen**, then **Download** as MP3, WAV, FLAC or AAC.
+- **Speech to Text (Saaras v4)**: transcribe a file or the microphone. Output
+  in the spoken language, English, verbatim, romanised or code-mixed.
+  **Key terms** help it spell names correctly. It can **separate speakers** and
+  add **timings** for SRT subtitles. Long audio (up to 2 hours) uses the batch
+  API automatically.
+- **Translation, Transliteration and Language detection**: one dialog with an
+  **Operation** list. Upload any file to translate its text, or **translate a
+  whole document and keep its format**. **Sarvam-Translate** covers all 22
+  scheduled Indian languages. Mayura offers formal, colloquial and code-mixed
+  styles.
+- **Documents and OCR (Sarvam Document AI)**: read PDFs, scans, photos and
+  ZIPs of page images in 23 languages, keeping headings, tables, columns and
+  reading order. Or **extract data**: describe what you need and download it as
+  Excel, CSV or JSON.
+- **AI Workforce and Agent**: assistant, agent, image description, summary,
+  document analysis, content generation and question answering. You can attach
+  several files, switch models, set the reasoning level and ask follow-up
+  questions.
+- **Download formats everywhere**: once a task succeeds, a **Download format**
+  list and a **Download** button appear. Markdown tables become real tables in
+  Word, HTML and Excel.
+- **Accessibility-first**: download options appear only once a task succeeds.
   Escape closes any window from anywhere, every control is labelled, and no
   long task ever blocks NVDA.
 
@@ -98,11 +123,14 @@ Everything is reachable from **Tools → Sarvam AI** in the NVDA menu:
 
 | Menu item | What it does |
 |-----------|--------------|
-| Text to Speech… | Synthesise and play/save speech. |
-| Speech to Text… | Transcribe a file or the microphone. |
-| Translate… / Transliterate… / Detect language… | Text language tools. |
-| OCR… | Sarvam Document Intelligence OCR of a PDF/image, preserving tables and layout. |
-| AI Workforce… | Assistant, summary, document analysis, content generation and file analysis via Sarvam-105B. |
+| Text to Speech… | Synthesise, play and download speech (voice classification by gender, purpose, language). |
+| Speech to Text… | Transcribe a file or the microphone; speakers, timings, key terms. |
+| Translate… / Transliterate… / Detect language… | Text tools, plus whole-document translation that keeps the format. |
+| Documents and OCR… | Sarvam Document AI: read documents, or extract data to Excel/CSV/JSON. |
+| AI Workforce… | Assistant, summary, analysis, content, Q&A, with any model. |
+| Sarvam Agent… | Multi-step tasks done for you with tools (translate, speak, save files). |
+| Describe the screen with AI vision | Describes the current window. |
+| Model switching… | Choose the model behind every feature. |
 | Settings (API key)… | API key, Generate API key, and core defaults. |
 | Advanced settings… | All options, including batch processing speed. |
 | Logs… | View / export the add-on log. |
@@ -115,7 +143,8 @@ No shortcut is bound by default, so nothing clashes with NVDA's own commands
 (an earlier default clashed with NVDA's sound-split command). Assign your own in
 **NVDA → Preferences → Input Gestures → Sarvam AI** — for example "Opens the
 Sarvam AI menu", or go straight to Text to Speech, Speech to Text, Translate,
-OCR or AI Workforce.
+OCR, AI Workforce, the Agent, Model switching, "Describe the current window",
+"Describe the whole screen" or "Switch to the next chat model".
 
 Inside any Sarvam AI window, **Escape closes it** — even from inside a text box.
 
@@ -132,6 +161,12 @@ python build.py --pot      # regenerate the translation template
 The packaged add-on appears in the repository root and (by default) in your
 `Downloads` folder.
 
+Run the tests (no NVDA needed; NVDA and wx are stubbed):
+
+```bash
+python -m unittest discover -s tests -v
+```
+
 ## Accessibility
 
 This add-on is designed accessibility-first: labelled controls, logical focus
@@ -145,8 +180,15 @@ network calls run on background threads so NVDA never freezes.
   clear text). This is obfuscation, not strong encryption – treat the machine
   as trusted.
 - Text, audio, images and documents you process are sent to Sarvam's servers
-  for processing (including Sarvam Document OCR). Nothing is sent anywhere else,
+  for processing (including Sarvam Document AI). The screen is captured and
+  sent only when you run "Describe the screen". Nothing is sent anywhere else,
   and the add-on itself collects no data.
+- Open models (GLM, Gemma, DeepSeek, Kimi, Qwen) are hosted by Sarvam on its
+  India-based inference platform; your requests go to Sarvam, as with Sarvam
+  105B.
+- The Agent can read only the files you attach and can write only new files
+  into your output folder. It never overwrites or deletes files, and it cannot
+  run programs.
 
 ## License
 

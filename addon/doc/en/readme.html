@@ -14,152 +14,200 @@ th, td { border: 1px solid #ccc; padding: .4em .6em; text-align: left; }
 </style>
 </head>
 <body>
-<h1>Sarvam AI assistant for NVDA</h1>
-<p><strong>Purpose:</strong> Sarvam AI assistant lets you use the features of the
-Sarvam AI platform in an easy, accessible manner, directly from NVDA. It brings
-Sarvam's speech, language and document services to blind and low-vision users
-through a fully keyboard-driven, screen-reader-friendly interface.</p>
+<h1>Sarvam AI assistant for NVDA, version 2.0</h1>
+<p><strong>Purpose:</strong> Sarvam AI assistant lets you use the Sarvam AI
+platform from NVDA, by keyboard and screen reader. It covers speech, languages,
+documents, AI reasoning, an agent that does work for you, and AI vision.</p>
 
 <div class="note">
 <p><strong>Where to find it:</strong> Open the NVDA menu (<kbd>NVDA+N</kbd>) &rarr;
-<em>Tools</em> &rarr; <em>Sarvam AI</em>. You can also assign your own shortcut
-to "Opens the Sarvam AI menu" under <em>Preferences &rarr; Input Gestures &rarr;
-Sarvam AI</em>. Settings are available from that menu and under NVDA
-<em>Preferences &rarr; Settings &rarr; Sarvam AI</em>.</p>
+<em>Tools</em> &rarr; <em>Sarvam AI</em>. You can assign your own shortcuts
+under <em>Preferences &rarr; Input Gestures &rarr; Sarvam AI</em>. Settings are
+in that menu and under NVDA <em>Preferences &rarr; Settings &rarr; Sarvam AI</em>.</p>
 </div>
 
-<h2>Features</h2>
+<h2>What is new in 2.0</h2>
 <ul>
-<li><strong>Text to Speech</strong> – synthesise speech from typed or pasted
-text, or from an uploaded text, Word or EPUB file; filtered voices by style and
-gender; save as MP3 or WAV.</li>
-<li><strong>Speech to Text</strong> – transcribe an audio file or your
-microphone, optionally translating to English; copy or save the transcript.</li>
-<li><strong>Translation &amp; Transliteration</strong> – convert text between
-English and 10 Indian languages, with selectable styles.</li>
-<li><strong>Language Detection</strong> – identify the language and script of
-any text.</li>
-<li><strong>OCR</strong> – recognise text from PDFs and images with Sarvam
-Document Intelligence (23 languages), preserving headings, tables, columns and
-reading order; save as Markdown, Word or plain text.</li>
-<li><strong>AI Workforce</strong> – one module for AI Assistant, AI Summary,
-Document Analysis, Content Generation, Question Answering and File Analysis,
-powered by Sarvam's 105B reasoning model.</li>
+<li><strong>Model switching</strong> for every feature. Sarvam 105B plus Sarvam's
+hosted open models: GLM 5.3, GLM 5.3 Flash, Gemma 4, DeepSeek V4.1 Flash, and
+(with Provisioned Throughput) DeepSeek V4 Pro, Kimi K3.1 Pro and Qwen 3.8.</li>
+<li><strong>Bulbul v4 Flash</strong> persona voices, chosen by language, gender and
+purpose; <strong>Saaras v4</strong> speech recognition.</li>
+<li><strong>Sarvam Agent</strong>, which does multi-step work for you.</li>
+<li><strong>AI vision</strong> for images and the screen.</li>
+<li><strong>Sarvam Document AI</strong> for reading documents and extracting data.</li>
+<li><strong>Whole-document translation</strong> that keeps the file format.</li>
+<li><strong>Upload almost any file</strong>, and <strong>download in the format you
+want</strong>.</li>
 </ul>
-
-<div class="note">
-<p><strong>About OCR:</strong> OCR uses Sarvam's Document Intelligence service,
-which performs layout analysis so that headings, lists, tables, multi-column
-text and reading order are preserved rather than flattened. Images are wrapped
-into a one-page PDF automatically, and multi-page PDFs keep their page order.
-The previous offline Windows OCR engine was removed because running two engines
-produced conflicting results.</p>
-</div>
+<p>Retired Sarvam models (sarvam-30b, sarvam-m, bulbul:v2, saarika and the old
+speech translate endpoint) were removed. Your 1.x settings are moved to the new
+models automatically.</p>
 
 <h2>Getting started</h2>
 <ol>
 <li>Open <em>NVDA menu &rarr; Tools &rarr; Sarvam AI &rarr; Settings…</em></li>
-<li>Paste your Sarvam API key (from <code>https://dashboard.sarvam.ai</code>).</li>
-<li>Press <strong>Validate key / Test connection</strong>.</li>
-<li>If you do not have a key yet, press <strong>Generate API key</strong> to
-open the Sarvam developer portal in your browser.</li>
-<li>Set your defaults, then press <strong>Save</strong>.</li>
+<li>Paste your Sarvam API key (from <code>https://dashboard.sarvam.ai</code>), or
+press <strong>Generate API key</strong> to open the Sarvam developer portal.</li>
+<li>Press <strong>Validate key / Test connection</strong>, then <strong>Save</strong>.</li>
+<li>Optional: open <em>Model switching</em> and press <strong>Check which models
+my key can use</strong>.</li>
 </ol>
 
-<h2>Menu</h2>
-<p>All features are under <em>Tools &rarr; Sarvam AI</em>: Text to Speech,
-Speech to Text, Translate, Transliterate, Detect language, OCR, AI Workforce,
-Settings (API key), Advanced settings, Logs, Check for updates, Help and
-About.</p>
-
-<h2>Keyboard shortcuts</h2>
-<p>No keyboard shortcut is assigned by default, so nothing clashes with NVDA's
-own commands. To add your own, go to <em>NVDA &rarr; Preferences &rarr; Input
-Gestures &rarr; Sarvam AI</em> and assign a key to any command, for example
-"Opens the Sarvam AI menu", Text to Speech, Speech to Text, Translate, OCR or
-AI Workforce.</p>
-<p>Inside any Sarvam AI window, press <kbd>Escape</kbd> to close it — this works
-even while the cursor is inside a text box.</p>
+<h2>Model switching</h2>
+<p>One list for each feature: AI Workforce and Agent, image and screen
+description, text to speech, speech to text, translation, and documents.
+Moving through a list speaks a description of the model: what it is good at,
+how much it can read at once, whether it sees images and its reasoning levels.
+<strong>Check which models my key can use</strong> marks models that your key
+cannot use. Press <strong>Save</strong> to keep your choices. A gesture
+"Switches to the next Sarvam AI chat model" changes the chat model from
+anywhere and announces it.</p>
 
 <h2>Text to Speech</h2>
-<p>Type or paste text into the edit box, or press <strong>Upload file</strong>
-to load a text, Word (.docx) or EPUB (.epub) file. Choose a <strong>speaking
-style</strong> (Conversational, Narration, Expressive, News reader, Formal) and
-a <strong>gender</strong> — the <strong>voice</strong> list is filtered
-automatically so only matching voices are offered. Choose a language (Auto
-detect by default, which also handles mixed-language text) and adjust the
-<strong>Speech speed</strong> and <strong>Expression</strong> sliders, each of
-which announces its purpose and value (higher expression sounds livelier, lower
-sounds flatter). Press
-<strong>Convert</strong>. Only after the audio is ready do
-<strong>Listen</strong>, <strong>Save as MP3</strong> and <strong>Save as
-WAV</strong> appear.</p>
+<p>Type or paste text, or press <strong>Upload file</strong>. Almost any
+document works, and PDFs, scans and audio are converted to text first. Then
+choose a voice in steps. Each step narrows the next one:</p>
+<ol>
+<li><strong>Voice model</strong>: Bulbul v4 Flash (222 persona voices) or
+Bulbul v3 (37 voices that speak every language).</li>
+<li><strong>Language</strong>: Auto detect, or a language. Bulbul v4 Flash
+personas are recorded per language. Malayalam and Odia use Bulbul v3, and the
+add-on switches to it automatically and says so.</li>
+<li><strong>Gender</strong>: Female or Male.</li>
+<li><strong>Purpose (nature of work)</strong>: Conversational; Narration, stories
+and audiobooks; News and documentary; Customer support, banking and business;
+Education and children; Ads, sales and social media; Devotional; Drama and
+characters; Companion and assistant; Sports; Numbers and announcements; Formal;
+Expressive. Each entry says how many voices it has. Choosing a purpose also
+sets suitable speed and expression.</li>
+<li><strong>Voice</strong>: read as, for example, "Ritu - Hindi - Banking
+(female)".</li>
+</ol>
+<p>Adjust <strong>Speech speed</strong> and <strong>Expression</strong> if you
+like, then press <strong>Convert</strong>. Then use <strong>Listen</strong>, or
+choose a <strong>Download format</strong> (MP3, WAV, FLAC or AAC) and press
+<strong>Download audio</strong>.</p>
 
 <h2>Speech to Text</h2>
-<p>Press <strong>Choose audio file</strong> or <strong>Start recording</strong>,
-pick the audio language, then press <strong>Transcribe</strong>. Large audio
-files are handled for you: anything beyond the real-time limit is processed
-through Sarvam's batch transcription service and merged into one complete
-transcript. Tick <strong>Translate to English</strong> for an English
-transcript. After transcription finishes, save the result as plain text or a
-Word document.</p>
-
+<p>Press <strong>Choose audio file</strong> (WAV, MP3, M4A, MP4, AAC, AIFF, FLAC,
+OGG, Opus, WebM, AMR, WMA) or <strong>Start recording</strong>. Choose the audio
+language and the <strong>Output</strong>: automatic, transcribe in the spoken
+language, translate to English, verbatim, romanised, or code-mixed. Optionally:</p>
+<ul>
+<li><strong>Key terms</strong>: names or jargon to spell correctly, separated by
+commas (Saaras v4).</li>
+<li><strong>Separate speakers</strong>: produces "Speaker 1: …" lines.</li>
+<li><strong>Include timings</strong>: lets you download SRT subtitles.</li>
+</ul>
+<p>Press <strong>Transcribe</strong>. Long audio, up to two hours, is processed
+as a batch job automatically.</p>
 <div class="note">
-<p><strong>Mixed-language speech:</strong> leave the audio language on
-<em>Auto</em> (the default) if you naturally mix languages in one sentence, for
-example <em>"&#3240;&#3262;&#3240;&#3265; &#3234;&#3202;&#3238;&#3265; office &#3223;&#3270; &#3257;&#3275;&#3223;&#3244;&#3270;&#3221;&#3265; because I have a meeting."</em>
-Auto asks Sarvam to work out the language itself and to return code-mixed text,
-so the Kannada stays in Kannada script and the English words stay in English.
-Choosing a specific language instead gives normal single-language
-transcription. If you would rather always get single-language output, turn off
-the mixed-language option in Advanced settings.</p>
+<p><strong>Mixed-language speech:</strong> leave the language on <em>Auto</em>
+and the output on <em>Automatic</em>. The Kannada stays in Kannada script and
+the English words stay in English, for example <em>"&#3240;&#3262;&#3240;&#3265;
+&#3234;&#3202;&#3238;&#3265; office &#3223;&#3270; &#3257;&#3275;&#3223;&#3244;&#3270;&#3221;&#3265;
+because I have a meeting."</em></p>
 </div>
 
 <h2>Translate, Transliterate, Detect language</h2>
-<p>Enter or paste text, or press <strong>Upload document</strong> to load a
-text, Word, EPUB, PDF or image file (PDFs and images are read with Sarvam OCR
-first). Choose the <strong>Operation</strong> — Translation, Transliteration or
-Language detection — set the languages, and press <strong>Go</strong>. Text of
-any length is handled automatically. Save options appear once the result is
-ready.</p>
+<p>Enter text, or press <strong>Upload file</strong> to read the text of any
+supported file. Choose the <strong>Operation</strong>, the <strong>Translation
+model</strong> and the languages, and press <strong>Go</strong>.
+<strong>Sarvam-Translate</strong> offers all 22 scheduled Indian languages.
+<strong>Mayura</strong> offers formal, colloquial and code-mixed styles.</p>
+<p><strong>Translate a document file and keep its format</strong> sends a PDF,
+Word, Excel, PowerPoint, HTML, Markdown or text file to Sarvam. The translated
+copy comes back in the same format, with its layout kept, and is saved in the
+folder you choose. Set the source language first; Auto detect is not accepted
+here.</p>
 
-<h2>AI Workforce</h2>
-<p>This single module replaces the old separate AI Assistant and AI Summarise
-windows. When it opens, the cursor is in <strong>Ask a question</strong>. Press
-<kbd>Shift+Tab</kbd> to reach <strong>Upload file</strong>, which accepts text,
-Word, EPUB, PDF, image and audio files (PDFs and images are read with OCR and
-audio is transcribed automatically). Press <kbd>Tab</kbd> from the question box
-to reach the <strong>Response</strong>, then <kbd>Tab</kbd> again for
-<strong>Task mode</strong> (AI Assistant, AI Summary, Document Analysis,
-General AI Workforce, Content Generation, Question Answering, File Analysis),
-reasoning effort and the Run button. <kbd>Ctrl+Enter</kbd> in the question box
-also runs the task. When a response is ready you can save it as text, Word or
-Markdown.</p>
-
-<h2>OCR</h2>
-<p>Press <strong>Choose PDF or image</strong>, set the <strong>Document
-language</strong> (<em>Auto detect</em> by default) and the output structure,
-then press <strong>Perform OCR</strong>. The recognised text keeps the
-document's structure. Once recognition finishes you can save it as
-<strong>Markdown</strong> (Sarvam's original structured output, convertible to
-any format), <strong>Word</strong> (real headings and tables) or plain
-<strong>text</strong>, or send it straight to Translation or the AI
+<h2>Documents and OCR</h2>
+<p>Press <strong>Choose PDF, image or ZIP</strong>, then choose the
+<strong>Task</strong>:</p>
+<ul>
+<li><strong>Read the document</strong>: Sarvam Document AI recognises the text in
+23 languages and keeps headings, tables, columns and reading order.</li>
+<li><strong>Extract data into a spreadsheet</strong>: describe what you need in
+plain words, for example "invoice number, date, seller, and each line item with
+quantity and price". The chat model turns this into an extraction plan,
+Document AI fills it in, and <strong>Download the spreadsheet</strong> saves an
+Excel, CSV or JSON file.</li>
+</ul>
+<p>From the result you can go on to Translate, Read aloud, or the AI
 Workforce.</p>
+
+<h2>AI Workforce and the Sarvam Agent</h2>
+<p>The cursor starts in <strong>Ask a question</strong>. <kbd>Shift+Tab</kbd>
+reaches <strong>Attach files</strong>, where you can attach several files of any
+type, including images. <kbd>Ctrl+Enter</kbd> runs the task. Choose:</p>
+<ul>
+<li><strong>Task mode</strong>: AI Assistant, Agent, Describe images and
+screenshots, AI Summary, Document Analysis, Content Generation, Question
+Answering, General AI Workforce.</li>
+<li><strong>Model</strong> and <strong>Reasoning</strong>: the reasoning list
+shows only the levels the chosen model accepts.</li>
+</ul>
+<p>Follow-up questions keep the conversation. <strong>New conversation</strong>
+starts over.</p>
+<p><strong>Agent mode</strong> lets the model act for you. It can read your
+attached files, translate, transliterate, detect languages, create speech files
+with the right voice for a gender and purpose, and save documents in any
+format. For example: "Translate the attached letter into Kannada, save it as a
+Word file, and make an MP3 of it read by a female narration voice." Each step
+is announced and listed under <strong>Agent steps</strong>. The agent can read
+only the files you attached and can only create new files in your output
+folder. It never overwrites or deletes files, and it cannot run programs.</p>
+
+<h2>AI vision: images and the screen</h2>
+<p>Attach a photo or screenshot in AI Workforce and choose <em>Describe images
+and screenshots</em>. If the chosen model cannot see images, the vision model
+from Model switching (Gemma 4 by default) is used for that request. The
+gestures "Describes the current window" and "Describes the whole screen", and
+the menu item, take a screenshot and describe it, including all visible
+text.</p>
+
+<h2>Downloading results</h2>
+<p>When a task finishes, a <strong>Download format</strong> list and a
+<strong>Download</strong> button appear. The formats are Word (.docx),
+Markdown, web page (.html), rich text (.rtf), Excel (.xlsx), CSV, JSON, plain
+text, and SRT subtitles for timed transcripts. Tables become real tables in
+Word, HTML and Excel. The add-on remembers the format you used last.</p>
+
+<h2>Files you can upload</h2>
+<table>
+<tr><th>Kind</th><th>Formats</th><th>How it is read</th></tr>
+<tr><td>Documents</td><td>TXT, Markdown, Word (.docx), EPUB, HTML, RTF, PowerPoint (.pptx), Excel (.xlsx), OpenDocument (.odt, .ods, .odp), CSV, JSON, XML, SRT/VTT</td><td>On your computer</td></tr>
+<tr><td>Scans and PDFs</td><td>PDF, PNG, JPEG, ZIP of page images, BMP, TIFF, GIF, WebP</td><td>Sarvam Document AI</td></tr>
+<tr><td>Audio</td><td>WAV, MP3, M4A, MP4, AAC, AIFF, FLAC, OGG, Opus, WebM, AMR, WMA</td><td>Sarvam speech to text</td></tr>
+</table>
+
+<h2>Keyboard shortcuts</h2>
+<p>No shortcut is assigned by default, so nothing clashes with NVDA's own
+commands. Assign your own in <em>NVDA &rarr; Preferences &rarr; Input Gestures
+&rarr; Sarvam AI</em>, for example for the Sarvam AI menu, Text to Speech,
+Speech to Text, Translate, OCR, AI Workforce, the Agent, Model switching,
+describing the window or the whole screen, or switching to the next chat model.
+Inside any Sarvam AI window, <kbd>Escape</kbd> closes it, even from inside a
+text box.</p>
 
 <h2>Troubleshooting</h2>
 <table>
 <tr><th>Symptom</th><th>Cause / fix</th></tr>
 <tr><td>"No Sarvam API key set"</td><td>Enter your key in Settings.</td></tr>
 <tr><td>"Authentication failed"</td><td>The key is wrong; re-check it.</td></tr>
-<tr><td>"No credits available"</td><td>Your account needs credits – add them in the Sarvam dashboard.</td></tr>
-<tr><td>"Windows OCR is not available"</td><td>Install a Windows OCR language pack in Windows Settings.</td></tr>
-<tr><td>Nothing happens on the network</td><td>Check your connection, proxy and network timeout in Settings; open Logs for details.</td></tr>
+<tr><td>"No credits available"</td><td>Your account needs credits. Add them in the Sarvam dashboard.</td></tr>
+<tr><td>"The model … is not available to your Sarvam key"</td><td>Choose another model in Model switching. Models marked Provisioned need Provisioned Throughput on your Sarvam account.</td></tr>
+<tr><td>"The model ran out of output space"</td><td>Lower the reasoning level, or raise the maximum response length in Advanced settings.</td></tr>
+<tr><td>Document reading fails</td><td>If Document AI is not enabled for your key, the add-on falls back to the older OCR API automatically. You can also choose the legacy engine in Model switching.</td></tr>
+<tr><td>Nothing happens on the network</td><td>Check your connection, proxy and network timeout in Settings. Open Logs for details.</td></tr>
 </table>
 
 <h2>Privacy</h2>
-<p>Your API key is stored obfuscated in NVDA's configuration. Text, audio and
-images you process are sent to Sarvam for processing; OCR runs locally in
-Windows.</p>
+<p>Your API key is stored obfuscated in NVDA's configuration. The text, audio,
+images and documents you process are sent to Sarvam for processing. The screen
+is captured only when you ask for a description. Open models are hosted by
+Sarvam, so those requests also go only to Sarvam.</p>
 
 <h2>Author and contact</h2>
 <p>Created by <strong>Rakesh</strong>.</p>
@@ -169,11 +217,11 @@ Windows.</p>
 </ul>
 <p>Sarvam AI and its API are the property of Sarvam AI. This is an independent
 community add-on and is not affiliated with or endorsed by Sarvam AI or NV
-Access. You need your own Sarvam API key (with credits) to use the online
+Access. You need your own Sarvam API key, with credits, to use the online
 features.</p>
 
 <h2>Version and changelog</h2>
-<p>Version 1.0.0. See the
+<p>Version 2.0. See the
 <a href="https://github.com/rakeshhonisty/Sarvam-AI-assistant/blob/main/CHANGELOG.md">CHANGELOG</a>
 for the list of changes.</p>
 

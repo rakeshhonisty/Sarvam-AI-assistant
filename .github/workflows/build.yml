@@ -29,6 +29,9 @@ jobs:
         run: |
           python -c "import compileall, sys; sys.exit(0 if compileall.compile_dir('addon', quiet=1) else 1)"
 
+      - name: Run the tests (NVDA and wx are stubbed)
+        run: python -W ignore::ResourceWarning -m unittest discover -s tests -v
+
       - name: Build the .nvda-addon package
         run: python build.py --no-copy
 

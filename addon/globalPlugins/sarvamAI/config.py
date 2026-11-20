@@ -33,11 +33,16 @@ CONFIG_SPEC = {
 	"pace": "float(default=1.0)",
 	"loudness": "float(default=1.0)",
 	"ttsTemperature": "float(default=0.8)",
+	# Voice classification: purpose (nature of work), gender and the voice
+	# chosen last for each model.
 	"ttsStyle": "string(default=\"conversational\")",
 	"ttsGender": "string(default=\"Female\")",
+	"ttsVoiceV4": "string(default=\"\")",
+	"ttsVoiceV3": "string(default=\"\")",
 	"ttsCodec": "string(default=\"%s\")" % constants.DEFAULT_TTS_CODEC,
 	"sampleRate": "integer(default=%d)" % constants.DEFAULT_TTS_SAMPLE_RATE,
-	"enablePreprocessing": "boolean(default=True)",
+	# bulbul:v2-only; ignored by v3 / v4-flash. Kept so old configs load.
+	"enablePreprocessing": "boolean(default=False)",
 	"autoPlayTts": "boolean(default=True)",
 
 	# Speech to text defaults.
@@ -47,6 +52,11 @@ CONFIG_SPEC = {
 	# When the audio language is Auto, ask Sarvam for code-mixed output so
 	# naturally mixed speech (e.g. Kannada + English) is transcribed as spoken.
 	"sttCodeSwitching": "boolean(default=True)",
+	"sttMode": "string(default=\"auto\")",
+	# Names / jargon to spell correctly (saaras:v4), comma separated.
+	"sttKeyterms": "string(default=\"\")",
+	"sttDiarization": "boolean(default=False)",
+	"sttTimestamps": "boolean(default=False)",
 
 	# Translation defaults.
 	"translateModel": "string(default=\"%s\")" % constants.DEFAULT_TRANSLATE_MODEL,
@@ -54,18 +64,29 @@ CONFIG_SPEC = {
 	"translateTargetLang": "string(default=\"en-IN\")",
 	"translateMode": "string(default=\"%s\")" % constants.DEFAULT_TRANSLATE_MODE,
 
-	# Chat / summarisation defaults.
+	# Chat / summarisation defaults (Model Center).
 	"chatModel": "string(default=\"%s\")" % constants.DEFAULT_CHAT_MODEL,
+	"visionModel": "string(default=\"%s\")" % constants.DEFAULT_VISION_MODEL,
 	"chatTemperature": "float(default=0.3)",
 	"chatMaxTokens": "integer(default=800)",
 
-	# AI Workforce (sarvam-105b reasoning) defaults.
+	# AI Workforce / Agent defaults.
 	"workforceRole": "string(default=\"assistant\")",
 	"reasoningEffort": "string(default=\"%s\")" % constants.DEFAULT_REASONING_EFFORT,
+	# Retired in 2.0 (not part of the current API); kept so old configs load.
 	"wikiGrounding": "boolean(default=False)",
-	"workforceMaxTokens": "integer(default=2048)",
+	"workforceMaxTokens": "integer(default=4096)",
+	"agentMaxSteps": "integer(default=%d)" % constants.AGENT_MAX_STEPS,
 
-	# OCR (document digitization) defaults.
+	# Documents.
+	"docEngine": "string(default=\"docai\")",
+	"extractFormat": "string(default=\"xlsx\")",
+	"extractMode": "string(default=\"basic\")",
+	"exportFormat": "string(default=\"docx\")",
+	# Set once the 1.x -> 2.0 model migration has run.
+	"migratedTo2": "boolean(default=False)",
+
+	# OCR defaults.
 	"ocrEngine": "string(default=\"%s\")" % constants.OCR_ENGINE_SARVAM,
 	"ocrLanguage": "string(default=\"%s\")" % constants.DEFAULT_OCR_LANGUAGE,
 	"ocrOutputFormat": "string(default=\"%s\")" % constants.DEFAULT_OCR_OUTPUT_FORMAT,
@@ -152,23 +173,46 @@ def _migrateStaleValues():
 	since retired (for example the saarika:* speech-to-text models or
 	bulbul:v2). Without this, an upgraded install would keep sending a model
 	name the API no longer accepts."""
+	from . import models
 	section = conf()
+	# One-time 1.x -> 2.0 upgrade: move to the new default models (Bulbul v4
+	# Flash, Saaras v4). Users can switch back in Model switching.
+	try:
+		if not section.get("migratedTo2"):
+			section["ttsModel"] = models.DEFAULT_TTS_MODEL
+			section["sttModel"] = models.DEFAULT_STT_MODEL
+			if section.get("reasoningEffort") not in constants.REASONING_EFFORTS:
+				section["reasoningEffort"] = constants.DEFAULT_REASONING_EFFORT
+			if section.get("ocrLanguage") == "bodo-IN":
+				section["ocrLanguage"] = "brx-IN"
+			elif section.get("ocrLanguage") == "or-IN":
+				section["ocrLanguage"] = "od-IN"
+			section["migratedTo2"] = True
+	except Exception:
+		pass
 	for key, valid, default in (
-		("sttModel", constants.STT_MODELS, constants.DEFAULT_STT_MODEL),
-		("sttTranslateModel", constants.STT_TRANSLATE_MODELS, constants.DEFAULT_STT_TRANSLATE_MODEL),
-		("ttsModel", constants.TTS_MODELS, constants.DEFAULT_TTS_MODEL),
-		("chatModel", constants.CHAT_MODELS, constants.DEFAULT_CHAT_MODEL),
+		("sttModel", models.stt_ids(), models.DEFAULT_STT_MODEL),
+		("ttsModel", models.tts_ids(), models.DEFAULT_TTS_MODEL),
+		("chatModel", models.chat_ids(), models.DEFAULT_CHAT_MODEL),
+		("visionModel", models.vision_ids(), models.DEFAULT_VISION_MODEL),
+		("translateModel", models.translate_ids(), models.DEFAULT_TRANSLATE_MODEL),
+		("docEngine", models.doc_engine_ids(), models.DEFAULT_DOC_ENGINE),
 	):
 		try:
 			if section.get(key) not in valid:
 				section[key] = default
 		except Exception:
 			pass
-	# A voice saved for the removed bulbul:v2 model is not valid for v3.
+	# Voices saved for a retired model are reset.
 	try:
 		from . import ttsstyles
 		if section.get("defaultSpeaker") not in ttsstyles.ALL_SPEAKERS:
 			section["defaultSpeaker"] = constants.DEFAULT_SPEAKER
+		if section.get("ttsStyle") not in ttsstyles.PURPOSE_KEYS:
+			section["ttsStyle"] = ttsstyles.default_style()
+		for key, model in (("ttsVoiceV4", ttsstyles.MODEL_V4), ("ttsVoiceV3", ttsstyles.MODEL_V3)):
+			if section.get(key) and not ttsstyles.is_valid_speaker(section.get(key), model):
+				section[key] = ""
 	except Exception:
 		pass
 

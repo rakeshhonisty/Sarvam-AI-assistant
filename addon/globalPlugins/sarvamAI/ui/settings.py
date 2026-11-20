@@ -20,7 +20,7 @@ from .. import config
 from .. import client
 from .. import tasks
 from .. import logger
-from .. import ttsstyles
+from .. import models
 from . import common
 
 
@@ -51,9 +51,7 @@ class SarvamSettingsPanel(SettingsPanel):
 
 		# --- Text to speech ------------------------------------------------
 		sh.addItem(wx.StaticText(self, label=_("Text to speech")))
-		self.ttsModelCtrl = self._choice(sh, _("TTS &model:"), constants.TTS_MODELS, conf.get("ttsModel"))
-		self.speakerCtrl = self._choice(sh, _("Default &voice:"),
-			ttsstyles.ALL_SPEAKERS, conf.get("defaultSpeaker"))
+		self.ttsModelCtrl = self._modelChoice(sh, _("TTS &model:"), "tts", conf.get("ttsModel"))
 		labels, self._langCodes = common.language_choices(include_auto=True)
 		# Translators: default synthesis language ("Auto detect" detects the
 		# language of the text, including code-mixed text, before synthesis).
@@ -71,18 +69,14 @@ class SarvamSettingsPanel(SettingsPanel):
 			sh, _("E&xpression in percent, 5 is flat and 100 is most lively:"),
 			conf.get("ttsTemperature"), constants.TEMPERATURE_RANGE)
 		self.sampleRateCtrl = self._choice(
-			sh, _("Sample &rate:"), [str(r) for r in constants.TTS_SAMPLE_RATES], str(conf.get("sampleRate")))
-		# Translators: checkbox to enable text preprocessing before synthesis.
-		self.preprocCtrl = sh.addItem(wx.CheckBox(self, label=_("Enable text &preprocessing")))
-		self.preprocCtrl.SetValue(bool(conf.get("enablePreprocessing")))
+			sh, _("Sample &rate (Hz):"), [str(r) for r in constants.TTS_SAMPLE_RATES], str(conf.get("sampleRate")))
 		# Translators: checkbox to play synthesised audio automatically.
 		self.autoPlayCtrl = sh.addItem(wx.CheckBox(self, label=_("&Play audio automatically after synthesis")))
 		self.autoPlayCtrl.SetValue(bool(conf.get("autoPlayTts")))
 
 		# --- Speech to text ------------------------------------------------
 		sh.addItem(wx.StaticText(self, label=_("Speech to text")))
-		self.sttModelCtrl = self._choice(sh, _("STT mo&del:"), constants.STT_MODELS, conf.get("sttModel"))
-		self.sttTransModelCtrl = self._choice(sh, _("Speech &translate model:"), constants.STT_TRANSLATE_MODELS, conf.get("sttTranslateModel"))
+		self.sttModelCtrl = self._modelChoice(sh, _("STT mo&del:"), "stt", conf.get("sttModel"))
 		# Translators: checkbox controlling mixed-language transcription.
 		self.codeSwitchCtrl = sh.addItem(wx.CheckBox(self, label=_(
 			"When the audio language is Auto, keep &mixed-language speech as spoken "
@@ -91,21 +85,27 @@ class SarvamSettingsPanel(SettingsPanel):
 
 		# --- Translation ---------------------------------------------------
 		sh.addItem(wx.StaticText(self, label=_("Translation")))
-		self.translateModelCtrl = self._choice(sh, _("Translatio&n model:"), constants.TRANSLATE_MODELS, conf.get("translateModel"))
-		srcLabels, self._srcCodes = common.language_choices(include_auto=True)
+		self.translateModelCtrl = self._modelChoice(sh, _("Translatio&n model:"), "translate", conf.get("translateModel"))
+		srcLabels, self._srcCodes = common.language_choices(include_auto=True, extended=True)
 		self.translateSrcCtrl = sh.addLabeledControl(_("Default so&urce language:"), wx.Choice, choices=srcLabels)
 		common.select_in_combo(self.translateSrcCtrl, self._srcCodes, conf.get("translateSourceLang"))
-		tgtLabels, self._tgtCodes = common.language_choices()
+		tgtLabels, self._tgtCodes = common.language_choices(extended=True)
 		self.translateTgtCtrl = sh.addLabeledControl(_("Default targe&t language:"), wx.Choice, choices=tgtLabels)
 		common.select_in_combo(self.translateTgtCtrl, self._tgtCodes, conf.get("translateTargetLang"))
 		self.translateModeCtrl = self._choice(sh, _("Translation st&yle:"), constants.TRANSLATE_MODES, conf.get("translateMode"))
 
 		# --- Chat ----------------------------------------------------------
-		sh.addItem(wx.StaticText(self, label=_("AI chat and summarisation")))
-		self.chatModelCtrl = self._choice(sh, _("&Chat model:"), constants.CHAT_MODELS, conf.get("chatModel"))
+		sh.addItem(wx.StaticText(self, label=_("AI Workforce, Agent and vision")))
+		self.chatModelCtrl = self._modelChoice(sh, _("&Chat model:"), "chat", conf.get("chatModel"))
+		self.visionModelCtrl = self._modelChoice(sh, _("V&ision model (images and screen):"), "vision", conf.get("visionModel"))
+		self.maxTokensCtrl = self._spin_int(sh, _("Maximum response &length (tokens):"),
+			conf.get("workforceMaxTokens"), 256, 32768)
+		self.agentStepsCtrl = self._spin_int(sh, _("Agent maximum &steps per task:"),
+			conf.get("agentMaxSteps"), 1, 20)
 
 		# --- OCR -----------------------------------------------------------
-		sh.addItem(wx.StaticText(self, label=_("OCR (Sarvam Document Intelligence)")))
+		sh.addItem(wx.StaticText(self, label=_("Documents and OCR (Sarvam Document AI)")))
+		self.docEngineCtrl = self._modelChoice(sh, _("Document &engine:"), "doc", conf.get("docEngine"))
 		self._ocrLangCodes = [constants.OCR_AUTO_LANGUAGE] + list(constants.OCR_LANGUAGES.keys())
 		ocrLangLabels = [_("Auto detect")] + [
 			"%s (%s)" % (name, code) for code, name in constants.OCR_LANGUAGES.items()]
@@ -156,6 +156,16 @@ class SarvamSettingsPanel(SettingsPanel):
 		elif values:
 			ctrl.SetSelection(0)
 		ctrl._values = values
+		return ctrl
+
+	def _modelChoice(self, sh, label, service, current):
+		"""A model combo showing friendly names but storing model ids."""
+		catalogue = next(c for k, _l, c, _d, _k in models.SERVICES if k == service)
+		ids = [m["id"] for m in catalogue]
+		ctrl = sh.addLabeledControl(label, wx.Choice,
+			choices=[models.label_of(service, i) for i in ids])
+		common.select_in_combo(ctrl, ids, current)
+		ctrl._values = ids
 		return ctrl
 
 	def _spin_int(self, sh, label, current, lo, hi):
@@ -277,21 +287,23 @@ class SarvamSettingsPanel(SettingsPanel):
 		config.setApiKey(self.apiKeyCtrl.GetValue())
 		conf["baseUrl"] = self.baseUrlCtrl.GetValue().strip() or constants.DEFAULT_BASE_URL
 		conf["ttsModel"] = self.ttsModelCtrl._values[self.ttsModelCtrl.GetSelection()]
-		conf["defaultSpeaker"] = self.speakerCtrl._values[self.speakerCtrl.GetSelection()]
 		conf["defaultLanguage"] = self._langCodes[self.langCtrl.GetSelection()]
 		conf["pace"] = self._percent_to_fraction(self.paceCtrl)
 		conf["ttsTemperature"] = self._percent_to_fraction(self.temperatureCtrl)
 		conf["sampleRate"] = int(self.sampleRateCtrl._values[self.sampleRateCtrl.GetSelection()])
-		conf["enablePreprocessing"] = self.preprocCtrl.GetValue()
 		conf["autoPlayTts"] = self.autoPlayCtrl.GetValue()
 		conf["sttModel"] = self.sttModelCtrl._values[self.sttModelCtrl.GetSelection()]
-		conf["sttTranslateModel"] = self.sttTransModelCtrl._values[self.sttTransModelCtrl.GetSelection()]
 		conf["sttCodeSwitching"] = self.codeSwitchCtrl.GetValue()
+		conf["visionModel"] = self.visionModelCtrl._values[self.visionModelCtrl.GetSelection()]
+		conf["workforceMaxTokens"] = int(self.maxTokensCtrl.GetValue())
+		conf["agentMaxSteps"] = int(self.agentStepsCtrl.GetValue())
+		conf["docEngine"] = self.docEngineCtrl._values[self.docEngineCtrl.GetSelection()]
 		conf["translateModel"] = self.translateModelCtrl._values[self.translateModelCtrl.GetSelection()]
 		conf["translateSourceLang"] = self._srcCodes[self.translateSrcCtrl.GetSelection()]
 		conf["translateTargetLang"] = self._tgtCodes[self.translateTgtCtrl.GetSelection()]
 		conf["translateMode"] = self.translateModeCtrl._values[self.translateModeCtrl.GetSelection()]
 		conf["chatModel"] = self.chatModelCtrl._values[self.chatModelCtrl.GetSelection()]
+		conf["reasoningEffort"] = models.normalise_effort(conf["chatModel"], conf.get("reasoningEffort"))
 		conf["ocrEngine"] = constants.OCR_ENGINE_SARVAM
 		conf["ocrLanguage"] = self._ocrLangCodes[self.ocrLangCtrl.GetSelection()]
 		conf["ocrOutputFormat"] = self.ocrFormatCtrl._values[self.ocrFormatCtrl.GetSelection()]

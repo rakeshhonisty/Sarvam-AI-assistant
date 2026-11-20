@@ -5,17 +5,20 @@
 
 """Speech to text dialog.
 
-Choose an audio file (or record the microphone), then press Transcribe. Large
-audio is handled automatically: files beyond the real-time limit are sent
-through Sarvam's batch transcription job API and merged into one complete
-transcript, with no manual intervention. Save as TXT / DOCX appears only after
-the transcription finishes.
+Choose an audio file (WAV, MP3, M4A/MP4, AAC, AIFF, FLAC, OGG, Opus, WebM,
+AMR, WMA) or record the microphone, pick the output (transcript in the spoken
+language, English translation, verbatim, romanised or code-mixed), optionally
+add key terms (names and jargon Saaras v4 should spell correctly), ask for
+speaker separation or timings, and press Transcribe.
+
+Long audio (up to two hours) and speaker separation automatically use
+Sarvam's batch API. The result downloads as text, Word, Markdown, HTML, JSON
+or - with timings - as SRT subtitles.
 """
 
 import os
 
 import wx
-import gui
 import addonHandler
 from gui import guiHelper
 
@@ -24,9 +27,12 @@ addonHandler.initTranslation()
 from .. import constants
 from .. import config
 from .. import client
+from .. import models
 from .. import tasks
 from .. import recorder
 from . import common
+
+_MODE_AUTO = "auto"
 
 
 class SpeechToTextDialog(wx.Dialog):
@@ -38,6 +44,7 @@ class SpeechToTextDialog(wx.Dialog):
 		self._cli = client.SarvamClient(config)
 		self._rec = recorder.MicRecorder()
 		self._audioPath = None
+		self._segments = []
 		conf = config.conf()
 
 		helper = guiHelper.BoxSizerHelper(self, orientation=wx.VERTICAL)
@@ -49,22 +56,37 @@ class SpeechToTextDialog(wx.Dialog):
 		self.recordBtn = srcBtns.addButton(self, label=_("Start &recording"))
 		self.recordBtn.Bind(wx.EVT_BUTTON, self.onRecordToggle)
 		helper.addItem(srcBtns)
-
 		# Translators: shows the currently selected audio source.
 		self.sourceLabel = helper.addItem(wx.StaticText(self, label=_("Source: none selected")))
 
 		# Options.
 		row = guiHelper.BoxSizerHelper(self, orientation=wx.HORIZONTAL)
-		labels, self._langCodes = common.language_choices(include_unknown=True)
-		# "Auto" is the recommended choice: it also allows a single utterance to
-		# mix languages (see onTranscribe).
-		self.langCtrl = row.addLabeledControl(
-			_("Audio la&nguage (Auto also handles mixed-language speech):"),
-			wx.Choice, choices=labels)
+		labels, self._langCodes = common.language_choices(include_unknown=True, extended=True)
+		self.langCtrl = row.addLabeledControl(_("Audio la&nguage:"), wx.Choice, choices=labels)
 		common.select_in_combo(self.langCtrl, self._langCodes, conf.get("sttLanguage"))
-		# Translators: checkbox to translate transcription to English.
-		self.translateCtrl = row.addItem(wx.CheckBox(self, label=_("Translate to &English")))
+		self._modes = [_MODE_AUTO] + list(constants.STT_MODES)
+		self.modeCtrl = row.addLabeledControl(
+			_("&Output:"), wx.Choice,
+			choices=[_("Automatic (code-mixed when the language is Auto)")]
+				+ [_(constants.STT_MODE_LABELS[m]) for m in constants.STT_MODES])
+		common.select_in_combo(self.modeCtrl, self._modes, conf.get("sttMode") or _MODE_AUTO)
 		helper.addItem(row.sizer)
+
+		# Translators: names or jargon the recogniser should spell correctly.
+		self.keytermsCtrl = helper.addLabeledControl(
+			_("&Key terms to spell correctly, separated by commas (Saaras v4, optional):"),
+			wx.TextCtrl)
+		self.keytermsCtrl.SetValue(conf.get("sttKeyterms") or "")
+
+		opts = guiHelper.BoxSizerHelper(self, orientation=wx.HORIZONTAL)
+		self.diarizeCtrl = opts.addItem(wx.CheckBox(self, label=_("Separate &speakers (who said what)")))
+		self.diarizeCtrl.SetValue(bool(conf.get("sttDiarization")))
+		self.speakersCtrl = opts.addLabeledControl(
+			_("Number of spea&kers (0 = detect):"), wx.SpinCtrl, min=0, max=20)
+		self.speakersCtrl.SetValue(0)
+		self.timestampsCtrl = opts.addItem(wx.CheckBox(self, label=_("Include t&imings (for subtitles)")))
+		self.timestampsCtrl.SetValue(bool(conf.get("sttTimestamps")))
+		helper.addItem(opts.sizer)
 
 		# Transcribe.
 		go = guiHelper.ButtonHelper(wx.HORIZONTAL)
@@ -72,19 +94,22 @@ class SpeechToTextDialog(wx.Dialog):
 		self.transcribeBtn.Bind(wx.EVT_BUTTON, self.onTranscribe)
 		helper.addItem(go)
 
-		# Transcript. TE_RICH2 handles very large documents efficiently.
 		self.transcriptCtrl = helper.addLabeledControl(
-			_("&Transcript:"), wx.TextCtrl,
+			_("Transcrip&t:"), wx.TextCtrl,
 			style=wx.TE_MULTILINE | wx.TE_RICH2, size=(600, 260))
 
-		# Save bar (hidden until transcription succeeds).
+		# Download bar (hidden until transcription succeeds); SRT when timed.
 		self.saveBar = common.SaveBar(self, helper,
-			lambda: self.transcriptCtrl.GetValue(), "transcript")
+			lambda: self.transcriptCtrl.GetValue(), "transcript",
+			get_segments=lambda: self._segments, title=_("Transcript"))
 
-		closeRow = guiHelper.ButtonHelper(wx.HORIZONTAL)
-		closeBtn = closeRow.addButton(self, id=wx.ID_CLOSE, label=_("Cl&ose"))
+		more = guiHelper.ButtonHelper(wx.HORIZONTAL)
+		self.aiBtn = more.addButton(self, label=_("Send to AI &Workforce"))
+		self.aiBtn.Bind(wx.EVT_BUTTON, self.onSendToAI)
+		closeBtn = more.addButton(self, id=wx.ID_CLOSE, label=_("Cl&ose"))
 		closeBtn.Bind(wx.EVT_BUTTON, lambda e: self.Close())
-		helper.addItem(closeRow)
+		helper.addItem(more)
+		self.aiBtn.Show(False)
 
 		self._updateTranscribe()
 		self.SetEscapeId(wx.ID_CLOSE)
@@ -145,40 +170,48 @@ class SpeechToTextDialog(wx.Dialog):
 			return
 		path = self._audioPath
 		lang = self._langCodes[self.langCtrl.GetSelection()]
-		translate = self.translateCtrl.GetValue()
+		mode = self._modes[self.modeCtrl.GetSelection()]
+		keyterms = self.keytermsCtrl.GetValue().strip()
+		diarize = self.diarizeCtrl.GetValue()
+		speakers = int(self.speakersCtrl.GetValue()) or None
+		timings = self.timestampsCtrl.GetValue()
 		conf = config.conf()
+		conf["sttLanguage"] = lang
+		conf["sttMode"] = mode
+		conf["sttKeyterms"] = keyterms
+		conf["sttDiarization"] = diarize
+		conf["sttTimestamps"] = timings
+		model = conf.get("sttModel") or models.DEFAULT_STT_MODEL
 		self.transcribeBtn.Enable(False)
 		self.saveBar.show(False)
 
 		def work(cancel, progress):
-			model = conf.get("sttTranslateModel") if translate else conf.get("sttModel")
-			# Auto: let Sarvam work the language out itself ("unknown") and ask
-			# for code-mixed output, so a sentence that naturally mixes, say,
-			# Kannada and English is transcribed as spoken instead of being
-			# forced into a single language. An explicit language keeps the
-			# normal single-language transcription behaviour.
 			isAuto = lang in ("unknown", constants.AUTO_DETECT)
-			if isAuto:
-				language = constants.STT_AUTO_LANGUAGE
-				mode = (constants.STT_CODEMIX_MODE
-					if conf.get("sttCodeSwitching") else constants.DEFAULT_STT_MODE)
+			language = constants.STT_AUTO_LANGUAGE if isAuto else lang
+			if mode == _MODE_AUTO:
+				# Auto language + code switching keeps naturally mixed speech
+				# (e.g. Kannada with English words) as it was spoken.
+				real_mode = (constants.STT_CODEMIX_MODE if isAuto and conf.get("sttCodeSwitching")
+					else constants.DEFAULT_STT_MODE)
 			else:
-				language = lang
-				mode = constants.DEFAULT_STT_MODE
+				real_mode = mode
 			return self._cli.transcribe(
-				path, language_code=language, model=model, translate=translate,
-				mode=mode, cancel=cancel, progress=progress)
+				path, language_code=language, model=model, mode=real_mode,
+				keyterms=keyterms, with_timestamps=timings, diarization=diarize,
+				num_speakers=speakers, cancel=cancel, progress=progress)
 
 		def ok(result):
 			self.transcribeBtn.Enable(True)
 			text = result.get("transcript", "")
-			# ChangeValue avoids firing text events for very large transcripts.
+			self._segments = result.get("segments") or []
 			self.transcriptCtrl.ChangeValue(text)
 			self.saveBar.show(True)
-			# Deliberately not announcing a detected language: for mixed-language
-			# speech a single language name is misleading, and repeating it adds
-			# noise. The user just gets the transcript.
-			common.report(_("Transcribed, {n} characters. Save options are now available.").format(n=len(text)))
+			self.aiBtn.Show(True)
+			self.Layout()
+			msg = _("Transcribed, {n} characters. Download options are now available.").format(n=len(text))
+			if keyterms and not models.stt_supports_keyterms(model):
+				msg += " " + _("Key terms need Saaras v4; switch models in Model switching.")
+			common.report(msg)
 			self.transcriptCtrl.SetFocus()
 
 		def bad(exc):
@@ -187,8 +220,14 @@ class SpeechToTextDialog(wx.Dialog):
 
 		tasks.run_task(work, on_success=ok, on_error=bad,
 			title=_("Sarvam AI - Speech to Text"),
-			message=_("Transcribing audio (large files are processed in batches)..."),
+			message=_("Transcribing audio (long files are processed as a batch job)..."),
 			parent=self)
+
+	def onSendToAI(self, evt):
+		text = self.transcriptCtrl.GetValue().strip()
+		if text:
+			from .workforce import WorkforceDialog
+			WorkforceDialog(self, initial_context=text, context_name=_("transcript")).Show()
 
 	def _cleanup(self):
 		if self._rec.recording:

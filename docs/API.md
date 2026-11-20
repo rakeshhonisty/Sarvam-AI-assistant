@@ -1,65 +1,99 @@
-# Sarvam API reference (as used by this add-on)
+# Sarvam API reference (as used by this add-on, version 2.0)
 
 All endpoints are on `https://api.sarvam.ai` and authenticate with the header
-`api-subscription-key: <YOUR_KEY>`. Verified against the live API and the
-published OpenAPI specification (`https://docs.sarvam.ai/openapi.json`) on
-2026-07-01. Errors use the envelope
-`{"error": {"message": ..., "code": ..., "request_id": ...}}`.
+`api-subscription-key: <YOUR_KEY>`. Checked against the Sarvam documentation
+(`https://docs.sarvam.ai/openapi/apis.json`, the model guides and the
+changelog) on 2026-11-20. The model catalogue lives in
+`addon/globalPlugins/sarvamAI/models.py`; endpoints live in `constants.py`.
 
 > Credits: every processing endpoint consumes account credits. A valid key with
-> an empty balance returns `insufficient_quota_error` (HTTP 402 or 429).
+> an empty balance returns `insufficient_quota_error` (HTTP 402 or 429). Auth
+> failures are HTTP 403.
 
-## Real-time endpoints
+## Chat - `POST /v2/chat/completions`
 
-| Method & path | Purpose | Key fields |
-|---|---|---|
-| `POST /text-to-speech` | Text → speech | `text`, `target_language_code`, `speaker`, `model` (`bulbul:v2`), `pitch`, `pace`, `loudness`, `speech_sample_rate` → `{ "audios": ["<base64 wav>"] }` |
-| `POST /text-to-speech/stream` | Streaming TTS | as above, streamed audio |
-| `POST /speech-to-text` | Audio → text | multipart `file`, `model` (`saarika:v2.5`), `language_code` → `{ "transcript", "language_code" }` |
-| `POST /speech-to-text-translate` | Audio → English text | multipart `file`, `model` (`saaras:v2.5`) |
-| `POST /translate` | Text translation | `input`, `source_language_code`, `target_language_code`, `model` (`sarvam-translate:v1`), `mode` |
-| `POST /transliterate` | Transliteration | `input`, `source_language_code`, `target_language_code` |
-| `POST /text-lid` | Language identification | `input` → `{ "language_code", "script_code" }` |
-| `POST /v1/chat/completions` | LLM chat (OpenAI-compatible) | `model` (`sarvam-105b`, `sarvam-30b`), `messages` (text only) |
-| `GET /v1/models` | List chat models | — (also a lightweight auth/connectivity check) |
+OpenAI-compatible. Used by the AI Workforce, the Agent, vision and data
+extraction (schema building).
 
-## Batch (job) endpoints
+| Model id | Notes |
+|---|---|
+| `sarvam-105b` | Sarvam flagship, 128K context. Falls back to `/v1/chat/completions` if V2 is refused. |
+| `glm5.3-flash` | 1M context, images. Reasoning `low` / `high` only. |
+| `glm5.3` | 1M context. Reasoning `low` / `high` only. |
+| `gemma4` | Gemma 4 31B, 262K context, images. Thinks only when `reasoning_effort` is sent. |
+| `deepseekv4.1-flash-1017` (+ `-interactive`) | 1M context, images. `none` turns thinking off. |
+| `deepseekv4-pro`, `kimi-k3.1-pro`, `qwen38-27b` | Provisioned Throughput only. |
 
-All batch services share the lifecycle: **create → upload-files → start →
-status (poll) → download-files**, under `/{service}/job/v1`.
+Retired: `sarvam-m`, `sarvam-30b`, `sarvam-30b-16k`, `sarvam-105b-32k`, `kimi-k3`,
+`mimo-v2.6-*`.
 
-- `POST /speech-to-text/job/v1`
-- `POST /speech-to-text-translate/job/v1`
+Fields used: `model`, `messages` (content is a string or `text` / `image_url`
+parts; images must be inline `data:` URLs), `reasoning_effort`
+(`none`/`low`/`medium`/`high`/`max`, per model), `max_tokens`, `temperature`,
+`tools` (`type: function`), `tool_choice` (`auto`), `response_format`
+(`json_object` for schema building). The response's `choices[0].message`
+carries `content`, `tool_calls` and `reasoning_content`. A request body can be
+at most 10 MB.
 
-## Document OCR (Document Digitization)
+`GET /v2/models` returns `{"data": [{"id", "owned_by", "access"}]}`. It is used
+for "Check which models my key can use" and as the connection test.
 
-Sarvam's OCR is the **document-digitization** service. It is job-based and works
-on a single **PDF** (or ZIP) per job; images are wrapped into a one-page PDF by
-this add-on before upload.
+## Text to speech - `POST /text-to-speech`
 
-| Step | Method & path | Notes |
-|---|---|---|
-| 1. Create | `POST /doc-digitization/job/v1` | body `{"job_parameters": {"language": "en-IN", "output_format": "md"}}` → `{ "job_id", "storage_container_type", "job_state" }` |
-| 2. Upload URL | `POST /doc-digitization/job/v1/upload-files` | body `{"job_id", "files": ["doc.pdf"]}` → `{ "upload_urls": { "doc.pdf": {"file_url": ...} } }` |
-| 3. Upload | `PUT <file_url>` | raw PUT of the PDF bytes; Azure requires `x-ms-blob-type: BlockBlob` |
-| 4. Start | `POST /doc-digitization/job/v1/{job_id}/start` | 202 |
-| 5. Status | `GET /doc-digitization/job/v1/{job_id}/status` | poll until `job_state` ∈ {`Completed`, `PartiallyCompleted`, `Failed`} |
-| 6. Download | `POST /doc-digitization/job/v1/{job_id}/download-files` | → `{ "download_urls": { name: {"file_url": ...} } }`; the file is a **ZIP** of `md`/`html`/`json` output |
+`text` (up to 2500 characters; the add-on chunks longer text),
+`target_language_code`, `speaker`, `model` (`bulbul:v4-flash` or
+`bulbul:v3`), `pace` (0.5-2.0), `temperature` (0.01-1.0),
+`speech_sample_rate` (8000-48000), `output_audio_codec` (`wav` for playback;
+`mp3`, `flac`, `aac` for downloads). The response is `{"audios": ["<base64>"]}`.
 
-### OCR parameters
+- `pitch`, `loudness` and `enable_preprocessing` are bulbul:v2-only and are
+  rejected or ignored by v3 and v4-flash, so they are never sent.
+- `bulbul:v4-flash` has 222 persona voices named `<name>_<lang>_<purpose>`, for
+  example `ritu_hi_banking`. Its languages are hi, en, Hinglish, bn, gu, kn, mr,
+  pa, ta and te; there is no ml or od, so the add-on falls back to `bulbul:v3`
+  for those. `bulbul:v3` has 37 voices, for example `shubh` and `ritu`.
 
-- `language` (**not** `language_code`): one of 23 codes — note Odia is `or-IN`
-  here (the TTS/translate APIs use `od-IN`).
-- `output_format`: `md` (Markdown — not `markdown`), `html`, or `json`.
+## Speech to text
 
-## Language codes
+- `POST /speech-to-text` (multipart, clips up to 30 s): `file`, `model`
+  (`saaras:v4` default, `saaras:v3`), `language_code` (`unknown` = auto),
+  `mode` (`transcribe`, `translate`, `verbatim`, `translit`, `codemix`),
+  `with_timestamps`, and `keyterms` (a JSON array, saaras:v4 only, up to 50).
+- Batch: `POST /speech-to-text/job/v1` with `{"job_parameters": {model,
+  language_code, mode, with_timestamps, with_diarization, num_speakers,
+  keyterms}}` → `upload-files` → PUT → `{job_id}/start` → `{job_id}/status`
+  (`job_state` Title Case) → `download-files` with `{"job_id", "files"}`.
+  Results can include `diarized_transcript.entries[]` (`speaker_id`,
+  `transcript`, `start_time_seconds`, `end_time_seconds`).
+- The legacy `/speech-to-text-translate` (`saaras:v2.5`) is no longer used.
 
-`en-IN`, `hi-IN`, `bn-IN`, `gu-IN`, `kn-IN`, `ml-IN`, `mr-IN`, `od-IN`/`or-IN`
-(Odia; OCR uses `or-IN`), `pa-IN`, `ta-IN`, `te-IN`. Document OCR adds `ur-IN`,
-`as-IN`, `sa-IN`, `ne-IN`, `kok-IN`, `mai-IN`, `sd-IN`, `ks-IN`, `doi-IN`,
-`mni-IN`, `bodo-IN`, `sat-IN`.
+## Translation
 
-## TTS voices
+- `POST /translate`: `input`, `source_language_code` (`auto` allowed),
+  `target_language_code`, `model` (`sarvam-translate:v1`, 22 languages, 2000
+  characters; or `mayura:v1`, 1000 characters, with `mode` styles).
+- `POST /transliterate`, `POST /text-lid`.
+- Document translation keeps the file format. `POST /translate/document/jobs`
+  with `{source_language_code, target_language_codes[], original_filename,
+  job_name}` returns `{job_id, upload_url}`. Then PUT the file
+  (`x-ms-blob-type: BlockBlob`), `POST .../{job_id}/start`, poll
+  `GET .../{job_id}/live-status` (`job_state`, `translations[]`), call
+  `POST .../{job_id}/export?lang=<code>`, poll
+  `GET .../{job_id}/export/status`, and finally download from `download_url`.
 
-`bulbul:v2`: `anushka`, `manisha`, `vidya`, `arya`, `abhilash`, `karun`,
-`hitesh`.
+## Document AI (Sarvam Vision 2.1) - `/doc-ai/v1`
+
+| Step | Call |
+|---|---|
+| Parse (read) | `POST /doc-ai/v1/job/parse`, multipart `file`, `language` (omitted = auto), `output_format` `md`/`html`/`json` → `{job_id}` |
+| Extract | `POST /doc-ai/v1/job/extract`, multipart `file`, `schema` (JSON string), `output_format` `json`/`csv`/`xlsx`, `mode` `basic`/`advanced` |
+| Status | `GET /doc-ai/v1/job/{job_id}/status` → `status`: `pending`, `running`, `completed`, `partially_completed`, `failed` or `rejected`, plus `usage.pages_total` |
+| Results | `GET /doc-ai/v1/job/{job_id}/results` → parse: `documents[].pages[].content`; extract: `result` |
+| File | `GET /doc-ai/v1/job/{job_id}/download-url` → `{url, headers}` (a ZIP for parse; the CSV or XLSX for extract) |
+
+Inputs: PDF, PNG, JPEG, ZIP (a flat archive of page images). Other images are
+wrapped into a one-page PDF by `imaging.py`. Languages: 23 (Odia `od-IN`, Bodo
+`brx-IN`).
+
+If Document AI answers 404 or 405, the add-on falls back to the legacy
+`/doc-digitization/job/v1` flow (Odia `or-IN`, Bodo `bodo-IN`).

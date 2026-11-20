@@ -3,6 +3,114 @@
 All notable changes to the Sarvam AI assistant NVDA add-on are documented here.
 This project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.0] - 2026-11-20 - "sarvamAI-2.0"
+
+A landmark release that brings the add-on up to date with Sarvam's latest
+platform: new models, open models, model switching, an agent, AI vision,
+Document AI, document translation, and upload / download in many formats.
+
+### New models, and retired ones removed
+- **Chat moves to Sarvam's Chat Completions V2** (`/v2/chat/completions`), which
+  serves **Sarvam 105B** plus Sarvam's hosted **open models**: **GLM 5.3**,
+  **GLM 5.3 Flash**, **Gemma 4 (31B)**, **DeepSeek V4.1 Flash** (and its
+  Interactive variant), and - for keys with Provisioned Throughput -
+  **DeepSeek V4 Pro**, **Kimi K3.1 Pro** and **Qwen 3.8 (27B)**.
+- **Text to speech defaults to Bulbul v4 Flash** with its **222 persona
+  voices**. Bulbul v3 (37 voices) stays for Malayalam and Odia, which v4 Flash
+  does not cover - the add-on switches automatically and tells you.
+- **Speech to text defaults to Saaras v4.**
+- **Documents use Sarvam Document AI** (Sarvam Vision 2.1, `/doc-ai/v1`). The
+  legacy document digitization API is used only as an automatic fallback.
+- **Retired and removed:** `sarvam-m`, `sarvam-30b` and the other retired chat
+  models, `bulbul:v2`, the `saarika` models, the legacy
+  `/speech-to-text-translate` endpoint with `saaras:v2.5` (translation is now
+  the `translate` output mode of Saaras), the undocumented `wiki_grounding`
+  option, and the v2-only TTS `enable_preprocessing`, `pitch` and `loudness`
+  parameters. Settings saved by 1.x are migrated automatically on first start.
+
+### Model switching
+- New **Model switching** window (menu, and an assignable gesture): choose the
+  model for the AI Workforce and Agent, image/screen description, text to
+  speech, speech to text, translation and documents. Each choice speaks a
+  description: what the model is good at, context size, whether it sees images
+  and its reasoning levels.
+- **Check which models my key can use** asks Sarvam (`GET /v2/models`) and marks
+  models your key cannot use.
+- A **model switch inside AI Workforce**, with a reasoning list that adapts to
+  each model (for example GLM accepts only Low/High; Gemma 4 thinks only when
+  asked).
+- New gesture: **switch to the next chat model and announce it**.
+
+### Voice classification kept and extended (gender, purpose, language)
+- The voice picker narrows down in steps: **Voice model -> Language -> Gender
+  -> Purpose (nature of work) -> Voice**, on both Bulbul v4 Flash and v3.
+- Purposes: Conversational; Narration, stories and audiobooks; News and
+  documentary; Customer support, banking and business; Education and
+  children; Ads, sales and social media; Devotional and spiritual; Drama,
+  suspense and characters; Companion and assistant; Sports; Numbers and
+  announcements; Formal; Expressive. Each purpose shows how many voices it has
+  and sets matching speed and expression.
+- v4 Flash personas are classified from their ids (`<name>_<lang>_<purpose>`),
+  so new personas slot in automatically; genders are confirmed against
+  Sarvam's recommended male/female tables. Voices read as, for example,
+  "Ritu - Hindi - Banking (female)".
+
+### Sarvam Agent (agentic features)
+- New **Agent** task mode (also its own menu item): the model uses tools that
+  run inside the add-on - read your attached files, translate, transliterate,
+  detect language, **create speech files** with the right voice for a gender
+  and purpose, and **save documents** in any format. One request like
+  "translate this letter to Kannada, save it as Word and make an MP3 read by a
+  female narration voice" is done end to end.
+- Every step is announced and listed in **Agent steps**. The agent can only
+  read the files you attach and only write new files into your output folder;
+  it cannot overwrite, delete or run anything, and steps per task are capped.
+- **Smart data extraction**: describe in plain words what you need from a
+  document; the chat model writes the extraction schema and Document AI fills
+  it - download as Excel, CSV or JSON.
+
+### AI vision
+- **Describe images**: attach photos or screenshots in AI Workforce; a vision
+  model (Gemma 4 by default) describes them, reading all visible text.
+- **Describe the screen**: new gestures describe the current window or the
+  whole screen.
+
+### Upload any file, download in the format you want
+- Upload now reads **TXT, Markdown, Word, EPUB, HTML, RTF, PowerPoint, Excel,
+  OpenDocument (text, spreadsheet, presentation), CSV, JSON, XML and
+  subtitles**, plus **PDF, images and ZIPs of page images** (Document AI) and
+  **audio** (transcribed) - in every dialog.
+- Results now have a **Download format** list and a **Download** button:
+  **Word, Markdown, web page (HTML), rich text (RTF), Excel, CSV, JSON, plain
+  text** and, for timed transcripts, **SRT subtitles**. Markdown tables become
+  real Word, HTML and Excel tables. The last format used is remembered.
+- Audio downloads as **MP3, WAV, FLAC or AAC**; new sample rates up to 48 kHz.
+- **Translate a whole document and keep its format**: PDF, Word, Excel,
+  PowerPoint, HTML, Markdown or text in, the same format out, layout kept.
+- AI Workforce accepts **several attachments at once** and keeps the
+  **conversation** for follow-up questions (New conversation starts over).
+
+### Speech to text
+- Output modes: transcribe, translate to English, verbatim, romanised or
+  code-mixed.
+- **Key terms** (Saaras v4): names and jargon to spell correctly.
+- **Separate speakers** (who said what) and **timings** for subtitles.
+- Long audio goes to the batch API automatically (up to two hours); if the
+  real-time API rejects a clip as too long it is retried as a batch job.
+- More input formats: MP4, AIFF, AMR, WMA.
+
+### Translation
+- **Sarvam-Translate** offers all **22 scheduled Indian languages** (Assamese,
+  Bodo, Dogri, Kashmiri, Konkani, Maithili, Manipuri, Nepali, Sanskrit,
+  Santali, Sindhi, Urdu and more); Mayura keeps its styles.
+
+### Under the hood
+- New modules: `models.py` (catalogue), `agent.py`, `exporter.py`, `fileio.py`.
+- 31 automated tests (`python -m unittest discover -s tests`) cover the voice
+  catalogue, model rules, every export format, the file readers, the agent
+  loop and the request shapes for Chat V2, Bulbul, batch STT, Document AI and
+  document translation.
+
 ## [1.0.7] - 2026-08-11
 
 Fixes a crash that stopped the settings panel opening, and makes Speech to Text

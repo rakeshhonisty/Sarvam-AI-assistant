@@ -37,7 +37,7 @@ def _current_version():
 				return addon.version
 	except Exception:
 		pass
-	return "1.0.0"
+	return "2.0"
 
 
 def _fetch_latest():
@@ -48,8 +48,10 @@ def _fetch_latest():
 	})
 	with urllib.request.urlopen(req, timeout=15) as resp:
 		data = json.loads(resp.read().decode("utf-8"))
-	tag = (data.get("tag_name") or "").lstrip("vV")
-	return tag, data.get("html_url")
+	# Tags look like "v2.0"; tolerate prefixes such as "sarvamAI-2.0".
+	import re
+	m = re.search(r"\d+(?:\.\d+)*", data.get("tag_name") or "")
+	return (m.group(0) if m else ""), data.get("html_url")
 
 
 def check(parent=None, interactive=False):
